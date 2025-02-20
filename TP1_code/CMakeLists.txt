@@ -31,6 +31,7 @@ if(INCLUDE_DISTRIB)
 endif(INCLUDE_DISTRIB)
 
 
+add_definitions(-g) # compiler flag
 
 include_directories(
 	external/glfw-3.1.2/include/
@@ -54,6 +55,7 @@ add_definitions(
 )
 
 # TP1
+
 add_executable(TP1
         TP1/TP1.cpp
 	common/shader.cpp
@@ -66,9 +68,14 @@ add_executable(TP1
 	common/objloader.hpp
 	common/vboindexer.cpp
 	common/vboindexer.hpp
+	TP1/engine/core/resourceLoader/resourceLoader.h
+	TP1/engine/core/resourceLoader/resourceLoader.cpp
+	TP1/engine/render/Mesh/mesh.h
+	TP1/engine/render/Mesh/mesh.cpp # order is important!!!
 	
         TP1/vertex_shader.glsl
         TP1/fragment_shader.glsl
+
 )
 target_link_libraries(TP1
 	${ALL_LIBS}

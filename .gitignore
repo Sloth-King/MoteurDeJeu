@@ -10,3 +10,6 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
+
+TP1_code/build/*
+TP1_code/build/launch-TP1.sh

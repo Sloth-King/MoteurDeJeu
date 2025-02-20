@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 
+
 // Include GLEW
 #include <GL/glew.h>
 
@@ -21,6 +22,8 @@ using namespace glm;
 #include <common/shader.hpp>
 #include <common/objloader.hpp>
 #include <common/vboindexer.hpp>
+
+#include "engine/includes/core.h"
 
 void processInput(GLFWwindow *window);
 
@@ -42,6 +45,7 @@ float angle = 0.;
 float zoom = 1.;
 /*******************************************************************************/
 
+using Utils::print;
 int main( void )
 {
     // Initialise GLFW
@@ -57,6 +61,8 @@ int main( void )
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
     // Open a window and create its OpenGL context
     window = glfwCreateWindow( 1024, 768, "TP1 - GLFW", NULL, NULL);
@@ -87,10 +93,11 @@ int main( void )
     glfwSetCursorPos(window, 1024/2, 768/2);
 
     // Dark blue background
-    glClearColor(0.8f, 0.8f, 0.8f, 0.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
+    glEnable (GL_PROGRAM_POINT_SIZE);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
 
@@ -101,39 +108,25 @@ int main( void )
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    // Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders( "vertex_shader.glsl", "fragment_shader.glsl" );
-
     /*****************TODO***********************/
     // Get a handle for our "Model View Projection" matrices uniforms
 
     /****************************************/
-    std::vector<unsigned short> indices; //Triangles concaténés dans une liste
-    std::vector<std::vector<unsigned short> > triangles;
-    std::vector<glm::vec3> indexed_vertices;
 
-    //Chargement du fichier de maillage
-    std::string filename("chair.off");
-    loadOFF(filename, indexed_vertices, indices, triangles );
+    std::string filename("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/chair.off");
+    std::cout << "\n\n\n\n\n\n" << std::endl;
 
-    // Load it into a VBO
-
-    GLuint vertexbuffer;
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, indexed_vertices.size() * sizeof(glm::vec3), &indexed_vertices[0], GL_STATIC_DRAW);
-
-    // Generate a buffer for the indices as well
-    GLuint elementbuffer;
-    glGenBuffers(1, &elementbuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0] , GL_STATIC_DRAW);
-
-    // Get a handle for our "LightPosition" uniform
-    glUseProgram(programID);
-    GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+    std::string vertex_shader_filename = "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/vertex_shader.glsl";
+    std::string fragment_shader_filename = "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/fragment_shader.glsl";
 
 
+    Camera camera;
+
+    //Mesh mesh = Mesh::gen_tesselatedSquare(2, 2);
+    Mesh mesh = ResourceLoader::load_mesh_off(filename);
+    mesh.setShader(vertex_shader_filename, fragment_shader_filename);
+
+    print(mesh);
 
     // For speed computation
     double lastTime = glfwGetTime();
@@ -156,10 +149,6 @@ int main( void )
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Use our shader
-        glUseProgram(programID);
-
-
         /*****************TODO***********************/
         // Model matrix : an identity matrix (model will be at the origin) then change
 
@@ -172,33 +161,7 @@ int main( void )
 
         /****************************************/
 
-
-
-
-        // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(
-                    0,                  // attribute
-                    3,                  // size
-                    GL_FLOAT,           // type
-                    GL_FALSE,           // normalized?
-                    0,                  // stride
-                    (void*)0            // array buffer offset
-                    );
-
-        // Index buffer
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-
-        // Draw the triangles !
-        glDrawElements(
-                    GL_TRIANGLES,      // mode
-                    indices.size(),    // count
-                    GL_UNSIGNED_SHORT,   // type
-                    (void*)0           // element array buffer offset
-                    );
-
-        glDisableVertexAttribArray(0);
+        mesh.render();
 
         // Swap buffers
         glfwSwapBuffers(window);
@@ -208,10 +171,6 @@ int main( void )
     while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0 );
 
-    // Cleanup VBO and shader
-    glDeleteBuffers(1, &vertexbuffer);
-    glDeleteBuffers(1, &elementbuffer);
-    glDeleteProgram(programID);
     glDeleteVertexArrays(1, &VertexArrayID);
 
     // Close OpenGL window and terminate GLFW
