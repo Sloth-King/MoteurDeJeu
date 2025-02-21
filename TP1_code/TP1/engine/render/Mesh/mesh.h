@@ -76,6 +76,7 @@ public:
             stream << "Mesh(" << mesh.vertices.size() <<" verts, " << mesh.triangles.size() <<" tris)" <<
             " at position (" << mesh.transform[3][0] << ", " << mesh.transform[3][1] << ", " << mesh.transform[3][2] << ")";
         }
+        return stream;
 
 
 };
