@@ -49,4 +49,12 @@ public:
     inline glm::mat4 getProjectionMatrix(){
         return projection;
     }
+
+    inline glm::mat4 getViewMatrix(){
+        return transform; // TODO once return global transform once we have created the scene class
+    }
+
+    inline glm::mat4 getVP(){
+        return getProjectionMatrix() * getViewMatrix();
+    }
 };
