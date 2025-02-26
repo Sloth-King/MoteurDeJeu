@@ -114,7 +114,7 @@ int main( void )
     /****************************************/
 
     std::string filename("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/chair.off");
-    std::cout << "\n\n\n\n\n\n" << std::endl;
+    // std::cout << "\n\n\n\n\n\n" << std::endl;
 
     std::string vertex_shader_filename = "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/vertex_shader.glsl";
     std::string fragment_shader_filename = "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/fragment_shader.glsl";
