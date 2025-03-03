@@ -2,6 +2,7 @@
 
 #include <cstdarg>
 #include <iostream>
+#include <glm/gtx/string_cast.hpp>
 
 namespace Utils{
 
@@ -18,6 +19,7 @@ void print(Args... args)
     print(args...) ;
     std::cout << std::endl;
 }
+
 
 
 }

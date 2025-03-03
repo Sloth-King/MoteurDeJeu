@@ -73,13 +73,22 @@ void Mesh::synchronize(){
     _synchronized = true;
 }
 
-void Mesh::render(){
+void Mesh::render(glm::mat4 vpMatrix){
 
     if (!_synchronized){ // FIXME branch prediction may bottleneck a little here?
         synchronize();
     }
     glUseProgram(shaderPID);
     
+    GLuint mvpUniformLocation = glGetUniformLocation(shaderPID, "MVP");
+
+    vpMatrix = vpMatrix * transform; // transform the VP into MVP
+
+
+
+    if (mvpUniformLocation != -1){
+        glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &vpMatrix[0][0]);
+    }
 
     glBindVertexArray(_VAO);
     glEnableVertexAttribArray(0);
@@ -141,58 +150,4 @@ void Mesh::recomputeNormals () {
     }
     for (unsigned int i = 0; i < vertices.size (); i++)
         normals[i] = glm::normalize(normals[i]);
-}
-
-
-
-
-
-
-
-
-
-
-//// generates a base plane
-Mesh Mesh::gen_tesselatedSquare(int nX, int nY, float sX, float sY){
-    Mesh o_mesh;
-
-    for (int u = 0; u<nX; ++u){
-        for (int v = 0; v<nY; ++v){
-
-            float px = 1. / float(nX) * u -0.5;
-            float py = 1. / float(nY) * v -0.5;
-
-            o_mesh.vertices.push_back(
-                glm::vec3(
-                    px * sX,
-                    py * sY,
-                    0
-                )
-            );
-        }
-    }
-
-    for (int i = 0; i<nY-1; ++i){
-        for (int j = 0; j<nX-1; ++j){
-
-            o_mesh.triangles.push_back(
-                Triangle(
-                    nX * j + i,
-                    nX*(j+1) +i,
-                    nX*(j+1) +i+1
-                )
-            );
-            o_mesh.triangles.push_back(
-                Triangle(
-                    nX * j + i,
-                    nX*(j+1) +i+1,
-                    nX*(j) +i+1
-                )
-            );
-            
-            
-        }
-    }
-    o_mesh.recomputeNormals();
-    return o_mesh;
 }

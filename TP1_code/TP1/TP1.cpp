@@ -31,10 +31,7 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// camera
-glm::vec3 camera_position   = glm::vec3(0.0f, 0.0f,  3.0f);
-glm::vec3 camera_target = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f,  0.0f);
+
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -123,7 +120,8 @@ int main( void )
     Camera camera;
 
     //Mesh mesh = Mesh::gen_tesselatedSquare(2, 2);
-    Mesh mesh = ResourceLoader::load_mesh_off(filename);
+    Mesh mesh = Mesh::gen_tesselatedSquare(50, 50, 1.0, 1.0);
+    mesh.rotate(90, glm::vec3(1.0, 0.0, 0.0));
     mesh.setShader(vertex_shader_filename, fragment_shader_filename);
 
     print(mesh);
@@ -141,7 +139,7 @@ int main( void )
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
+        // inputœ
         // -----
         processInput(window);
 
@@ -149,19 +147,9 @@ int main( void )
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /*****************TODO***********************/
-        // Model matrix : an identity matrix (model will be at the origin) then change
-
-        // View matrix : camera/view transformation lookat() utiliser camera_position camera_target camera_up
-
-        // Projection matrix : 45 Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-
-        // Send our transformation to the currently bound shader,
-        // in the "Model View Projection" to the shader uniforms
-
-        /****************************************/
-
-        mesh.render();
+        camera.computeMatricesFromInputs();
+        //std::cout << glm::to_string(camera.transform) << std::endl;
+        mesh.render(camera.getVP());
 
         // Swap buffers
         glfwSwapBuffers(window);
@@ -186,13 +174,6 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    //Camera zoom in and out
-    float cameraSpeed = 2.5 * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera_position += cameraSpeed * camera_target;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera_position -= cameraSpeed * camera_target;
 
     //TODO add translations
 

@@ -1,4 +1,3 @@
-#pragma once
 
 #include "TP1/engine/render/Mesh/mesh.h"
 #include <iostream>

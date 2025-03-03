@@ -52,8 +52,6 @@ class GameObject{
 
 class Object3D: GameObject{
     glm::mat4 transform;
-
-
     
     void getGlobalTransform() const {
 

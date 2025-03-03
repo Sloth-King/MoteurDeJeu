@@ -47,14 +47,12 @@ protected:
 
 public:
 
-    glm::mat4 transform;
+    glm::mat4 transform = glm::mat4(1.0f);
     std::vector< glm::vec3 > vertices;
     std::vector< glm::vec2 > uvs;
     std::vector< glm::vec3 > normals;
     std::vector< Triangle > triangles;
     std::vector< glm::vec3 > colors;
-
-
 
     static Mesh gen_tesselatedSquare(int nX, int nY, float sX = 1, float sY = 1);
 
@@ -68,8 +66,12 @@ public:
     void recomputeNormals();
 
     void setShader(std::string vertex_shader, std::string fragment_shader);
-    void render();
+    void render(glm::mat4 vpMatrix);
     void debug_draw();
+
+    void rotate(float v, glm::vec3 axis){
+        transform = glm::rotate(transform, v, axis);
+    }
 
 
     friend std::ostream& operator<< (std::ostream& stream, const Mesh& mesh) {
