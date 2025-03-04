@@ -5,8 +5,11 @@
 #include <iostream>
 #include <string>
 #include <array>
+#include <utility>
 #include <vector>
 #include <GL/glew.h>
+
+#include "TP1/engine/render/texture/texture.h"
 
 using TRI_IDX_TYPE = unsigned int; // change both if needed!
 extern GLuint TRI_GL_TYPE; // defined in mesh.cpp
@@ -43,16 +46,20 @@ protected:
     GLuint _VBO;
     GLuint _VAO; // https://stackoverflow.com/questions/21652546/what-is-the-role-of-glbindvertexarrays-vs-glbindbuffer-and-what-is-their-relatio
     GLuint _EBO;
-    GLuint shaderPID;
+    GLuint _UV;
 
 public:
 
+
+    GLuint shaderPID; // public for now.
     glm::mat4 transform = glm::mat4(1.0f);
     std::vector< glm::vec3 > vertices;
     std::vector< glm::vec2 > uvs;
     std::vector< glm::vec3 > normals;
     std::vector< Triangle > triangles;
     std::vector< glm::vec3 > colors;
+
+    std::vector< std::pair<Texture, std::string> > textures;
 
     static Mesh gen_tesselatedSquare(int nX, int nY, float sX = 1, float sY = 1);
 
@@ -71,6 +78,10 @@ public:
 
     void rotate(float v, glm::vec3 axis){
         transform = glm::rotate(transform, v, axis);
+    }
+
+    void addTexture(Texture tex, std::string name_in_shader){
+        textures.push_back( std::pair(tex, name_in_shader));
     }
 
 

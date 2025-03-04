@@ -73,6 +73,7 @@ add_executable(TP1
 	TP1/engine/render/Mesh/mesh.h
 	TP1/engine/render/Mesh/mesh.cpp # order is important!!!
 	TP1/engine/render/Mesh/mesh_gen.cpp # order is important!!!
+	TP1/engine/external/stb_image.cpp
 	
         TP1/vertex_shader.glsl
         TP1/fragment_shader.glsl

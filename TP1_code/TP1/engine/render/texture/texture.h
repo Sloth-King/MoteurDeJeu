@@ -9,6 +9,9 @@
 #include <GL/glew.h>
 #include "TP1/engine/external/stb_image.h"
 
+
+
+
 class Texture {
 // https://learnopengl.com/Getting-started/Textures
 
@@ -20,19 +23,27 @@ public:
     int width, height;
     int nbChannels;
 
+    Texture(const std::string path){
+        loadTexture(path);
+        
+    }
 
-    void loadTexture(const std::string & path){
+    void loadTexture(const std::string path){
         data = stbi_load(path.c_str(), &width, &height, &nbChannels, 0);
+        if (!data) std::cout << " TEXTURE MAL CHARGEE" << std::endl;
+        //std::cout << "nbchannels: " << nbChannels << std::endl;
+
 
         synchronize();
 
     }
-    Gluint getTextureId(){ return _texture_id};
+    GLuint getTextureId(){ return _texture_id;};
 
     void synchronize(){ // TODO unsynchronize if already synchronized. Otherwise this is a memory leak :)
-
+        
+        
         glGenTextures(1, &_texture_id);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, _texture_id);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -40,11 +51,12 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-
         glGenerateMipmap(GL_TEXTURE_2D); 
     }
 
-    void bind(Gluint slot = 0){
+
+    // IN CASE STRANGE THINGS HAPPEN: ALWAYS REMEMBER https://learnopengl.com/Getting-started/Textures
+    void bind(GLuint slot = 0){
         glActiveTexture(GL_TEXTURE0+slot); // activate the texture unit first before binding texture
         glBindTexture(GL_TEXTURE_2D, _texture_id);
     }

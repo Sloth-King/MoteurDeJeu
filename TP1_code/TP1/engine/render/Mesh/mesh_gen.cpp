@@ -32,16 +32,23 @@ Mesh Mesh::gen_tesselatedSquare(int nX, int nY, float sX, float sY){
     for (int u = 0; u<nX; ++u){
         for (int v = 0; v<nY; ++v){
 
-            float px = 1. / float(nX) * u -0.5;
-            float py = 1. / float(nY) * v -0.5;
+            float px = 1. / float(nX) * u;
+            float py = 1. / float(nY) * v;
 
             o_mesh.vertices.push_back(
                 glm::vec3(
-                    px * sX,
-                    py * sY,
+                    (px -0.5) * sX,
+                    (py -0.5) * sY,
                     0
                 )
             );
+            o_mesh.uvs.push_back(
+                glm::vec2(
+                    px,
+                    py
+                )
+            );
+
         }
     }
     for (int i = 0; i<nY-1; ++i){

@@ -15,14 +15,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <common/shader.hpp>
-#include <common/objloader.hpp>
-#include <common/vboindexer.hpp>
-
-#include "TP1/engine/core/resourceLoader/resourceLoader.h"
-#include "TP1/engine/utils/utils.h"
-
-
 class Camera{
 
 protected:
@@ -38,7 +30,7 @@ public:
         transform = glm::mat4(1.0f);
 
         projection = glm::perspective(
-            glm::radians(70.0f),
+            glm::radians(45.0f),
             width / height,
             0.1f,
             100.0f
@@ -58,8 +50,8 @@ public:
         return getProjectionMatrix() * getViewMatrix();
     }
 
-    float mouseSpeed = -1.0;
-    float speed = 0.01;
+    float mouseSpeed = 2.0;
+    float speed = 1.0;
 
     void computeMatricesFromInputs(){
 
@@ -71,20 +63,33 @@ public:
         float deltaTime = float(currentTime - lastTime);
 
         // Get mouse position
+        static double xpos_last, ypos_last;
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
         // Reset mouse position for next frame
-        glfwSetCursorPos(window, 1024/2, 768/2);
+        //glfwSetCursorPos(window, 1024/2, 768/2);
 
         // Compute new orientation
-        float horizontalAngle = mouseSpeed * float(1024/2 - xpos ) / 1024.0;
-        float verticalAngle   = mouseSpeed * float( 768/2 - ypos ) / 768.0;
-        transform = glm::rotate(transform, horizontalAngle, glm::vec3(0, 1, 0));
-        transform = glm::rotate(transform, verticalAngle, glm::vec3(1, 0, 0));
+
+        mat4 transposed_transform = glm::transpose(transform);
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
+            float horizontalAngle = mouseSpeed * (xpos - xpos_last) / 1024.0;
+            float verticalAngle   = mouseSpeed * (ypos - ypos_last) / 768.0;
+
+            // in local space
+            transform = glm::rotate(transform, horizontalAngle, glm::vec3(transposed_transform[1]));
+            transform = glm::rotate(transform, verticalAngle, glm::vec3(transposed_transform[0]));
+
+        }
+
+
+        lastTime = currentTime;
+        xpos_last = xpos;
+        ypos_last = ypos;
 
         // Move forward
-        mat4 transposed_transform = glm::transpose(transform);
 
         if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
             transform = glm::translate(

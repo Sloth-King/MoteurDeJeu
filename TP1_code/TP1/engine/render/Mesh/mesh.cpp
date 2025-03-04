@@ -25,6 +25,11 @@
 
 
 
+
+
+
+
+
 GLuint TRI_GL_TYPE = GL_UNSIGNED_INT; // change with TRI_IDX_TYPE in mesh.h!
 
 
@@ -65,17 +70,38 @@ void Mesh::synchronize(){
     glBindBuffer(GL_ARRAY_BUFFER, _VBO);
 
 
+    glGenBuffers(1, &_UV);
+    glBindBuffer(GL_ARRAY_BUFFER, _UV);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0] , GL_STATIC_DRAW);
+
+
+
     glDisableVertexAttribArray(0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+    // textures
+
+    // TODO synchronize texture here aswell but not now since texture still can't "unsychronize"
+
+    /*
+    glUseProgram(shaderPID);
+    
+    for (auto t: textures){
+        glUniform1i(
+            glGetUniformLocation(shaderPID, t.second.c_str()),
+            t.first.getTextureId()
+        );
+    }*/
 
     _synchronized = true;
 }
 
 void Mesh::render(glm::mat4 vpMatrix){
 
-    if (!_synchronized){ // FIXME branch prediction may bottleneck a little here?
+    if (!_synchronized){ // FIXME branch prediction may bottleneck a little here? idk
         synchronize();
     }
     glUseProgram(shaderPID);
@@ -95,7 +121,7 @@ void Mesh::render(glm::mat4 vpMatrix){
     
     glBindBuffer(GL_ARRAY_BUFFER, _VBO);
 
-    // Draw the triangles !
+    // Positions attribute buffer
 
     glVertexAttribPointer(
         0,                  // attribute
@@ -106,9 +132,25 @@ void Mesh::render(glm::mat4 vpMatrix){
         (void*)0            // array buffer offset
     );
 
+
+    // Uvs attribute buffer
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, _UV);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    int i = 0;
+    for (auto t: textures){
+        t.first.bind(i);
+        glUniform1i(
+            glGetUniformLocation(shaderPID, t.second.c_str()),
+            i
+        );
+        ++i;
+    }
+
+
     // Index buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
-
+    
     glDrawElements(
                 GL_TRIANGLES,      // mode
                 triangles.size()*3,    // count
@@ -118,6 +160,7 @@ void Mesh::render(glm::mat4 vpMatrix){
     
 
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
     glBindVertexArray(0);
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -127,8 +170,11 @@ void Mesh::render(glm::mat4 vpMatrix){
 void Mesh::unsynchronize(){
     glDeleteBuffers(1, &_VBO);
     glDeleteBuffers(1, &_EBO);
+    glDeleteBuffers(1, &_UV);
     glDeleteProgram(shaderPID);
     glDeleteVertexArrays(1, &_VAO);
+    
+    _synchronized = false;
 
 }
 

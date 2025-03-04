@@ -43,6 +43,36 @@ float zoom = 1.;
 /*******************************************************************************/
 
 using Utils::print;
+
+
+inline void limit_fps(int FPS){
+    static double last_time = glfwGetTime();
+
+    double current_time = glfwGetTime();
+    double ms = 1.0 / FPS;
+    while (current_time - last_time <= ms){
+        current_time = glfwGetTime();
+    }
+
+    last_time = current_time;
+}
+
+void GLAPIENTRY
+MessageCallback( GLenum source,
+                 GLenum type,
+                 GLuint id,
+                 GLenum severity,
+                 GLsizei length,
+                 const GLchar* message,
+                 const void* userParam )
+{
+    return ;//
+  fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+}
+
+
 int main( void )
 {
     // Initialise GLFW
@@ -64,7 +94,7 @@ int main( void )
     // Open a window and create its OpenGL context
     window = glfwCreateWindow( 1024, 768, "TP1 - GLFW", NULL, NULL);
     if( window == NULL ){
-        fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+        fprintf( stderr, "Failed to open GLFW window." );
         getchar();
         glfwTerminate();
         return -1;
@@ -79,6 +109,9 @@ int main( void )
         glfwTerminate();
         return -1;
     }
+    // During init, enable debug output
+    glEnable              ( GL_DEBUG_OUTPUT );
+    glDebugMessageCallback( MessageCallback, 0 );
 
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -95,15 +128,13 @@ int main( void )
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     glEnable (GL_PROGRAM_POINT_SIZE);
+
+    std::cout << "yolo" << std::endl;
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
 
     // Cull triangles which normal is not towards the camera
     //glEnable(GL_CULL_FACE);
-
-    GLuint VertexArrayID;
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
 
     /*****************TODO***********************/
     // Get a handle for our "Model View Projection" matrices uniforms
@@ -118,11 +149,22 @@ int main( void )
 
 
     Camera camera;
-
+    
     //Mesh mesh = Mesh::gen_tesselatedSquare(2, 2);
     Mesh mesh = Mesh::gen_tesselatedSquare(50, 50, 1.0, 1.0);
-    mesh.rotate(90, glm::vec3(1.0, 0.0, 0.0));
+    mesh.rotate(-90, glm::vec3(1.0, 0.0, 0.0));
     mesh.setShader(vertex_shader_filename, fragment_shader_filename);
+
+    // load textures
+    Texture heightmap("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/heightmap.jpg");
+    Texture rock("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/rock.jpg");
+    Texture grass("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/grass.jpg");
+    Texture snow("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/snow.jpg");
+
+    mesh.addTexture(heightmap, "heightmap");
+    mesh.addTexture(rock, "rock");
+    mesh.addTexture(grass, "grass");
+    mesh.addTexture(snow, "snow");
 
     print(mesh);
 
@@ -149,17 +191,18 @@ int main( void )
 
         camera.computeMatricesFromInputs();
         //std::cout << glm::to_string(camera.transform) << std::endl;
+
         mesh.render(camera.getVP());
 
         // Swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
 
+        limit_fps(60);
+
     } // Check if the ESC key was pressed or the window was closed
     while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0 );
-
-    glDeleteVertexArrays(1, &VertexArrayID);
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
