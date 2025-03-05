@@ -23,7 +23,7 @@ protected:
 public:
     glm::mat4 transform; // !! is actually the inverse view matrix
 
-    float width = 500;
+    float width = 500; // pas encore utilisés
     float height = 500;
 
     Camera(){
@@ -42,7 +42,7 @@ public:
     }
 
     inline glm::mat4 getViewMatrix(){
-        return transform; // TODO return global transform once we have created the scene class
+        return glm::inverse(transform); // TODO return global transform once we have created the scene class
     }
 
     inline glm::mat4 getVP(){
@@ -71,28 +71,46 @@ public:
         //glfwSetCursorPos(window, 1024/2, 768/2);
 
         // Compute new orientation
-        
-        glm::mat4 transposed_transform = glm::transpose(transform);
-        //glm::mat4 transposed_transform = glm::transpose(transform);
-
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
-            //rotating = false;
-            float horizontalAngle = mouseSpeed * (xpos - xpos_last) / 1024.0;
-            float verticalAngle   = mouseSpeed * (ypos - ypos_last) / 768.0;
+
+            float horizontalAngle = mouseSpeed * (xpos - xpos_last) / 1000.0;
+            float verticalAngle   = mouseSpeed * (ypos - ypos_last) / 1000.0;
+
+            glm::vec3 t0 = glm::vec3(transform[0]);
+
+            // in global space
+            transform = glm::rotate(glm::mat4(1.0), horizontalAngle, glm::vec3(transform[1])) * transform;
+            transform = glm::rotate(glm::mat4(1.0), verticalAngle, t0) * transform;
 
             // in local space
-            transform = glm::rotate(transform, horizontalAngle, glm::vec3(transposed_transform[1]));
-            transform = glm::rotate(transform, verticalAngle, glm::vec3(transposed_transform[0]));
-        }
+            // transform = glm::rotate(transform, horizontalAngle, glm::vec3(0.0, 1.0, 0.0));
+            // transform =  glm::rotate(transform, verticalAngle, glm::vec3(1.0, 0.0, 0.0));
 
+
+            glm::vec3 global_up = glm::vec3(0, 1, 0);
+            // transform[2] = glm::normalize(transform[2]);
+            // transform[0] = glm::vec4(glm::normalize(glm::cross(glm::vec3(transform[2]), global_up)), 0.0);
+            // transform[1] = glm::vec4(glm::cross(
+            //     glm::vec3(transform[0]),
+            //     glm::vec3(transform[2])
+            // ), 0.0);
+            // float ang = -glm::acos(glm::dot(global_up, glm::normalize(glm::vec3(transform[1]))));
+            // transform = glm::rotate(transform, ang, glm::vec3(transform[2]));
+            
+            glm::mat3 test = glm::mat3(
+                glm::vec3(transform[1]),
+                glm::vec3(global_up),
+                glm::vec3(transform[2])
+            );
+
+            std::cout << glm::determinant(test) << std::endl;
+        }
         lastTime = currentTime;
 
         if (rotating){
-            transform = glm::rotate(transform, deltaTime, glm::vec3(transposed_transform[1]));
+            transform = glm::rotate(transform, deltaTime, glm::vec3(transform[1]));
         }
-
-
         xpos_last = xpos;
         ypos_last = ypos;
 
@@ -101,31 +119,30 @@ public:
         if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
-                glm::vec3(transposed_transform[2]) * deltaTime * speed
+                glm::vec3(0.0, 0.0, -1.0) * deltaTime * speed
             );
         }
         // Move backward
         if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
-                glm::vec3(-transposed_transform[2]) * deltaTime * speed
+                glm::vec3(0.0, 0.0, 1.0) * deltaTime * speed
             );
         }
         // Strafe right
         if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
-                glm::vec3(-transposed_transform[0]) * deltaTime * speed
+                glm::vec3(1.0, 0.0, 0.0) * deltaTime * speed
             );
         }
         // Strafe left
         if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
-                glm::vec3(transposed_transform[0]) * deltaTime * speed
+                glm::vec3(-1.0, 0.0, 0) * deltaTime * speed
             );
         }
-
         // Activate rotation
         if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS){
             rotating = !rotating;
