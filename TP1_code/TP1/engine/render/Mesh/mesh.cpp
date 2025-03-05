@@ -32,7 +32,6 @@
 
 GLuint TRI_GL_TYPE = GL_UNSIGNED_INT; // change with TRI_IDX_TYPE in mesh.h!
 
-
 void Mesh::debug_draw(){
 
     glEnableClientState( GL_VERTEX_ARRAY );
@@ -49,7 +48,6 @@ void Mesh::synchronize(){
     if (_synchronized){ // maybe we just want to resync
         unsynchronize();
     }
-    std::cout << "TAILLE " << sizeof(Triangle) << std::endl;
     
     glGenVertexArrays(1, &_VAO);
     glBindVertexArray(_VAO);

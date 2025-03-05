@@ -151,15 +151,15 @@ int main( void )
     Camera camera;
     
     //Mesh mesh = Mesh::gen_tesselatedSquare(2, 2);
-    Mesh mesh = Mesh::gen_tesselatedSquare(50, 50, 1.0, 1.0);
+    Mesh mesh = Mesh::gen_tesselatedSquare(100, 100, 1.0, 1.0);
     mesh.rotate(-90, glm::vec3(1.0, 0.0, 0.0));
     mesh.setShader(vertex_shader_filename, fragment_shader_filename);
 
     // load textures
     Texture heightmap("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/heightmap.jpg");
-    Texture rock("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/rock.jpg");
-    Texture grass("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/grass.jpg");
-    Texture snow("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/snow.jpg");
+    Texture rock("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/textures/rock.png");
+    Texture grass("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/textures/grass.png");
+    Texture snow("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/textures/snowrocks.png");
 
     mesh.addTexture(heightmap, "heightmap");
     mesh.addTexture(rock, "rock");

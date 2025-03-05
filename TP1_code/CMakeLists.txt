@@ -68,12 +68,19 @@ add_executable(TP1
 	common/objloader.hpp
 	common/vboindexer.cpp
 	common/vboindexer.hpp
+
 	TP1/engine/core/resourceLoader/resourceLoader.h
 	TP1/engine/core/resourceLoader/resourceLoader.cpp
+
+	TP1/engine/core/gameObject/gameObject.h
+	TP1/engine/core/gameObject/gameObject.cpp
+
 	TP1/engine/render/Mesh/mesh.h
 	TP1/engine/render/Mesh/mesh.cpp # order is important!!!
-	TP1/engine/render/Mesh/mesh_gen.cpp # order is important!!!
+	TP1/engine/render/Mesh/mesh_gen.cpp
+
 	TP1/engine/external/stb_image.cpp
+
 	
         TP1/vertex_shader.glsl
         TP1/fragment_shader.glsl

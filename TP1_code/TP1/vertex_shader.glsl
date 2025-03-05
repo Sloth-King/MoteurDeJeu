@@ -9,7 +9,7 @@ layout(location = 0) in vec3 vertices_position_modelspace;
 layout(location = 1) in vec2 raw_uv;
 
 out vec2 uv;
-out float slopeness;
+out float steepness;
 out float height;
 
 void main(){
@@ -24,7 +24,7 @@ void main(){
         // norme carrée du gradient
         const float offset = 0.05;
         height = pos.z;
-        slopeness = (
+        steepness = pow(
                 pow(
                         texture(heightmap, uv + vec2(offset, 0)).r - texture(heightmap, uv - vec2(offset, 0)).r,
                         2.0
@@ -32,7 +32,8 @@ void main(){
                 pow(
                         texture(heightmap, uv + vec2(0, offset)).r - texture(heightmap, uv - vec2(0, offset)).r,
                         2.0
-                )
-        );
+                ),
+                1.0
+        ) * 20.0; // just to see it lol
 }
 

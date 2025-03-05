@@ -72,7 +72,7 @@ public:
 
         // Compute new orientation
 
-        mat4 transposed_transform = glm::transpose(transform);
+        glm::mat4 transposed_transform = glm::transpose(transform);
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
             float horizontalAngle = mouseSpeed * (xpos - xpos_last) / 1024.0;

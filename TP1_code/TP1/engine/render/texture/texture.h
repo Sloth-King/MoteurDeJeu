@@ -33,7 +33,6 @@ public:
         if (!data) std::cout << " TEXTURE MAL CHARGEE" << std::endl;
         //std::cout << "nbchannels: " << nbChannels << std::endl;
 
-
         synchronize();
 
     }
