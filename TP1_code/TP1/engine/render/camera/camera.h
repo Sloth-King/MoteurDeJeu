@@ -19,7 +19,7 @@ class Camera{
 
 protected:
     glm::mat4 projection;
-    
+    bool rotating = false;
 public:
     glm::mat4 transform; // !! is actually the inverse view matrix
 
@@ -71,21 +71,28 @@ public:
         //glfwSetCursorPos(window, 1024/2, 768/2);
 
         // Compute new orientation
-
+        
         glm::mat4 transposed_transform = glm::transpose(transform);
+        //glm::mat4 transposed_transform = glm::transpose(transform);
+
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
+            //rotating = false;
             float horizontalAngle = mouseSpeed * (xpos - xpos_last) / 1024.0;
             float verticalAngle   = mouseSpeed * (ypos - ypos_last) / 768.0;
 
             // in local space
             transform = glm::rotate(transform, horizontalAngle, glm::vec3(transposed_transform[1]));
             transform = glm::rotate(transform, verticalAngle, glm::vec3(transposed_transform[0]));
+        }
 
+        lastTime = currentTime;
+
+        if (rotating){
+            transform = glm::rotate(transform, deltaTime, glm::vec3(transposed_transform[1]));
         }
 
 
-        lastTime = currentTime;
         xpos_last = xpos;
         ypos_last = ypos;
 
@@ -117,6 +124,11 @@ public:
                 transform,
                 glm::vec3(transposed_transform[0]) * deltaTime * speed
             );
+        }
+
+        // Activate rotation
+        if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS){
+            rotating = !rotating;
         }
 	}
 };
