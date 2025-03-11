@@ -16,6 +16,7 @@ void GameObject::setParent(GameObject & new_parent){
         ptr = std::unique_ptr<GameObject>(this);
     }
     parent = &new_parent;
+    scene = new_parent.scene;
 
     new_parent.children[this] = std::move(ptr);
 }

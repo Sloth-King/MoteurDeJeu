@@ -1,5 +1,6 @@
 
 
+#pragma once
 // Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "TP1/engine/utils/utils.h"
-
+#include "TP1/engine/core/scene/scene.h"
 
 
 class GameObject{
@@ -21,6 +22,8 @@ class GameObject{
     GameObject * parent; // itself in case it's root of a scene
     
     std::map< GameObject*, std::unique_ptr<GameObject> > children;
+
+    Scene * scene;
 
     bool hidden = false;
     // bool deactivated = false;
@@ -42,6 +45,23 @@ class GameObject{
     glm::mat4 getGlobalTransform() const { return glm::mat4();}
 
     bool isRoot() const { return parent == this; };
+
+    
+
+    void __engineUpdate(float deltaTime){
+
+    }
+
+    void __enginePhysicsUpdate(float deltaTime){
+
+        for (const auto & [ptr, owning_ptr] : children)
+            owning_ptrè>__enginePhysicsUpdate();
+        
+        _physicsUpdate();
+    }
+
+    virtual void  _update(float deltaTime) {};
+    virtual void  _physicsUpdate(float deltaTime) {};
 
 };
 

@@ -74,7 +74,6 @@ public:
 
     void setShader(std::string vertex_shader, std::string fragment_shader);
     void render(glm::mat4 vpMatrix);
-    void debug_draw();
 
     void rotate(float v, glm::vec3 axis){
         transform = glm::rotate(transform, v, axis);
@@ -91,6 +90,4 @@ public:
         
         return stream;
     }
-
-
 };

@@ -28,10 +28,9 @@
 
 class Scene{
 
-    // For now, just a vector of gameobjects
-    std::vector< G
+    Camera* current_camera;
+    std::unique_ptr< GameObject > root;
 
-    Camera current_camera;
-
+    
 
 }
