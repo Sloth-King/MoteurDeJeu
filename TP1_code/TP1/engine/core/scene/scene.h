@@ -31,6 +31,15 @@ class Scene{
     Camera* current_camera;
     std::unique_ptr< GameObject > root;
 
-    
+    void __engineUpdate(float deltaTime){
+        if (camera && root){
+            camera->computeMatricesFromInputs();
+            root.__engineUpdate(deltaTime);
+        }
+    }
 
+    void __enginePhysicsUpdate(float deltaTime){
+        if (root)
+            root.__enginePhysicsUpdate(deltaTime);
+    }
 }

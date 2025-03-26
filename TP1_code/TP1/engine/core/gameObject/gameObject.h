@@ -28,6 +28,9 @@ class GameObject{
     bool hidden = false;
     // bool deactivated = false;
 
+    glm::mat4 transform = glm::mat4(1.0);
+    Mesh mesh;
+
     bool isInScene(){
         GameObject * ancestor = parent;
 
@@ -39,10 +42,7 @@ class GameObject{
 
     void setParent(GameObject & new_parent);
 
-
-
     // we assume that the transform of such a node is identity
-    glm::mat4 getGlobalTransform() const { return glm::mat4();}
 
     bool isRoot() const { return parent == this; };
 
@@ -50,25 +50,22 @@ class GameObject{
 
     void __engineUpdate(float deltaTime){
 
+        for (const auto & [ptr, owning_ptr] : children)
+            owning_ptr->__engineUpdate();
+        
+        _update();
+
     }
 
     void __enginePhysicsUpdate(float deltaTime){
 
         for (const auto & [ptr, owning_ptr] : children)
-            owning_ptrè>__enginePhysicsUpdate();
+            owning_ptr->__enginePhysicsUpdate();
         
         _physicsUpdate();
     }
 
     virtual void  _update(float deltaTime) {};
     virtual void  _physicsUpdate(float deltaTime) {};
-
-};
-
-class Object3D: GameObject{
-    glm::mat4 transform;
-    
-    glm::mat4 getGlobalTransform() const {
-    }
 
 };
