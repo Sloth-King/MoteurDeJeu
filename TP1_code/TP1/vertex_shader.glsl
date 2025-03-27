@@ -36,4 +36,3 @@ void main(){
                 1.0
         ) * 20.0; // just to see it lol
 }
-

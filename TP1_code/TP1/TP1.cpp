@@ -24,24 +24,29 @@ using namespace glm;
 #include <common/vboindexer.hpp>
 
 #include "engine/includes/core.h"
-
+#include "engine/includes/components.h"
 
 using Utils::print;
 
 int main( void )
 {
 
+    std::string vertex_shader_filename = "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/vertex_shader.glsl";
 
-    Camera camera;
-
-    Game
+    std::string fragment_shader_filename = "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/fragment_shader.glsl";
     
-    //Mesh mesh = Mesh::gen_tesselatedSquare(2, 2);
-    Mesh mesh = Mesh::gen_tesselatedSquare(100, 100, 1.0, 1.0);
+    Game game;
+
+    game.init();
+
+    Mesh mesh = Mesh::gen_tesselatedSquare(2, 2);
+    //Mesh mesh = ResourceLoader::load_mesh_off("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/sphere1.off");
     mesh.rotate(-90, glm::vec3(1.0, 0.0, 0.0));
+
     mesh.setShader(vertex_shader_filename, fragment_shader_filename);
 
     // load textures
+    
     Texture heightmap("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/heightmap.jpg");
     Texture rock("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/textures/rock.png");
     Texture grass("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/textures/grass.png");
@@ -51,62 +56,40 @@ int main( void )
     mesh.addTexture(rock, "rock");
     mesh.addTexture(grass, "grass");
     mesh.addTexture(snow, "snow");
-
-    print(mesh);
-
-    // For speed computation
-    double lastTime = glfwGetTime();
-    int nbFrames = 0;
-
-    do{
-
-        // Measure speed
-        // per-frame time logic
-        // --------------------
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-        // inputœ
-        // -----
-        processInput(window);
+    
 
 
-        // Clear the screen
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    Camera camera;
 
-        camera.computeMatricesFromInputs();
-        //std::cout << glm::to_string(camera.transform) << std::endl;
+    game.setCurrentCamera(camera);
 
-        mesh.render(camera.getVP());
 
-        // Swap buffers
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+    // gameobjects
 
-        limit_fps(60);
+    GameObject sphere1;
+    //GameObject sphere2;
 
-    } // Check if the ESC key was pressed or the window was closed
-    while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0 );
+    // components
 
-    // Close OpenGL window and terminate GLFW
-    glfwTerminate();
+    //C_Mesh mesh_comp(mesh);
 
-    return 0;
+    //C_Transform transform_comp;
+
+    // scene setup
+    sphere1.addComponent<C_Transform>();
+    sphere1.addComponent<C_Mesh>();
+
+    sphere1.getComponent<C_Mesh>()->mesh = mesh;
+
+    game.current_scene.setRoot(std::move(sphere1));
+
+    //game.start();
+
+    while (true) game.render_update();
 }
 
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
 
-    //TODO add translations
-
-}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------

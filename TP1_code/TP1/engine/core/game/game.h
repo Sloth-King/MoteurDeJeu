@@ -8,6 +8,13 @@
 #include <map>
 #include <iostream>
 #include <memory>
+#include <thread>
+
+// Include GLEW
+#include <GL/glew.h>
+
+// Include GLFW
+#include <GLFW/glfw3.h>
 
 // Include GLM
 #include <glm/glm.hpp>
@@ -19,17 +26,34 @@
 
 class Game {
 protected:
+    std::thread render_thread;
+
+    GLFWwindow* window;
     bool running = false;
 
 public:
+
+    inline bool isRunning() const { return running;}
+
+    GLFWwindow* getWindow() {
+        return window;
+    }
+
+    void setCurrentCamera(Camera& c){
+        c.window = window;
+        current_scene.setCurrentCamera(c);
+    }
+
     Scene current_scene;
 
-    void launch();
+    void start();
 
-    void initialize_gl();
+    void init();
 
-    void update_game();
+    void render_update();
 
-    void :stop();
+    //void fixed_update();
 
-}
+
+    void stop();
+};

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <iostream>
+#include <thread>
 
 
 // Include GLEW
@@ -13,7 +14,6 @@
 
 // Include GLFW
 #include <GLFW/glfw3.h>
-GLFWwindow* window;
 
 // Include GLM
 #include <glm/glm.hpp>
@@ -25,10 +25,6 @@ using namespace glm;
 #include <common/shader.hpp>
 #include <common/objloader.hpp>
 #include <common/vboindexer.hpp>
-
-#include "engine/includes/core.h"
-
-void processInput(GLFWwindow *window);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -62,14 +58,14 @@ MessageCallback( GLenum source,
 }
 
 
-void Game::initialize_gl()
+void Game::init()
 {
     // Initialise GLFW
     if( !glfwInit() )
     {
         fprintf( stderr, "Failed to initialize GLFW\n" );
         getchar();
-        return -1;
+        return ;
     }
 
     glfwWindowHint(GLFW_SAMPLES, 4);
@@ -86,7 +82,7 @@ void Game::initialize_gl()
         fprintf( stderr, "Failed to open GLFW window." );
         getchar();
         glfwTerminate();
-        return -1;
+        return ;
     }
     glfwMakeContextCurrent(window);
 
@@ -96,7 +92,7 @@ void Game::initialize_gl()
         fprintf(stderr, "Failed to initialize GLEW\n");
         getchar();
         glfwTerminate();
-        return -1;
+        return ;
     }
 
 
@@ -106,21 +102,29 @@ void Game::initialize_gl()
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
+    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     glEnable (GL_PROGRAM_POINT_SIZE);
     glDepthFunc(GL_LESS);
 
-
-    print(mesh);
+    //glEnable(GL_CULL_FACE);
 
 }
 
-void Game::launch(){
+void Game::start(){
     running = true;
+    render_thread = std::thread(
+        [this](){
+            while (running) render_update();
+        }
+    );
 }
 
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 void Game::render_update(){
     // Measure speed
     // per-frame time logic
@@ -131,9 +135,8 @@ void Game::render_update(){
 
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    scene.__engineUpdate(deltaTime)
-    scene.__enginePhysicsUpdate(deltaTime)
+    current_scene.__engineUpdate(deltaTime);
+    current_scene.__enginePhysicsUpdate(deltaTime);
 
     // Swap buffers
     glfwSwapBuffers(window);
@@ -144,5 +147,6 @@ void Game::render_update(){
 
 void Game::stop(){
     running = false;
+    render_thread.join();
     glfwTerminate();
 }

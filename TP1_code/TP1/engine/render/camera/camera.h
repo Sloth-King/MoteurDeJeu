@@ -23,6 +23,8 @@ protected:
 public:
     glm::mat4 transform; // !! is actually the inverse view matrix
 
+    GLFWwindow* window;
+
     float width = 500; // pas encore utilisés
     float height = 500;
 
@@ -54,6 +56,7 @@ public:
     float speed = 1.0;
 
     void computeMatricesFromInputs(){
+        if (!window) return;
 
         // glfwGetTime is called only once, the first time this function is called
         static double lastTime = glfwGetTime();

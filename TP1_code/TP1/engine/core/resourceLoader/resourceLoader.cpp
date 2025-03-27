@@ -1,5 +1,5 @@
 
-#include "TP1/engine/render/Mesh/mesh.h"
+#include "TP1/engine/render/mesh/mesh.h"
 #include <iostream>
 #include <fstream>
 #include <cstring>

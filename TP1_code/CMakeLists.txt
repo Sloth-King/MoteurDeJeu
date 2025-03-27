@@ -2,6 +2,9 @@
 cmake_minimum_required (VERSION 3.0)
 project (Tutorials)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(OpenGL REQUIRED)
 
 
@@ -72,12 +75,29 @@ add_executable(TP1
 	TP1/engine/core/resourceLoader/resourceLoader.h
 	TP1/engine/core/resourceLoader/resourceLoader.cpp
 
+	TP1/engine/core/component/component.h
+	TP1/engine/core/component/component.cpp
+
 	TP1/engine/core/gameObject/gameObject.h
 	TP1/engine/core/gameObject/gameObject.cpp
 
-	TP1/engine/render/Mesh/mesh.h
-	TP1/engine/render/Mesh/mesh.cpp # order is important!!!
-	TP1/engine/render/Mesh/mesh_gen.cpp
+	TP1/engine/core/scene/scene.h
+	TP1/engine/core/scene/scene.cpp
+
+	TP1/engine/core/game/game.h
+	TP1/engine/core/game/game.cpp
+
+
+	# base components definitions
+	TP1/engine/core/core_components/components.h
+	TP1/engine/core/core_components/components.cpp
+
+	TP1/engine/render/components/components.h
+	TP1/engine/render/components/components.cpp
+
+	TP1/engine/render/mesh/mesh.h
+	TP1/engine/render/mesh/mesh.cpp # order is important!!!
+	TP1/engine/render/mesh/mesh_gen.cpp
 
 	TP1/engine/external/stb_image.cpp
 

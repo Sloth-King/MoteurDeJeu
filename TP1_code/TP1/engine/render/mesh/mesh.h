@@ -39,14 +39,14 @@ class Mesh {
 protected:
 
     // GPU, VBO etc
-    void unsynchronize();
-    void synchronize();
+    void unsynchronize() const;
+    void synchronize() const;
 
-    bool _synchronized = false;
-    GLuint _VBO;
-    GLuint _VAO; // https://stackoverflow.com/questions/21652546/what-is-the-role-of-glbindvertexarrays-vs-glbindbuffer-and-what-is-their-relatio
-    GLuint _EBO;
-    GLuint _UV;
+    mutable bool _synchronized = false;
+    mutable GLuint _VBO;
+    mutable GLuint _VAO; // https://stackoverflow.com/questions/21652546/what-is-the-role-of-glbindvertexarrays-vs-glbindbuffer-and-what-is-their-relatio
+    mutable GLuint _EBO;
+    mutable GLuint _UV;
 
 public:
 
@@ -73,7 +73,7 @@ public:
     void recomputeNormals();
 
     void setShader(std::string vertex_shader, std::string fragment_shader);
-    void render(glm::mat4 vpMatrix);
+    void render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transform) const;
 
     void rotate(float v, glm::vec3 axis){
         transform = glm::rotate(transform, v, axis);

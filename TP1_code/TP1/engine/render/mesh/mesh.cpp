@@ -32,18 +32,8 @@
 
 GLuint TRI_GL_TYPE = GL_UNSIGNED_INT; // change with TRI_IDX_TYPE in mesh.h!
 
-void Mesh::debug_draw(){
 
-    glEnableClientState( GL_VERTEX_ARRAY );
-    glPointSize(8.0);
-    glColor3f(1.0, 0.0, 0.0);
-    glVertexPointer( 3, GL_FLOAT, sizeof(glm::vec3), &vertices[0].x );
-    glDrawArrays( GL_POINTS, 0, vertices.size() );
-    glDisableClientState( GL_VERTEX_ARRAY );
-    glFlush();
-}
-
-void Mesh::synchronize(){
+void Mesh::synchronize() const {
 
     if (_synchronized){ // maybe we just want to resync
         unsynchronize();
@@ -97,7 +87,7 @@ void Mesh::synchronize(){
     _synchronized = true;
 }
 
-void Mesh::render(glm::mat4 vpMatrix){
+void Mesh::render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transform) const{
 
     if (!_synchronized){ // FIXME branch prediction may bottleneck a little here? idk
         synchronize();
@@ -106,12 +96,12 @@ void Mesh::render(glm::mat4 vpMatrix){
     
     GLuint mvpUniformLocation = glGetUniformLocation(shaderPID, "MVP");
 
-    vpMatrix = vpMatrix * transform; // transform the VP into MVP
+    glm::mat4 MVP = vpMatrix * outside_transform * transform; // transform the VP into MVP
 
 
 
     if (mvpUniformLocation != -1){
-        glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &vpMatrix[0][0]);
+        glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &MVP[0][0]);
     }
 
     glBindVertexArray(_VAO);
@@ -165,7 +155,7 @@ void Mesh::render(glm::mat4 vpMatrix){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::unsynchronize(){
+void Mesh::unsynchronize() const {
     glDeleteBuffers(1, &_VBO);
     glDeleteBuffers(1, &_EBO);
     glDeleteBuffers(1, &_UV);

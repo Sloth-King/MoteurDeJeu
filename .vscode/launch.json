@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1",
-      "program": "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/build/Debug/outDebug",
+      "cwd": "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/engine/core/scene",
+      "program": "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/engine/core/scene/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

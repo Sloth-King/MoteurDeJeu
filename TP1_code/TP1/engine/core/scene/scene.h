@@ -27,19 +27,33 @@
 #include "TP1/engine/render/camera/camera.h"
 
 class Scene{
-
+private:
     Camera* current_camera;
     std::unique_ptr< GameObject > root;
 
+public:
+
+    Camera& getCurrentCamera(){
+        return *current_camera;
+    }
+
+    void setCurrentCamera(Camera& c){
+        current_camera = &c;
+    }
+
+    void setRoot(GameObject && g){
+        root = std::make_unique<GameObject>(std::move(g));
+    }
+
     void __engineUpdate(float deltaTime){
-        if (camera && root){
-            camera->computeMatricesFromInputs();
-            root.__engineUpdate(deltaTime);
+        if (current_camera && root){
+            current_camera->computeMatricesFromInputs();
+            root->__engineUpdate(deltaTime);
         }
     }
 
     void __enginePhysicsUpdate(float deltaTime){
         if (root)
-            root.__enginePhysicsUpdate(deltaTime);
+            root->__enginePhysicsUpdate(deltaTime);
     }
-}
+};
