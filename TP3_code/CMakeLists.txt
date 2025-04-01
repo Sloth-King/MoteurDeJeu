@@ -66,6 +66,17 @@ add_executable(TP1
 	common/objloader.hpp
 	common/vboindexer.cpp
 	common/vboindexer.hpp
+	common/scene_tree/mesh.hpp
+	common/scene_tree/mesh.cpp	
+	common/scene_tree/resourceLoader.hpp
+	common/scene_tree/resourceLoader.cpp
+	common/scene_tree/textureClass.hpp
+	common/scene_tree/transform.hpp
+	common/scene_tree/transform.cpp
+	common/scene_tree/gameObject.hpp
+	common/scene_tree/gameObject.cpp
+
+	common/stb.cpp
 	
         TP1/vertex_shader.glsl
         TP1/fragment_shader.glsl

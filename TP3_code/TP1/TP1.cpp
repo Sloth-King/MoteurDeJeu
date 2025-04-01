@@ -25,7 +25,17 @@ using namespace glm;
 #include <common/controls.hpp>
 
 //Image
-#include <common/stb.cpp>
+#include <common/stb_image.h>
+
+
+//Scene tree
+#include <common/scene_tree/mesh.hpp>
+#include <common/scene_tree/resourceLoader.hpp>
+#include <common/scene_tree/textureClass.hpp>
+#include <common/scene_tree/transform.hpp>
+#include <common/scene_tree/gameObject.hpp>
+
+
 
 
 void processInput(GLFWwindow *window);
@@ -192,6 +202,8 @@ void create_plane_with_texture(
     int height = 16,
     int width= 16){
 
+        std::cout << "come on mane" << std::endl;
+
         out_indices.clear();
         out_triangles.clear();
         //out_indexed_vertices.clear();
@@ -247,6 +259,7 @@ void create_plane_with_texture(
 
 int main( void )
 {
+    std::cout << "please god.." << std::endl;
     // Initialise GLFW
     if( !glfwInit() )
     {
@@ -319,63 +332,64 @@ int main( void )
     std::vector<glm::vec3> indexed_vertices;
     std::vector<glm::vec2> indexed_tex_coords;
     std::vector<Vertex> vertex;
-
-    //Chargement du fichier de maillage
-    //std::string filename("chair.off");
-    //loadOFF(filename, indexed_vertices, indices, triangles );
-
-    //plane
-
-    //create_plane(indices , triangles , indexed_vertices);
     
-    std::string h_map_1024 = "textures/heightmap-1024x1024.png";
-    std::string h_map_mountain = "textures/Heightmap_Mountain.png";
-    std::string h_map_rocky = "textures/Heightmap_Rocky.png"; 
+    //SUN 
+    std::string filename = "sphere2.off";
 
-    std::string grass_texture = "textures/grass.png";
-    std::string rock_texture = "textures/rock.png";
-    std::string snowrocks_texture = "textures/snowrocks.png";
+    //Initialize meshes
+    Mesh sun_mesh = ResourceLoader::load_mesh_off(filename);
+    Mesh earth_mesh = ResourceLoader::load_mesh_off(filename);
+    Mesh moon_mesh = ResourceLoader::load_mesh_off(filename);
 
-    GLuint grassID = load_texture(grass_texture);
-    GLuint rockID = load_texture(rock_texture);
-    GLuint snowID = load_texture(snowrocks_texture);
+    //Set shader type shit
+    sun_mesh.setShader("vertex_shader.glsl" , "fragment_shader.glsl");
+    earth_mesh.setShader("vertex_shader.glsl" , "fragment_shader.glsl");
+    moon_mesh.setShader("vertex_shader.glsl" , "fragment_shader.glsl");
 
-    //GLuint heightmapID = load_texture(h_map_1024);
-    //GLuint heightmapID = load_texture(h_map_mountain);
-    GLuint heightmapID = load_texture(h_map_mountain);
-
-
-
-
-    // glUseProgram(programID);
-    // GLuint tex0uniform = glGetUniformLocation(programID, "tex0");
-    // glUniform1i(tex0uniform, 0);  // 0 corresponds to GL_TEXTURE0
+    //calculate UV (for .off only)
+    sun_mesh.calculateUV_Sphere();
+    earth_mesh.calculateUV_Sphere();
+    moon_mesh.calculateUV_Sphere();
 
 
-    // GLuint rockID = load_texture(rock_texture);
-    // GLuint snowrocksID = load_texture(snowrocks_texture);
+    //I forgor what this does    
+    GLuint texSamplerID = glGetUniformLocation(programID , "textureSampler");
+    glUniform1i(texSamplerID , 0);
 
-    create_plane_with_texture(indices, triangles , vertex , height , width);
+    //load a texture
+    Texture sun_texture = Texture("textures/2k_sun.jpg");
+    Texture earth_texture = Texture("textures/2k_earth_daymap.jpg");
+    Texture moon_texture = Texture("textures/2k_moon.jpg");
 
-    // Load it into a VBO
 
-    GLuint vertexbuffer;
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), &vertex[0], GL_STATIC_DRAW);
+    //bind it
+    sun_mesh.addTexture(sun_texture , "mesh_texture");
+    earth_mesh.addTexture(earth_texture , "mesh_texture");
+    moon_mesh.addTexture(moon_texture , "mesh_texture");
 
-    //texturebuffer
-    GLuint texcoordbuffer;
-    glGenBuffers(1, &texcoordbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, texcoordbuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), &vertex[0], GL_STATIC_DRAW);
 
-    // Generate a buffer for the indices as well
-    GLuint elementbuffer;
-    glGenBuffers(1, &elementbuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0] , GL_STATIC_DRAW);
+    //Create the gameobjects
+    GameObject sunGO = GameObject(sun_mesh, "sunGO");
+    GameObject earthGO = GameObject(earth_mesh,"earthGO");
+    GameObject moonGO = GameObject(moon_mesh , "moonGO");
 
+    //Manage parent child hierarchy
+    sunGO.addChild(&earthGO);
+    earthGO.addChild(&moonGO);
+
+    //Initial transforms
+
+    //shrink shmove and roate the earth
+    earthGO.transform.setPosition(glm::vec3(-3.0f , 0.0f , 0.0f));
+    earthGO.transform.setScale(glm::vec3(0.25f , 0.25f , 0.25f));
+    earthGO.transform.setRotation(glm::vec3(23.0f, 0.0f, 0.0f));
+
+    //shrink shmoove and return the moon to its original shits
+    moonGO.transform.setScale(glm::vec3(0.5f,0.5f,0.5f));
+    moonGO.transform.setPosition(glm::vec3(-2.0f , 1.0f , 0.0f));
+
+
+    
     // Get a handle for our "LightPosition" uniform
     glUseProgram(programID);
     GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
@@ -401,25 +415,6 @@ int main( void )
         // -----
         processInput(window);
 
-        if(rebuild){
-            create_plane_with_texture(indices, triangles , vertex , height , width);
-
-            glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-            glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), &vertex[0], GL_STATIC_DRAW);
-
-            glBindBuffer(GL_ARRAY_BUFFER, texcoordbuffer);
-            glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), &vertex[0], GL_STATIC_DRAW);
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0] , GL_STATIC_DRAW);
-
-            glUniform1f(heightScaleID , heightScale);
-
-            rebuild = false;
-        }
-
-        //computeMatricesFromInputs();
-
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -431,9 +426,10 @@ int main( void )
         if(mode == orbit){
             angle+= rotation_speed;
         }
-        glm::mat4 model_matrix = glm::mat4(1.0f);
-        model_matrix = glm::rotate(model_matrix, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-        model_matrix = glm::scale(model_matrix, glm::vec3(zoom, zoom, zoom));
+
+        // glm::mat4 model_matrix = glm::mat4(1.0f);
+        // model_matrix = glm::rotate(model_matrix, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+        // model_matrix = glm::scale(model_matrix, glm::vec3(zoom, zoom, zoom));
 
         // View matrix : camera/view transformation lookat() utiliser camera_position camera_target camera_up
 
@@ -447,68 +443,24 @@ int main( void )
         // Send our transformation to the currently bound shader,
         // in the "Model View Projection" to the shader uniforms
 
-        glm::mat4 MVP = projection_matrix * view_matrix * model_matrix;
+        //MVP will be calculated in each mesh, so for now just send VP
+        glm::mat4 VP = projection_matrix * view_matrix;
 
-        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &VP[0][0]);
 
-        // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(
-                    0,                  // attribute
-                    3,                  // size
-                    GL_FLOAT,           // type
-                    GL_FALSE,           // normalized?
-                    sizeof(Vertex),                  // stride
-                    (void*)0            // array buffer offset
-                    );
-
-    
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, texcoordbuffer);
-        glVertexAttribPointer(
-                    1,                  // attribute
-                    2,                  // size
-                    GL_FLOAT,           // type
-                    GL_FALSE,           // normalized?
-                    sizeof(Vertex),                  // stride
-                    (void*)offsetof(Vertex, uv)            // array buffer offset
-                    );
-
-        // Index buffer
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+        // // Index buffer
+        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 
         //To test if the pb was my triangles
         //glDisable(GL_CULL_FACE);
 
-        glActiveTexture(GL_TEXTURE0 + 3);
-        glBindTexture(GL_TEXTURE_2D, grassID);
-        GLuint texUniform = glGetUniformLocation(programID, "grass");
-        glUniform1i(texUniform, 3);
-
-        glActiveTexture(GL_TEXTURE0 + 1);
-        glBindTexture(GL_TEXTURE_2D, rockID);
-        GLuint texUniform_r = glGetUniformLocation(programID, "rock");
-        glUniform1i(texUniform_r, 1);
-
-        glActiveTexture(GL_TEXTURE0 + 2);
-        glBindTexture(GL_TEXTURE_2D, snowID);
-        GLuint texUniform_s = glGetUniformLocation(programID, "snow");
-        glUniform1i(texUniform_s, 2);
-
-        glActiveTexture(GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D, heightmapID);
-        GLuint texUniform_h = glGetUniformLocation(programID, "h");
-        glUniform1i(texUniform_h, 0);
-
-        // Draw the triangles !
-        glDrawElements(
-                    GL_TRIANGLES,      // mode
-                    indices.size(),    // count
-                    GL_UNSIGNED_SHORT,   // type
-                    (void*)0           // element array buffer offset
-                    );
-
+        //mesh.render(VP);
+        sunGO.renderScene(VP);
+        sunGO.transform.rotate(glm::vec3(0.0f , 0.1f , 0.0f));
+        earthGO.transform.rotate(glm::vec3(0.0f , 0.5f , 0.0f));
+        
+        moonGO.transform.rotate(glm::vec3(0.0f, 1.2f, 0.0f)); 
+        sunGO.updateSelfAndChildren();
         glDisableVertexAttribArray(0);
 
         // Swap buffers
@@ -520,11 +472,10 @@ int main( void )
            glfwWindowShouldClose(window) == 0 );
 
     // Cleanup VBO and shader
-    glDeleteBuffers(1, &vertexbuffer);
-    glDeleteBuffers(1, &elementbuffer);
+    // glDeleteBuffers(1, &vertexbuffer);
+    // glDeleteBuffers(1, &elementbuffer);
     glDeleteProgram(programID);
     glDeleteVertexArrays(1, &VertexArrayID);
-    glDeleteTextures(1 , &grassID);
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();

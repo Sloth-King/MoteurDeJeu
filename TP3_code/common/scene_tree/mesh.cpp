@@ -1,4 +1,5 @@
 #include "mesh.hpp"
+#include "textureClass.hpp"
 
 // Include standard headers
 #include <stdio.h>
@@ -20,7 +21,7 @@
 #include <common/objloader.hpp>
 #include <common/vboindexer.hpp>
 
-GLuint TRI_GL_TYPE = GL_UNSIGNED_INT; // change with TRI_IDX_TYPE in mesh.h!
+GLuint TRI_GL_TYPE = GL_UNSIGNED_SHORT; // change with TRI_IDX_TYPE in mesh.h!
 
 void Mesh::debug_draw(){
 
@@ -127,15 +128,14 @@ void Mesh::render(glm::mat4 vpMatrix){
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
     int i = 0;
 
-    //TODO add textures eventually
-    // for (auto t: textures){
-    //     t.first.bind(i);
-    //     glUniform1i(
-    //         glGetUniformLocation(shaderPID, t.second.c_str()),
-    //         i
-    //     );
-    //     ++i;
-    // }
+    for (auto t: textures){
+        t.first.bind(i);
+        glUniform1i(
+            glGetUniformLocation(shaderPID, t.second.c_str()),
+            i
+        );
+        ++i;
+    }
 
 
     // Index buffer
@@ -143,7 +143,7 @@ void Mesh::render(glm::mat4 vpMatrix){
     
     glDrawElements(
                 GL_TRIANGLES,      // mode
-                triangles.size()*3,    // count
+                triangles.size()*sizeof(unsigned int),    // count
                 TRI_GL_TYPE,   // type
                 (void*)0           // element array buffer offset
                 );
@@ -155,7 +155,78 @@ void Mesh::render(glm::mat4 vpMatrix){
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 }
+
+void Mesh::render(glm::mat4 vpMatrix , glm::mat4 mMatrix){
+
+    if (!_synchronized){ // FIXME branch prediction may bottleneck a little here? idk
+        synchronize();
+    }
+
+    glUseProgram(shaderPID);
+    
+    GLuint mvpUniformLocation = glGetUniformLocation(shaderPID, "MVP");
+
+    vpMatrix = vpMatrix * mMatrix; // transform the VP into MVP
+
+    if (mvpUniformLocation != -1){
+        glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &vpMatrix[0][0]);
+    }
+
+    glBindVertexArray(_VAO);
+    glEnableVertexAttribArray(0);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, _VBO);
+
+    // Positions attribute buffer
+
+    glVertexAttribPointer(
+        0,                  // attribute
+        3,    // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,  // stride
+        (void*)0            // array buffer offset
+    );
+
+
+    // Uvs attribute buffer
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, _UV);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    int i = 0;
+
+    for (auto t: textures){
+        t.first.bind(i);
+        glUniform1i(
+            glGetUniformLocation(shaderPID, t.second.c_str()),
+            i
+        );
+        ++i;
+    }
+
+
+    // Index buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
+    
+    glDrawElements(
+                GL_TRIANGLES,      // mode
+                triangles.size()*sizeof(unsigned int),    // count
+                TRI_GL_TYPE,   // type
+                (void*)0           // element array buffer offset
+                );
+    
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glBindVertexArray(0);
+    glUseProgram(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+}
+
 
 void Mesh::unsynchronize(){
     glDeleteBuffers(1, &_VBO);
@@ -165,7 +236,6 @@ void Mesh::unsynchronize(){
     glDeleteVertexArrays(1, &_VAO);
     
     _synchronized = false;
-
 }
 
 void Mesh::setShader(std::string vertex_shader, std::string fragment_shader){
@@ -186,4 +256,18 @@ void Mesh::recomputeNormals () {
     }
     for (unsigned int i = 0; i < vertices.size (); i++)
         normals[i] = glm::normalize(normals[i]);
+}
+
+
+//Calculate and fill the UV vector for spheres, this is prolly only for .OFF files
+void Mesh::calculateUV_Sphere(){
+    uvs.resize(vertices.size());
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        //Copied a formula i found here
+        //https://gamedev.stackexchange.com/questions/114412/how-to-get-uv-coordinates-for-sphere-cylindrical-projection
+        glm::vec3 n = glm::normalize(vertices[i]); 
+        float u = atan2(n.x, n.z) / (2.0f * M_PI) + 0.5f; 
+        float v = n.y * 0.5f + 0.5f; 
+        uvs[i] = glm::vec2(u, v); 
+    }
 }

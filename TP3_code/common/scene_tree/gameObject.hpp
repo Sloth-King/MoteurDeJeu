@@ -9,16 +9,25 @@
 class GameObject{
     public:
         Transform transform;
-        //note to self : unique ptr is to make it so this object "owns" the child objects
-        std::vector<std::unique_ptr<GameObject>> children; //enfants
 
-        //nullptr i guess not to break the toings idk
+        std::vector<GameObject*> children = {}; //enfants
+
         GameObject* parent = nullptr; //parent
-        //mesh
+
         Mesh object_mesh;
 
-        GameObject(Mesh mesh);
+        std::string object_name;
 
-        //TODO
-        void add_child();
+        GameObject(Mesh mesh, std::string name, GameObject* parent = nullptr) {
+            object_mesh = mesh;
+            object_name = name;
+            this->parent = parent;
+            if (parent) {
+                parent->addChild(this);
+            }
+        }
+
+        void addChild(GameObject* child);
+        void updateSelfAndChildren();
+        void renderScene(glm::mat4 vpMatrix);
 };

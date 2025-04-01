@@ -9,7 +9,9 @@
 #include <vector>
 #include <GL/glew.h>
 
-using TRI_IDX_TYPE = unsigned int; // change both if needed!
+#include "textureClass.hpp"
+
+using TRI_IDX_TYPE = unsigned short; // change both if needed!
 extern GLuint TRI_GL_TYPE; // defined in mesh.cpp
 
 struct Triangle {
@@ -59,10 +61,7 @@ public:
     std::vector< Triangle > triangles;
     std::vector< glm::vec3 > colors;
 
-    //TODO Add textures eventually
-    //std::vector< std::pair<Texture, std::string> > textures;
-
-    static Mesh gen_tesselatedSquare(int nX, int nY, float sX = 1, float sY = 1);
+    std::vector< std::pair<Texture, std::string> > textures;
 
     Mesh() = default;
     ~Mesh(){
@@ -72,24 +71,18 @@ public:
     }
 
     void recomputeNormals();
+    void calculateUV_Sphere();
 
     void setShader(std::string vertex_shader, std::string fragment_shader);
     void render(glm::mat4 vpMatrix);
+    void render(glm::mat4 vpMatrix , glm::mat4 mMatrix);
 
     void rotate(float v, glm::vec3 axis){
         transform = glm::rotate(transform, v, axis);
     }
 
     //TODO Add textures eventually.
-    // void addTexture(Texture tex, std::string name_in_shader){
-    //     textures.push_back( std::pair(tex, name_in_shader));
-    // }
-
-
-    friend std::ostream& operator<< (std::ostream& stream, const Mesh& mesh) {
-            stream << "Mesh(" << mesh.vertices.size() <<" verts, " << mesh.triangles.size() <<" tris)" <<
-            " at position (" << mesh.transform[3][0] << ", " << mesh.transform[3][1] << ", " << mesh.transform[3][2] << ")";
-        
-        return stream;
+    void addTexture(Texture tex, std::string name_in_shader){
+        textures.push_back( std::pair(tex, name_in_shader));
     }
 };
