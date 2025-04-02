@@ -8,8 +8,6 @@ out vec2 uv;
 out float y;
 
 uniform mat4 MVP;
-uniform sampler2D h;
-uniform float heightScale;
 
 // Values that stay constant for the whole mesh.
 

@@ -70,6 +70,8 @@ public:
         }
     }
 
+    static Mesh gen_tesselatedSquare(int nX, int nY, float sX=1, float sY=1);
+
     void recomputeNormals();
     void calculateUV_Sphere();
 

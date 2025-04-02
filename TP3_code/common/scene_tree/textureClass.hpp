@@ -27,8 +27,9 @@ public:
     }
 
     void loadTexture(const std::string path){
+        
         data = stbi_load(path.c_str(), &width, &height, &nbChannels, 0);
-        if (!data) std::cout << " TEXTURE MAL CHARGEE" << std::endl;
+        if (!data) std::cout << " TEXTURE MAL CHARGEE : " << path << std::endl;
         //std::cout << "nbchannels: " << nbChannels << std::endl;
 
         synchronize();

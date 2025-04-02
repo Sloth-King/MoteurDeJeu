@@ -7,7 +7,6 @@ in vec2 uv;
 uniform sampler2D mesh_texture;
 
 
-void main(){
-        
+void main(){   
         color = texture(mesh_texture, uv).rgb;
 }

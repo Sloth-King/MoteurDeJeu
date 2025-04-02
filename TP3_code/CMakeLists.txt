@@ -80,6 +80,8 @@ add_executable(TP1
 	
         TP1/vertex_shader.glsl
         TP1/fragment_shader.glsl
+		TP1/terrain_vertex_shader.glsl
+		TP1/terrain_fragment_shader.glsl
 )
 target_link_libraries(TP1
 	${ALL_LIBS}

@@ -259,7 +259,6 @@ void create_plane_with_texture(
 
 int main( void )
 {
-    std::cout << "please god.." << std::endl;
     // Initialise GLFW
     if( !glfwInit() )
     {
@@ -333,6 +332,8 @@ int main( void )
     std::vector<glm::vec2> indexed_tex_coords;
     std::vector<Vertex> vertex;
     
+    /* The simple solar system 
+
     //SUN 
     std::string filename = "sphere2.off";
 
@@ -386,7 +387,31 @@ int main( void )
 
     //shrink shmoove and return the moon to its original shits
     moonGO.transform.setScale(glm::vec3(0.5f,0.5f,0.5f));
-    moonGO.transform.setPosition(glm::vec3(-2.0f , 1.0f , 0.0f));
+    moonGO.transform.setPosition(glm::vec3(-2.0f , 1.0f , 0.0f)); 
+    */
+
+    std::string filename = "sphere.off";
+    
+    Mesh terrain = Mesh::gen_tesselatedSquare(100, 100 , 10 , 10);
+    Mesh mesh = ResourceLoader::load_mesh_off(filename);
+
+    terrain.setShader("terrain_vertex_shader.glsl" , "terrain_fragment_shader.glsl");
+    mesh.setShader("vertex_shader.glsl" , "fragment_shader.glsl");
+
+    mesh.calculateUV_Sphere();
+
+    //FIXME : other heightmaps create seg faults
+    Texture heightmap("textures/coolheightmap.jpg");
+    Texture grass("textures/grass.png");
+    Texture rock("textures/rock.png");
+    Texture snow("textures/snowrocks.png");
+    Texture sun("textures/2k_sun.jpg");
+
+    terrain.addTexture(grass , "grass");
+    terrain.addTexture(rock , "rock");
+    terrain.addTexture(snow , "snow");
+    terrain.addTexture(heightmap , "h");
+    mesh.addTexture(sun , "mesh_texture"); 
 
 
     
@@ -394,7 +419,7 @@ int main( void )
     glUseProgram(programID);
     GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
-    GLuint heightScaleID = glGetUniformLocation(programID , "heightScale");
+    //GLuint heightScaleID = glGetUniformLocation(programID , "heightScale");
 
 
 
@@ -455,12 +480,22 @@ int main( void )
         //glDisable(GL_CULL_FACE);
 
         //mesh.render(VP);
+
+        /*Planets movement in real time
+
         sunGO.renderScene(VP);
         sunGO.transform.rotate(glm::vec3(0.0f , 0.1f , 0.0f));
         earthGO.transform.rotate(glm::vec3(0.0f , 0.5f , 0.0f));
         
         moonGO.transform.rotate(glm::vec3(0.0f, 1.2f, 0.0f)); 
         sunGO.updateSelfAndChildren();
+
+        */
+
+        terrain.render(VP);
+        mesh.render(VP);
+
+
         glDisableVertexAttribArray(0);
 
         // Swap buffers
