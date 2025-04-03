@@ -26,6 +26,9 @@
 
 class Game {
 protected:
+
+    void renderloop();
+
     std::thread render_thread;
 
     GLFWwindow* window;
@@ -54,6 +57,9 @@ public:
 
     //void fixed_update();
 
-
     void stop();
+
+    void waitGameStopped(){
+        while (running) {}
+    }
 };

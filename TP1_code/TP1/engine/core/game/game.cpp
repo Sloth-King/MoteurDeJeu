@@ -114,13 +114,20 @@ void Game::init()
 
 }
 
+void Game::renderloop(){
+    glfwMakeContextCurrent(window);
+    while (running) render_update();
+}
+
 void Game::start(){
     running = true;
+    /*
     render_thread = std::thread(
-        [this](){
-            while (running) render_update();
-        }
+        &Game::renderloop,
+        this
     );
+    */
+    Game::renderloop(); // TODO
 }
 
 float deltaTime = 0.0f;
@@ -135,14 +142,17 @@ void Game::render_update(){
 
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
     current_scene.__engineUpdate(deltaTime);
+
     current_scene.__enginePhysicsUpdate(deltaTime);
 
     // Swap buffers
     glfwSwapBuffers(window);
     glfwPollEvents();
 
-    limit_fps(60);
+    //limit_fps(60);
 }
 
 void Game::stop(){

@@ -7,7 +7,7 @@
 
 class C_Mesh: public Component {
 public:
-
+    
     Mesh mesh;
 
     //C_Mesh(Mesh & mesh): mesh(mesh) {}

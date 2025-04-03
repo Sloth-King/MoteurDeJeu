@@ -9,7 +9,7 @@ GameObject& Component::getOwner(){
 
 Scene& Component::getScene(){
     if (owner){
-        return owner->getScene();
+        return *owner->getScene();
     }
 }
 

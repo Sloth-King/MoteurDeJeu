@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "TP1/engine/core/component/component.h"
+#include <iostream>
 
 class C_Transform: public Component {
 
@@ -51,6 +52,9 @@ public:
         setLocalDirty();
     }
 
+    virtual void _onUpdate(float deltaTime) override{
+        //pos[0] += 0.1 * deltaTime;
+    }
 
     // global funcs TDOO
     /*
@@ -76,6 +80,21 @@ public:
         eulerRot = newRot;
         local_dirty = true;
     }*/
+
+    void printGlobal(){
+        auto g = getGlobalTransformationMatrix();
+
+        for (int i = 0; i < 3; ++i){
+            std::cout << "| " << g[i][0] << ", " << g[i][1] << ", " << g[i][2] << " |" << std::endl;
+        }
+    }
+    void printLocal(){
+        auto g = getLocalTransformationMatrix();
+
+        for (int i = 0; i < 3; ++i){
+            std::cout << "| " << g[i][0] << ", " << g[i][1] << ", " << g[i][2] << " |" << std::endl;
+        }
+    }
 };
 
 

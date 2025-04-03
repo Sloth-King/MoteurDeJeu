@@ -39,7 +39,7 @@ int main( void )
 
     game.init();
 
-    Mesh mesh = Mesh::gen_tesselatedSquare(2, 2);
+    Mesh mesh = Mesh::gen_tesselatedSquare(20, 20);
     //Mesh mesh = ResourceLoader::load_mesh_off("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/TP1/sphere1.off");
     mesh.rotate(-90, glm::vec3(1.0, 0.0, 0.0));
 
@@ -78,18 +78,16 @@ int main( void )
     // scene setup
     sphere1.addComponent<C_Transform>();
     sphere1.addComponent<C_Mesh>();
-
     sphere1.getComponent<C_Mesh>()->mesh = mesh;
 
     game.current_scene.setRoot(std::move(sphere1));
 
-    //game.start();
 
-    while (true) game.render_update();
+
+    game.start();
+
+    game.waitGameStopped();
 }
-
-
-
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------

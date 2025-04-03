@@ -107,7 +107,6 @@ public:
                 glm::vec3(transform[2])
             );
 
-            std::cout << glm::determinant(test) << std::endl;
         }
         lastTime = currentTime;
 

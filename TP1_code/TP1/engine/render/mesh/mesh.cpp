@@ -89,6 +89,8 @@ void Mesh::synchronize() const {
 
 void Mesh::render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transform) const{
 
+    if (vertices.empty()) return;
+
     if (!_synchronized){ // FIXME branch prediction may bottleneck a little here? idk
         synchronize();
     }

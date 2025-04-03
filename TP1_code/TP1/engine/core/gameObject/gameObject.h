@@ -34,7 +34,18 @@ public:
     std::map<std::type_index, std::unique_ptr<Component> > components;
 
     Scene * scene;
-// public
+
+    GameObject( GameObject&& rcOther )
+    : children( std::move(rcOther.children) )
+    , components( std::move(rcOther.components) )
+    , scene(rcOther.scene)
+    {
+        for (const auto & [ptr, owning_ptr] : children)
+            owning_ptr->parent = this;
+        
+        for (const auto & [ti, comp] : components)
+            comp->owner = this;
+    }
 
     bool hidden = false;
     // bool deactivated = false;
@@ -43,11 +54,9 @@ public:
 
     void setParent(GameObject & new_parent);
 
-    // we assume that the transform of such a node is identity
+    bool isRoot() const { return (bool)parent; };
 
-    bool isRoot() const { return (bool)parent ; };
-
-    Scene & getScene() const {return *scene;};
+    Scene * getScene() const {return scene;};
 
 
     template <DerivedFromComponent T>
@@ -73,7 +82,7 @@ public:
     }
 
     void __engineUpdate(float deltaTime){
-
+        
         for (const auto & [ptr, owning_ptr] : children)
             owning_ptr->__engineUpdate(deltaTime);
         
@@ -89,7 +98,6 @@ public:
 
         for (const auto & [ti, comp] : components)
             comp->_onPhysicsUpdate(deltaTime);
-
     }
 
 
