@@ -15,6 +15,7 @@ class GameObject{
         GameObject* parent = nullptr; //parent
 
         Mesh object_mesh;
+        //Mesh low_mesh;
 
         std::string object_name;
 
@@ -30,4 +31,7 @@ class GameObject{
         void addChild(GameObject* child);
         void updateSelfAndChildren();
         void renderScene(glm::mat4 vpMatrix);
-};
+        Triangle detectClosestTriangle(GameObject collisionObject);
+        float calculateTriangleDistance(const Triangle &t1, const Mesh &mesh1, const Triangle &t2, const Mesh &mesh2);
+        float getHeightAtPosition(glm::vec3 position, GameObject& terrain);
+    };

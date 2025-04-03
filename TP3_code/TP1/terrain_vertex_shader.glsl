@@ -19,8 +19,11 @@ void main(){
         float height =  texture(h, aTex).r; //heightscale replacement
         //height = 1.0;
 
-        vec3 new_position = vec3(vertices_position_modelspace.x, height , vertices_position_modelspace.y); //heightscale replacement
-        //vec3 new_position = vertices_position_modelspace;
+        //Generating the plane with heightmap in the shader
+        //vec3 new_position = vec3(vertices_position_modelspace.x, height , vertices_position_modelspace.y); 
+
+        //Generating the plane with heightmap in the cpu
+        vec3 new_position = vertices_position_modelspace;
 
         gl_Position = MVP * vec4(new_position, 1.0);
 

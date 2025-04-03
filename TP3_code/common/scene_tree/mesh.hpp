@@ -70,7 +70,7 @@ public:
         }
     }
 
-    static Mesh gen_tesselatedSquare(int nX, int nY, float sX=1, float sY=1);
+    static Mesh gen_tesselatedSquare(int nX, int nY, float sX=1, float sY=1 , const char* heightmapPath = nullptr);
 
     void recomputeNormals();
     void calculateUV_Sphere();

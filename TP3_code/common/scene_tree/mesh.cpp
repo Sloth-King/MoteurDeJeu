@@ -274,8 +274,19 @@ void Mesh::calculateUV_Sphere(){
 
 
 //// generates a base plane
-Mesh Mesh::gen_tesselatedSquare(int nX, int nY, float sX, float sY){
+Mesh Mesh::gen_tesselatedSquare(int nX, int nY, float sX, float sY , const char* heightmapPath){
     Mesh o_mesh;
+
+    int heightmapWidth , heightmapHeight , heightmapChannels;
+    unsigned char* heightmapData = nullptr;
+
+    if(heightmapPath){
+        heightmapData = stbi_load(heightmapPath , &heightmapWidth , &heightmapHeight , &heightmapChannels , 0);
+        std::cout << "Channels : " << heightmapChannels << std::endl;
+        std::cout << "Height : " << heightmapHeight << std::endl;
+        std::cout << "Width : " << heightmapWidth << std::endl;
+        if(!heightmapData) std::cerr << "heightmap aint it chief : " << heightmapPath << std::endl;
+    }
 
     for (int u = 0; u<nX; ++u){
         for (int v = 0; v<nY; ++v){
@@ -283,11 +294,28 @@ Mesh Mesh::gen_tesselatedSquare(int nX, int nY, float sX, float sY){
             float px = 1. / float(nX) * u;
             float py = 1. / float(nY) * v;
 
+            //std::cout << "px? " << px << std::endl;
+
+            float height = 0.0f;
+            if(heightmapData){
+                //Texture coords
+                //FIXME : maybe replace with static_cast
+                float texX = (px*heightmapWidth); 
+                float texY = (py*heightmapHeight);
+
+                //access the values of the map like in the Puech code bases
+                int index = static_cast<int>((texY * heightmapWidth + texX) * heightmapChannels);
+                //std::cout << "index : " << index << std::endl;
+                height = heightmapData[index] / 255.0f;
+            }
+
+            //std::cout << "Height : " << height << std::endl;
+
             o_mesh.vertices.push_back(
                 glm::vec3(
                     (px -0.5) * sX,
-                    (py -0.5) * sY,
-                    0
+                    height,
+                    (py -0.5) * sY
                 )
             );
             o_mesh.uvs.push_back(

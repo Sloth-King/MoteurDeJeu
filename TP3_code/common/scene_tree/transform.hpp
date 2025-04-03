@@ -33,6 +33,17 @@ class Transform
         void setRotation(glm::vec3 newRot){
             eulerRot = newRot;
         }
+        glm::vec3 getPosition() const {
+            return pos;
+        }
+
+        glm::vec3 getScale() const {
+            return scale;
+        }
+
+        glm::vec3 getRotation() const {
+            return eulerRot;
+        }
 
 };
     

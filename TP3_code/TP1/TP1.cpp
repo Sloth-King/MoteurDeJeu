@@ -10,7 +10,7 @@
 
 // Include GLFW
 #include <GLFW/glfw3.h>
-GLFWwindow* window;
+GLFWwindow *window;
 
 // Include GLM
 #include <glm/glm.hpp>
@@ -24,19 +24,15 @@ using namespace glm;
 #include <common/vboindexer.hpp>
 #include <common/controls.hpp>
 
-//Image
+// Image
 #include <common/stb_image.h>
 
-
-//Scene tree
+// Scene tree
 #include <common/scene_tree/mesh.hpp>
 #include <common/scene_tree/resourceLoader.hpp>
 #include <common/scene_tree/textureClass.hpp>
 #include <common/scene_tree/transform.hpp>
 #include <common/scene_tree/gameObject.hpp>
-
-
-
 
 void processInput(GLFWwindow *window);
 
@@ -44,23 +40,24 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-enum CameraMode {
+enum CameraMode
+{
     free_roam,
     orbit,
 };
 
-CameraMode mode = free_roam; 
+CameraMode mode = free_roam;
 
 // camera
-glm::vec3 camera_position   = glm::vec3(0.0f, 0.0f,  3.0f);
+glm::vec3 camera_position = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 camera_target = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f,  0.0f);
+glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // timing
-float deltaTime = 0.0f;	// time between current frame and last frame
+float deltaTime = 0.0f; // time between current frame and last frame
 float lastFrame = 0.0f;
 
-//rotation
+// rotation
 float angle = 0.;
 float zoom = 1.;
 
@@ -73,196 +70,270 @@ float rotation_speed = 0.2;
 
 float heightScale = 0.2;
 
-
 /*******************************************************************************/
-//Other functions
+// Other functions
 
-struct Vertex{
+struct Vertex
+{
     glm::vec3 position;
     glm::vec2 uv;
 };
 
-unsigned char* convert_REDtoRGB(unsigned char * data , int width , int height){
-    unsigned char* rgbData = new unsigned char[width * height * 3];
-    for (int i = 0; i < width * height; ++i) {
-    rgbData[i * 3] = data[i];
-    rgbData[i * 3 + 1] = data[i];
-    rgbData[i * 3 + 2] = data[i];
+unsigned char *convert_REDtoRGB(unsigned char *data, int width, int height)
+{
+    unsigned char *rgbData = new unsigned char[width * height * 3];
+    for (int i = 0; i < width * height; ++i)
+    {
+        rgbData[i * 3] = data[i];
+        rgbData[i * 3 + 1] = data[i];
+        rgbData[i * 3 + 2] = data[i];
     }
 
     return rgbData;
 }
 
-//FIXME : Textures not working
-//Working on textures 
-GLuint load_texture(std::string filename){
+// FIXME : Textures not working
+// Working on textures
+GLuint load_texture(std::string filename)
+{
 
-
-    int imgWidth , imgHeight , channels;    
+    int imgWidth, imgHeight, channels;
     stbi_set_flip_vertically_on_load(1);
-    unsigned char* data = stbi_load(filename.c_str() , &imgWidth , &imgHeight , &channels , 0);
+    unsigned char *data = stbi_load(filename.c_str(), &imgWidth, &imgHeight, &channels, 0);
 
-
-
-    if (!data) {
+    if (!data)
+    {
         std::cerr << "Failed to load texture: " << filename << std::endl;
         return 0;
     }
 
     GLuint textureID;
-    glGenTextures(1 , &textureID);
+    glGenTextures(1, &textureID);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D , textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
-    glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_WRAP_T , GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_WRAP_S , GL_REPEAT);
-
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 
     GLenum format;
-    if (channels == 1) {
-        data = convert_REDtoRGB(data , imgWidth , imgHeight);
+    if (channels == 1)
+    {
+        data = convert_REDtoRGB(data, imgWidth, imgHeight);
         format = GL_RGB;
-    } else if (channels == 3) {
+    }
+    else if (channels == 3)
+    {
         format = GL_RGB;
-    } else {
+    }
+    else
+    {
         format = GL_RGBA;
     }
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, format, GL_UNSIGNED_BYTE, data);
 
-
     glGenerateMipmap(GL_TEXTURE_2D);
 
-
-
     stbi_image_free(data);
-    glBindTexture(GL_TEXTURE_2D , 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     return textureID;
 }
 
-void bind(GLuint texture , unsigned int slot = 0){
+void bind(GLuint texture, unsigned int slot = 0)
+{
     glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D , texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 }
 
 void create_plane(
-    std::vector<unsigned short> &out_indices, 
-    std::vector<std::vector<unsigned short>> &out_triangles, 
+    std::vector<unsigned short> &out_indices,
+    std::vector<std::vector<unsigned short>> &out_triangles,
     std::vector<glm::vec3> &out_indexed_vertices,
     int height = 16,
-    int width= 16){
+    int width = 16)
+{
 
-        out_indices.clear();
-        out_triangles.clear();
-        out_indexed_vertices.clear();
+    out_indices.clear();
+    out_triangles.clear();
+    out_indexed_vertices.clear();
 
-        srand(std::time(0));
+    srand(std::time(0));
 
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
 
-                //TP1 question 2. Set it to 0 for question 1
-                float random_altitude = std::fmod(std::rand(),1.000001f);
-                out_indexed_vertices.push_back(glm::vec3((float)j / (width - 1)-0.5 , random_altitude-0.5f , (float)i / (height - 1)));
-            }
+            // TP1 question 2. Set it to 0 for question 1
+            float random_altitude = std::fmod(std::rand(), 1.000001f);
+            out_indexed_vertices.push_back(glm::vec3((float)j / (width - 1) - 0.5, random_altitude - 0.5f, (float)i / (height - 1)));
         }
+    }
 
-        for (int i = 0; i < height - 1; i++) {
-            for (int j = 0; j < width - 1; j++) {
-                unsigned short topLeft = i * width + j;
-                unsigned short topRight = topLeft + 1;
-                unsigned short bottomLeft = (i + 1) * width + j;
-                unsigned short bottomRight = bottomLeft + 1;
+    for (int i = 0; i < height - 1; i++)
+    {
+        for (int j = 0; j < width - 1; j++)
+        {
+            unsigned short topLeft = i * width + j;
+            unsigned short topRight = topLeft + 1;
+            unsigned short bottomLeft = (i + 1) * width + j;
+            unsigned short bottomRight = bottomLeft + 1;
 
-                out_indices.push_back(topLeft);
-                out_indices.push_back(bottomLeft);
-                out_indices.push_back(topRight);
+            out_indices.push_back(topLeft);
+            out_indices.push_back(bottomLeft);
+            out_indices.push_back(topRight);
 
-                out_indices.push_back(topRight);
-                out_indices.push_back(bottomLeft);
-                out_indices.push_back(bottomRight);
+            out_indices.push_back(topRight);
+            out_indices.push_back(bottomLeft);
+            out_indices.push_back(bottomRight);
 
-                out_triangles.push_back({topLeft, bottomLeft, topRight});
-                out_triangles.push_back({topRight, bottomLeft, bottomRight});
-            }
+            out_triangles.push_back({topLeft, bottomLeft, topRight});
+            out_triangles.push_back({topRight, bottomLeft, bottomRight});
         }
+    }
 }
 
 void create_plane_with_texture(
-    std::vector<unsigned short> &out_indices, 
-    std::vector<std::vector<unsigned short>> &out_triangles, 
+    std::vector<unsigned short> &out_indices,
+    std::vector<std::vector<unsigned short>> &out_triangles,
     std::vector<Vertex> &vertex_coords,
     int height = 16,
-    int width= 16){
+    int width = 16)
+{
 
-        std::cout << "come on mane" << std::endl;
+    std::cout << "come on mane" << std::endl;
 
-        out_indices.clear();
-        out_triangles.clear();
-        //out_indexed_vertices.clear();
-        //indexed_tex_coords.clear();
-        vertex_coords.clear();
+    out_indices.clear();
+    out_triangles.clear();
+    // out_indexed_vertices.clear();
+    // indexed_tex_coords.clear();
+    vertex_coords.clear();
 
-        srand(std::time(0));
+    srand(std::time(0));
 
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                
-                float u = (float)j / (width - 1);
-                float v = (float)i / (height - 1);
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
 
-                float random_altitude = std::fmod(std::rand(),1.000001f);
+            float u = (float)j / (width - 1);
+            float v = (float)i / (height - 1);
 
-                float x = (float)j / (width - 1)*2 -1;
-                float y = random_altitude;
-                float z = (float)i / (height - 1)*2 -1;
+            float random_altitude = std::fmod(std::rand(), 1.000001f);
 
-                Vertex vx = {glm::vec3(x,y,z), glm::vec2(u,v)};
-                vertex_coords.push_back(vx);
-                //out_indexed_vertices.push_back(glm::vec3((float)j / (width - 1)-0.5 , (altitude*h_scale)-0.5f , (float)i / (height - 1)));
-            }
+            float x = (float)j / (width - 1) * 2 - 1;
+            float y = random_altitude;
+            float z = (float)i / (height - 1) * 2 - 1;
+
+            Vertex vx = {glm::vec3(x, y, z), glm::vec2(u, v)};
+            vertex_coords.push_back(vx);
+            // out_indexed_vertices.push_back(glm::vec3((float)j / (width - 1)-0.5 , (altitude*h_scale)-0.5f , (float)i / (height - 1)));
         }
+    }
 
-        for (int i = 0; i < height - 1; i++) {
-            for (int j = 0; j < width - 1; j++) {
-                unsigned short topLeft = i * width + j;
-                unsigned short topRight = topLeft + 1;
-                unsigned short bottomLeft = (i + 1) * width + j;
-                unsigned short bottomRight = bottomLeft + 1;
+    for (int i = 0; i < height - 1; i++)
+    {
+        for (int j = 0; j < width - 1; j++)
+        {
+            unsigned short topLeft = i * width + j;
+            unsigned short topRight = topLeft + 1;
+            unsigned short bottomLeft = (i + 1) * width + j;
+            unsigned short bottomRight = bottomLeft + 1;
 
-                out_indices.push_back(topLeft);
-                out_indices.push_back(bottomLeft);
-                out_indices.push_back(topRight);
+            out_indices.push_back(topLeft);
+            out_indices.push_back(bottomLeft);
+            out_indices.push_back(topRight);
 
-                out_indices.push_back(topRight);
-                out_indices.push_back(bottomLeft);
-                out_indices.push_back(bottomRight);
+            out_indices.push_back(topRight);
+            out_indices.push_back(bottomLeft);
+            out_indices.push_back(bottomRight);
 
-                out_triangles.push_back({topLeft, bottomLeft, topRight});
-                out_triangles.push_back({topRight, bottomLeft, bottomRight});
-            }
+            out_triangles.push_back({topLeft, bottomLeft, topRight});
+            out_triangles.push_back({topRight, bottomLeft, bottomRight});
         }
-
+    }
 }
 
 // void create_plane_heightmaptex_texturetex(); // Commented out as it's not used
 
+float getTerrainHeightAtXZ(GameObject &terrain, float x, float z)
+{
+    float minDistance = std::numeric_limits<float>::max();
+    Triangle *closestTriangle = nullptr;
+    glm::vec3 worldPoint(x, 0.0f, z);
+
+    for (size_t i = 0; i < terrain.object_mesh.triangles.size(); i++)
+    {
+        Triangle &tri = terrain.object_mesh.triangles[i];
+
+        glm::vec3 v0 = terrain.object_mesh.vertices[tri.v[0]];
+        glm::vec3 v1 = terrain.object_mesh.vertices[tri.v[1]];
+        glm::vec3 v2 = terrain.object_mesh.vertices[tri.v[2]];
+
+        glm::vec2 triCenter((v0.x + v1.x + v2.x) / 3.0f, (v0.z + v1.z + v2.z) / 3.0f);
+        glm::vec2 pointXZ(x, z);
+
+        float dist = glm::length(triCenter - pointXZ);
+
+        if (dist < minDistance)
+        {
+            minDistance = dist;
+            closestTriangle = &tri;
+        }
+    }
+
+    if (!closestTriangle)
+    {
+        return 0.0f;
+    }
+
+    glm::vec3 v0 = terrain.object_mesh.vertices[closestTriangle->v[0]];
+    glm::vec3 v1 = terrain.object_mesh.vertices[closestTriangle->v[1]];
+    glm::vec3 v2 = terrain.object_mesh.vertices[closestTriangle->v[2]];
+
+    glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+
+    if (std::abs(normal.y) < 0.01f)
+    {
+        return (v0.y + v1.y + v2.y) / 3.0f;
+    }
+
+    //Plane equation: ax + by + cz + d = 0
+    float d = -glm::dot(normal, v0);
+    float height = (-normal.x * x - normal.z * z - d) / normal.y;
+
+    return height;
+}
+
+void keepBallAboveTerrain(GameObject &ball, GameObject &terrain)
+{
+    //Get ball position ts
+    glm::vec3 ballPos = ball.transform.getPosition();
+    float ballRadius = ball.transform.getScale().x * 0.5f;
+
+    float terrainHeight = getTerrainHeightAtXZ(terrain, ballPos.x, ballPos.z);
+
+    if (ballPos.y < terrainHeight + ballRadius)
+    {
+        ball.transform.setPosition(glm::vec3(ballPos.x, terrainHeight + ballRadius, ballPos.z));
+    }
+}
 
 /*******************************************************************************/
 
-int main( void )
+int main(void)
 {
     // Initialise GLFW
-    if( !glfwInit() )
+    if (!glfwInit())
     {
-        fprintf( stderr, "Failed to initialize GLFW\n" );
+        fprintf(stderr, "Failed to initialize GLFW\n");
         getchar();
         return -1;
     }
@@ -274,9 +345,10 @@ int main( void )
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow( 1024, 768, "TP1 - GLFW", NULL, NULL);
-    if( window == NULL ){
-        fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+    window = glfwCreateWindow(1024, 768, "TP1 - GLFW", NULL, NULL);
+    if (window == NULL)
+    {
+        fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
         getchar();
         glfwTerminate();
         return -1;
@@ -285,7 +357,8 @@ int main( void )
 
     // Initialize GLEW
     glewExperimental = true; // Needed for core profile
-    if (glewInit() != GLEW_OK) {
+    if (glewInit() != GLEW_OK)
+    {
         fprintf(stderr, "Failed to initialize GLEW\n");
         getchar();
         glfwTerminate();
@@ -299,7 +372,7 @@ int main( void )
 
     // Set the mouse at the center of the screen
     glfwPollEvents();
-    glfwSetCursorPos(window, 1024/2, 768/2);
+    glfwSetCursorPos(window, 1024 / 2, 768 / 2);
 
     // Dark blue background
     glClearColor(0.8f, 0.8f, 0.8f, 0.0f);
@@ -310,31 +383,30 @@ int main( void )
     glDepthFunc(GL_LESS);
 
     // Cull triangles which normal is not towards the camera
-    //glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
     // Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders( "vertex_shader.glsl", "fragment_shader.glsl" );
+    GLuint programID = LoadShaders("vertex_shader.glsl", "fragment_shader.glsl");
 
-    //TODO***********************/
-    // Get a handle for our "Model View Projection" matrices uniforms
+    // TODO***********************/
+    //  Get a handle for our "Model View Projection" matrices uniforms
 
     GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
-
     /****************************************/
-    std::vector<unsigned short> indices; //Triangles concaténés dans une liste
-    std::vector<std::vector<unsigned short> > triangles;
+    std::vector<unsigned short> indices; // Triangles concaténés dans une liste
+    std::vector<std::vector<unsigned short>> triangles;
     std::vector<glm::vec3> indexed_vertices;
     std::vector<glm::vec2> indexed_tex_coords;
     std::vector<Vertex> vertex;
-    
-    /* The simple solar system 
 
-    //SUN 
+    /* The simple solar system
+
+    //SUN
     std::string filename = "sphere2.off";
 
     //Initialize meshes
@@ -353,7 +425,7 @@ int main( void )
     moon_mesh.calculateUV_Sphere();
 
 
-    //I forgor what this does    
+    //I forgor what this does
     GLuint texSamplerID = glGetUniformLocation(programID , "textureSampler");
     glUniform1i(texSamplerID , 0);
 
@@ -387,47 +459,57 @@ int main( void )
 
     //shrink shmoove and return the moon to its original shits
     moonGO.transform.setScale(glm::vec3(0.5f,0.5f,0.5f));
-    moonGO.transform.setPosition(glm::vec3(-2.0f , 1.0f , 0.0f)); 
+    moonGO.transform.setPosition(glm::vec3(-2.0f , 1.0f , 0.0f));
     */
 
-    std::string filename = "sphere.off";
-    
-    Mesh terrain = Mesh::gen_tesselatedSquare(100, 100 , 10 , 10);
-    Mesh mesh = ResourceLoader::load_mesh_off(filename);
+    std::string meshfile = "sphere.off";
+    char *heightmapPath = "textures/coolheightmap.jpg";
 
-    terrain.setShader("terrain_vertex_shader.glsl" , "terrain_fragment_shader.glsl");
-    mesh.setShader("vertex_shader.glsl" , "fragment_shader.glsl");
+    Mesh terrain = Mesh::gen_tesselatedSquare(100, 100, 10, 10, heightmapPath);
+    Mesh ball = ResourceLoader::load_mesh_off(meshfile);
 
-    mesh.calculateUV_Sphere();
+    terrain.setShader("terrain_vertex_shader.glsl", "terrain_fragment_shader.glsl");
+    ball.setShader("vertex_shader.glsl", "fragment_shader.glsl");
 
-    //FIXME : other heightmaps create seg faults
+    ball.calculateUV_Sphere();
+
+    // FIXME : other heightmaps create seg faults
     Texture heightmap("textures/coolheightmap.jpg");
     Texture grass("textures/grass.png");
     Texture rock("textures/rock.png");
     Texture snow("textures/snowrocks.png");
     Texture sun("textures/2k_sun.jpg");
 
-    terrain.addTexture(grass , "grass");
-    terrain.addTexture(rock , "rock");
-    terrain.addTexture(snow , "snow");
-    terrain.addTexture(heightmap , "h");
-    mesh.addTexture(sun , "mesh_texture"); 
+    terrain.addTexture(grass, "grass");
+    terrain.addTexture(rock, "rock");
+    terrain.addTexture(snow, "snow");
+    terrain.addTexture(heightmap, "h");
+    ball.addTexture(sun, "mesh_texture");
 
+    Mesh empty_mesh;
 
-    
+    GameObject ballGO = GameObject(ball, "ball");
+    GameObject terrainGO = GameObject(terrain, "terrain");
+    GameObject scene = GameObject(empty_mesh, "scene");
+
+    ballGO.transform.setScale(glm::vec3(0.2f, 0.2f, 0.2f));
+    ballGO.transform.move(glm::vec3(0.0f, 0.7f, 0.0f));
+
+    scene.addChild(&ballGO);
+    scene.addChild(&terrainGO);
+
     // Get a handle for our "LightPosition" uniform
     glUseProgram(programID);
     GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
-    //GLuint heightScaleID = glGetUniformLocation(programID , "heightScale");
-
-
+    // GLuint heightScaleID = glGetUniformLocation(programID , "heightScale");
 
     // For speed computation
     double lastTime = glfwGetTime();
     int nbFrames = 0;
 
-    do{
+    do
+    {
 
         // Measure speed
         // per-frame time logic
@@ -448,8 +530,9 @@ int main( void )
 
         // Model matrix : an identity matrix (model will be at the origin) then change
 
-        if(mode == orbit){
-            angle+= rotation_speed;
+        if (mode == orbit)
+        {
+            angle += rotation_speed;
         }
 
         // glm::mat4 model_matrix = glm::mat4(1.0f);
@@ -464,11 +547,10 @@ int main( void )
 
         glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 
-
         // Send our transformation to the currently bound shader,
         // in the "Model View Projection" to the shader uniforms
 
-        //MVP will be calculated in each mesh, so for now just send VP
+        // MVP will be calculated in each mesh, so for now just send VP
         glm::mat4 VP = projection_matrix * view_matrix;
 
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &VP[0][0]);
@@ -476,25 +558,51 @@ int main( void )
         // // Index buffer
         // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 
-        //To test if the pb was my triangles
-        //glDisable(GL_CULL_FACE);
+        // To test if the pb was my triangles
+        // glDisable(GL_CULL_FACE);
 
-        //mesh.render(VP);
+        // mesh.render(VP);
 
         /*Planets movement in real time
 
         sunGO.renderScene(VP);
         sunGO.transform.rotate(glm::vec3(0.0f , 0.1f , 0.0f));
         earthGO.transform.rotate(glm::vec3(0.0f , 0.5f , 0.0f));
-        
-        moonGO.transform.rotate(glm::vec3(0.0f, 1.2f, 0.0f)); 
+
+        moonGO.transform.rotate(glm::vec3(0.0f, 1.2f, 0.0f));
         sunGO.updateSelfAndChildren();
 
         */
 
-        terrain.render(VP);
-        mesh.render(VP);
+        // Move da ball
+        //  Move the ball using arrow keys
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        {
+            ballGO.transform.move(glm::vec3(-0.05f, 0.0f, 0.0f));
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        {
+            ballGO.transform.move(glm::vec3(0.05f, 0.0f, 0.0f));
+        }
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        {
+            ballGO.transform.move(glm::vec3(0.0f, 0.0f, -0.05f));
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        {
+            ballGO.transform.move(glm::vec3(0.0f, 0.0f, 0.05f));
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+        {
+            ballGO.transform.move(glm::vec3(0.0f, -0.02f, 0.0f));
+        }
+        if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+        {
+            ballGO.transform.move(glm::vec3(0.0f, 0.02f, 0.0f));
+        }
 
+        scene.renderScene(VP);
+        keepBallAboveTerrain(ballGO, terrainGO);
 
         glDisableVertexAttribArray(0);
 
@@ -503,8 +611,8 @@ int main( void )
         glfwPollEvents();
 
     } // Check if the ESC key was pressed or the window was closed
-    while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0 );
+    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+           glfwWindowShouldClose(window) == 0);
 
     // Cleanup VBO and shader
     // glDeleteBuffers(1, &vertexbuffer);
@@ -518,7 +626,6 @@ int main( void )
     return 0;
 }
 
-
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
@@ -526,97 +633,107 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    //Camera zoom in and out
+    // Camera zoom in and out
     float cameraSpeed = 2.5 * deltaTime;
 
-    //handle free cam based controls
-    if(mode == free_roam){
-        //forward
+    // handle free cam based controls
+    if (mode == free_roam)
+    {
+        // forward
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             camera_position += cameraSpeed * camera_target;
-        //backwards
+        // backwards
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
             camera_position -= cameraSpeed * camera_target;
-        //right
+        // right
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            camera_position -= cameraSpeed * glm::cross(camera_up,camera_target);
-        //left
+            camera_position -= cameraSpeed * glm::cross(camera_up, camera_target);
+        // left
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            camera_position += cameraSpeed * glm::cross(camera_up,camera_target);
-        //up
+            camera_position += cameraSpeed * glm::cross(camera_up, camera_target);
+        // up
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
             camera_position += cameraSpeed * camera_up;
-        //down
+        // down
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
             camera_position -= cameraSpeed * camera_up;
     }
-    //handle orbit based controls
-    if(mode == orbit){
-        //decrease rotation speed
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-            rotation_speed-=0.1;
-        }
-        //increase rotation speed
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-            rotation_speed+=0.1;
-        }
+    // handle orbit based controls
+    if (mode == orbit)
+    {
+        /* This is useless for now
+
+            //decrease rotation speed
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+                rotation_speed-=0.1;
+            }
+            //increase rotation speed
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
+                rotation_speed+=0.1;
+            }
+        */
     }
 
-
-    //increase res
-    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS){
+    // increase res
+    if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+    {
         height++;
         width++;
         rebuild = true;
     }
-    //decrease res
-    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS){
+    // decrease res
+    if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+    {
         height--;
         width--;
         rebuild = true;
-        }
-        //M for mountains heheheh
-    //increase heightscale
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS){
-        heightScale+=0.05;
+    }
+    // M for mountains heheheh
+    // increase heightscale
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+    {
+        heightScale += 0.05;
         rebuild = true;
     }
-    //N for no mountains :( 
-    //decrease heightscale
-    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS){
-        if(heightScale - 0.05 > 0){
-            heightScale-=0.05;
+    // N for no mountains :(
+    // decrease heightscale
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+    {
+        if (heightScale - 0.05 > 0)
+        {
+            heightScale -= 0.05;
             rebuild = true;
         }
     }
-        static bool cKeyPressed = false;
+    static bool cKeyPressed = false;
 
-        //press c to toggle camera mode
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && !cKeyPressed){
+    // press c to toggle camera mode
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && !cKeyPressed)
+    {
         cKeyPressed = true;
-        if(mode == orbit){
+        if (mode == orbit)
+        {
             mode = free_roam;
-        }else{
+        }
+        else
+        {
             mode = orbit;
-            camera_position = vec3(0.0,3.0,3.0);
+            camera_position = vec3(0.0, 3.0, 3.0);
             camera_target = glm::vec3(0.0, -1.0, -1.0);
         }
     }
-    //make sure its just a press ones ting
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE){
+    // make sure its just a press ones ting
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE)
+    {
         cKeyPressed = false;
     }
 
-
-
-
-    //TODO add translations
-
+    // TODO add translations
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
