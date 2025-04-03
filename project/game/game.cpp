@@ -26,6 +26,9 @@ using namespace glm;
 #include "engine/includes/core.h"
 #include "engine/includes/components.h"
 
+
+#include "src/voxel/voxel.h"
+
 using Utils::print;
 
 int main( void )
@@ -62,27 +65,34 @@ int main( void )
 
 
     Camera camera;
+    camera.transform = glm::translate(camera.transform, glm::vec3(-10, 10, 0));
 
     game.setCurrentCamera(camera);
 
 
+    std::function<int(glm::vec3)> f = [](glm::vec3 v){
+        if (sin(v.y) + 0.9 <=0){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    };
+
     // gameobjects
 
-    GameObject sphere1;
-    //GameObject sphere2;
-
-    // components
-
-    //C_Mesh mesh_comp(mesh);
-
-    //C_Transform transform_comp;
+    GameObject object1;
 
     // scene setup
-    sphere1.addComponent<C_Transform>();
-    sphere1.addComponent<C_Mesh>();
-    sphere1.getComponent<C_Mesh>()->mesh = mesh;
+    object1.addComponent<C_Transform>();
 
-    game.current_scene.setRoot(std::move(sphere1));
+    object1.addComponent<C_Mesh>();
+    object1.getComponent<C_Mesh>()->mesh = mesh;
+
+    object1.addComponent<C_voxelMesh>();
+    object1.getComponent<C_voxelMesh>()->create(20, 10, 20, 0.00000, f);
+
+    game.current_scene.setRoot(std::move(object1));
 
 
 

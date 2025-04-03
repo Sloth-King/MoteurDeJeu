@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 #include <GL/glew.h>
+#include <common/shader.hpp>
 
 #include "engine/render/texture/texture.h"
 
@@ -49,6 +50,7 @@ protected:
     mutable GLuint _UV;
 
 public:
+    static GLuint base_shader;
 
 
     GLuint shaderPID; // public for now.
@@ -63,7 +65,10 @@ public:
 
     static Mesh gen_tesselatedSquare(int nX, int nY, float sX = 1, float sY = 1);
 
-    Mesh() = default;
+    Mesh(){
+        if (base_shader == 0) createDefaultShader();
+        shaderPID = base_shader;
+    };
     ~Mesh(){
         if (_synchronized){
             unsynchronize();
@@ -90,4 +95,6 @@ public:
         
         return stream;
     }
+
+    void createDefaultShader();
 };

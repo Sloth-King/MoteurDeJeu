@@ -49,10 +49,7 @@ add_definitions(
 	-D_CRT_SECURE_NO_WARNINGS
 )
 
-# TP1
-
 add_executable(Game
-    	game/game.cpp
 	engine/external/common/shader.cpp
 	engine/external/common/shader.hpp
 	engine/external/common/controls.cpp
@@ -93,7 +90,13 @@ add_executable(Game
 
 	engine/external/stb_image.cpp
 
+	# game
+    	game/game.cpp
+	
+	game/src/voxel/voxel.h
+	game/src/voxel/voxel.cpp
 )
+
 target_link_libraries(Game
 	${ALL_LIBS}
 )
