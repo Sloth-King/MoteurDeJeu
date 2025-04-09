@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <typeindex>
+#include <cassert>
 
 // Include GLM
 #include <glm/glm.hpp>
@@ -26,21 +27,26 @@ class Scene;
 class GameObject{
     friend Scene;
 
+    static unsigned long next_id;
+
+    unsigned long id = 0;
+
 public:
-    GameObject * parent; // null in case it's root of a scene
+    GameObject * parent = nullptr; // null in case it's root of a scene
     
-    std::map< GameObject*, std::unique_ptr<GameObject> > children;
+    std::map< unsigned long, std::unique_ptr<GameObject> > children = std::map< unsigned long, std::unique_ptr<GameObject> >();
 
-    std::map<std::type_index, std::unique_ptr<Component> > components;
+    std::map<std::type_index, std::unique_ptr<Component> > components = std::map<std::type_index, std::unique_ptr<Component> >();
 
-    Scene * scene;
+    Scene * scene = nullptr;
 
     GameObject( GameObject&& rcOther )
     : children( std::move(rcOther.children) )
     , components( std::move(rcOther.components) )
     , scene(rcOther.scene)
+    , id(rcOther.id)
     {
-        for (const auto & [ptr, owning_ptr] : children)
+        for (const auto & [id, owning_ptr] : children)
             owning_ptr->parent = this;
         
         for (const auto & [ti, comp] : components)
@@ -50,13 +56,37 @@ public:
     bool hidden = false;
     // bool deactivated = false;
 
-    GameObject() = default;
+    GameObject(): id(next_id++) {};
 
-    void setParent(GameObject & new_parent);
+    void addChild(GameObject && child);
 
     bool isRoot() const { return (bool)parent; };
 
-    Scene * getScene() const {return scene;};
+    Scene * getScene() const {
+        assert(scene != nullptr);
+        return scene;
+    }
+
+    void __enterScene(Scene * s){
+        scene = s;
+        for (const auto & [id, owning_ptr] : children)
+            owning_ptr->__enterScene(s);
+
+        for (const auto & [ti, comp] : components)
+            comp->_onEnterScene();
+
+    }
+
+    void __exitScene(){
+        for (const auto & [id, owning_ptr] : children)
+            owning_ptr->__exitScene();
+
+        for (const auto & [ti, comp] : components)
+            comp->_onExitScene();
+        
+        scene = nullptr;
+
+    }
 
 
     template <DerivedFromComponent T>
@@ -83,7 +113,7 @@ public:
 
     void __engineUpdate(float deltaTime){
         
-        for (const auto & [ptr, owning_ptr] : children)
+        for (const auto & [id, owning_ptr] : children)
             owning_ptr->__engineUpdate(deltaTime);
         
         for (const auto & [ti, comp] : components)
@@ -93,7 +123,7 @@ public:
 
     void __enginePhysicsUpdate(float deltaTime){
 
-        for (const auto & [ptr, owning_ptr] : children)
+        for (const auto & [id, owning_ptr] : children)
             owning_ptr->__enginePhysicsUpdate(deltaTime);
 
         for (const auto & [ti, comp] : components)

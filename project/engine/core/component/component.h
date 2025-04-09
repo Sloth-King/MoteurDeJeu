@@ -23,6 +23,9 @@ public:
     
     Component() = default;
 
+    virtual void _onEnterScene();
+    virtual void _onExitScene();
+
     virtual void _onUpdate(float deltaTime);
     virtual void _onPhysicsUpdate(float deltaTime);
 

@@ -38,27 +38,26 @@ struct VoxelContainer {
 
 class C_voxelMesh: public C_Mesh{
 
-    size_t sX = 20;
-    size_t sY = 10;
-    size_t sZ = 20;
+    size_t sX = 1;
+    size_t sY = 1;
+    size_t sZ = 1;
     float size = 1.0;
 
     VoxelContainer container = VoxelContainer(sX, sY, sZ);
 
 
-    void voxelize(std::function<int(glm::vec3)> f);
+    void voxelize(std::function<int(glm::vec3, float)> f);
 
 public:
-    void create ( size_t x, size_t y, size_t z, float size, std::function<int(glm::vec3)> f ){
+    void create ( size_t x, size_t y, size_t z, float size, std::function<int(glm::vec3, float)> f ){
         sX = x;
         sY = y;
         sZ = z;
-        size = size;
+        this->size = size;
         container = VoxelContainer(sX, sY, sZ);
         voxelize(f);
 
         //std::cout << "points size: " << mesh.triangles.size() << std::endl;
-        //std::cout << "tri size: " << mesh.triangles.size() << std::endl;
     }
 
 };

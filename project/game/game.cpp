@@ -65,13 +65,13 @@ int main( void )
 
 
     Camera camera;
-    camera.transform = glm::translate(camera.transform, glm::vec3(-10, 10, 0));
+    camera.transform = glm::translate(camera.transform, glm::vec3(0, 0, 0));
 
     game.setCurrentCamera(camera);
 
 
-    std::function<int(glm::vec3)> f = [](glm::vec3 v){
-        if (sin(v.y) + 0.9 <=0){
+    std::function<int(glm::vec3, float)> f = [](glm::vec3 v, float size){
+        if (sin((v.z + v.x) / 20.0) * 3 >= v.y  * size - 3.0){
             return 1;
         }
         else{
@@ -86,15 +86,21 @@ int main( void )
     // scene setup
     object1.addComponent<C_Transform>();
 
-    object1.addComponent<C_Mesh>();
-    object1.getComponent<C_Mesh>()->mesh = mesh;
-
     object1.addComponent<C_voxelMesh>();
-    object1.getComponent<C_voxelMesh>()->create(20, 10, 20, 0.00000, f);
+    object1.getComponent<C_voxelMesh>()->create(30, 5, 30, 0.050000, f);
 
-    game.current_scene.setRoot(std::move(object1));
+    GameObject object2;
+    
+    object2.addComponent<C_Transform>();
+    object2.addComponent<C_Mesh>();
+    object2.getComponent<C_Mesh>()->mesh = mesh;
 
 
+    object1.addChild(std::move(object2));
+
+
+
+    game.current_scene.setRoot(std::move(object1)); // do last because it moves !
 
     game.start();
 

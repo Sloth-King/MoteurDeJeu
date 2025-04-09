@@ -8,12 +8,12 @@ void C_Mesh::_onUpdate(float deltaTime) {
     
     if (getOwner().hasComponent<C_Transform>()){
         mesh.render(
-            getScene().getCurrentCamera().getVP(),
+            getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(),
             getOwner().getComponent<C_Transform>()->getGlobalTransformationMatrix()
         );
     
     } else {
-        mesh.render(getScene().getCurrentCamera().getVP(), glm::mat4(1.0));
+        mesh.render(getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(), glm::mat4(1.0));
     }
 };
 

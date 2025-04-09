@@ -13,5 +13,8 @@ Scene& Component::getScene(){
     }
 }
 
+void Component::_onEnterScene() {};
+void Component::_onExitScene() {};
+
 void Component::_onUpdate(float deltaTime) {};
 void Component::_onPhysicsUpdate(float deltaTime) {};

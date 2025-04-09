@@ -56,12 +56,17 @@ void Mesh::synchronize() const {
     glBindBuffer(GL_ARRAY_BUFFER, _UV);
     glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0] , GL_STATIC_DRAW);
 
+    glGenBuffers(1, &_NORMALS);
+    glBindBuffer(GL_ARRAY_BUFFER, _NORMALS);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0] , GL_STATIC_DRAW);
+
 
 
     glDisableVertexAttribArray(0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 
 
     // textures
@@ -81,7 +86,7 @@ void Mesh::synchronize() const {
     _synchronized = true;
 }
 
-void Mesh::render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transform) const{
+void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & outside_transform) const{
 
     if (vertices.empty()) return;
 
@@ -89,8 +94,21 @@ void Mesh::render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transfor
         synchronize();
     }
     glUseProgram(shaderPID);
+
+    int i = 0;
+    for (auto t: textures){
+        t.first.bind(i);
+        glUniform1i(
+            glGetUniformLocation(shaderPID, t.second.c_str()),
+            i
+        );
+        ++i;
+    }
     
+    // todo just tranfer a struct to the gpu with all interesting data
     GLuint mvpUniformLocation = glGetUniformLocation(shaderPID, "MVP");
+    GLuint camForardLocation = glGetUniformLocation(shaderPID, "view");
+    GLuint modelLocation = glGetUniformLocation(shaderPID, "Model");
 
     glm::mat4 MVP = vpMatrix * outside_transform * transform; // transform the VP into MVP
 
@@ -98,6 +116,13 @@ void Mesh::render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transfor
 
     if (mvpUniformLocation != -1){
         glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &MVP[0][0]);
+    }
+
+    if (camForardLocation != -1){
+        glUniform3fv(camForardLocation, 1, &fv[0]);
+    }
+    if (modelLocation != -1){
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE,  &transform[0][0]);
     }
 
     glBindVertexArray(_VAO);
@@ -121,15 +146,14 @@ void Mesh::render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transfor
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, _UV);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-    int i = 0;
-    for (auto t: textures){
-        t.first.bind(i);
-        glUniform1i(
-            glGetUniformLocation(shaderPID, t.second.c_str()),
-            i
-        );
-        ++i;
-    }
+
+
+
+
+    // normals
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, _NORMALS);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 
 
     // Index buffer
@@ -145,6 +169,7 @@ void Mesh::render(const glm::mat4 & vpMatrix, const glm::mat4 & outside_transfor
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindVertexArray(0);
     glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -155,6 +180,7 @@ void Mesh::unsynchronize() const {
     glDeleteBuffers(1, &_VBO);
     glDeleteBuffers(1, &_EBO);
     glDeleteBuffers(1, &_UV);
+    glDeleteBuffers(1, &_NORMALS);
     glDeleteProgram(shaderPID);
     glDeleteVertexArrays(1, &_VAO);
     
@@ -188,16 +214,23 @@ GLuint Mesh::base_shader = 0;
 
 const std::string base_shader_vert = R"(#version 330 core
 
-    uniform mat4 MVP;
-
     layout(location = 0) in vec3 vertices_position_modelspace;
     layout(location = 1) in vec2 raw_uv;
+    layout(location = 2) in vec3 raw_normals;
+
+    uniform mat4 Model;
+    uniform mat4 MVP;
 
     out vec2 uv;
+    out vec3 normal;
 
     void main(){
 
             uv = raw_uv;
+            mat4 norm_transform = transpose(inverse(Model));
+            normal = (norm_transform * vec4(raw_normals, 0)).xyz;
+
+
             vec4 pos = vec4(vertices_position_modelspace,1);
 
             gl_Position = MVP * pos;
@@ -205,12 +238,16 @@ const std::string base_shader_vert = R"(#version 330 core
 
 const std::string base_shader_frag = R"(#version 330 core
 
+    uniform vec3 view;
+
     in vec2 uv;
+    in vec3 normal;
 
     out vec3 color;
-
     void main(){
-            color = vec3(0.8, 0.6, 0.2);
+
+
+        color = vec3(0.8, 0.6, 0.2) * clamp(dot(view, normal)+0.2, 0.0, 1.0);
     }
     )";
 

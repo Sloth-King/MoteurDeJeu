@@ -52,6 +52,11 @@ public:
         return getProjectionMatrix() * getViewMatrix();
     }
 
+    inline glm::vec3 getForwardVector(){
+        //view = glm::inverse(getViewMatrix());
+        return glm::vec3(transform[2][0], transform[2][1], transform[2][2]);
+    }
+
     float mouseSpeed = 2.0;
     float speed = 1.0;
 

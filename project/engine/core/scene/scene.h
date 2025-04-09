@@ -30,7 +30,7 @@ class Scene{
 //private:
 public:
     Camera* current_camera;
-    std::unique_ptr< GameObject > root;
+    std::unique_ptr< GameObject > root = nullptr;
 
 public:
 
@@ -43,9 +43,11 @@ public:
         current_camera = &c;
     }
 
-    void setRoot(GameObject && g){
+    void setRoot(GameObject && g){ // async for now, probably not a good idea but we'll manage that later
+        if (root) root->__exitScene();
+
         root = std::make_unique<GameObject>(std::move(g));
-        root->scene = this;
+        root->__enterScene(this);
     }
     
     void __engineUpdate(float deltaTime){

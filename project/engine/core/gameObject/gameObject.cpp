@@ -4,19 +4,23 @@
 #include <map>
 #include "gameObject.h"
 
+unsigned long  GameObject::next_id = 0;
 
-void GameObject::setParent(GameObject & new_parent){
-    
-    std::unique_ptr<GameObject> ptr;
+void GameObject::addChild(GameObject && child){
 
-    if (parent != nullptr){
-        ptr = std::move(parent->children[this]);
-        parent->children.erase(this);
+
+    auto p = child.id;
+    std::unique_ptr<GameObject> ptr = nullptr;
+
+    if (child.parent != nullptr){
+        ptr = std::move(child.parent->children[child.id]);
+        child.parent->children.erase(p);
     } else {
-        ptr = std::unique_ptr<GameObject>(this);
-    }
-    parent = &new_parent;
-    scene = new_parent.scene;
+        ptr = std::make_unique<GameObject>(std::move(child));
 
-    new_parent.children[this] = std::move(ptr);
+    }
+    children[p] = std::move(ptr);
+    children[p]->parent = this;
+    if (scene) children[p]->__enterScene(scene);
 }
+

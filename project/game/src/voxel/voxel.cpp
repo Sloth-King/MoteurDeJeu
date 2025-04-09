@@ -50,19 +50,19 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, glm::vec3 size, int face_mask){
 
 
     //normals (un peu dirty, mais bon!)
+    /*
+    mesh.normals.push_back( glm::normalize(-1.0f* glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) - (glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front bottom left
+    mesh.normals.push_back( glm::normalize(glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) - (glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front bottom right
+
+    mesh.normals.push_back( glm::normalize(-1.0f*  glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) - (glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front top left
+    mesh.normals.push_back( glm::normalize(pos + glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) - (glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front top right
     
-    mesh.normals.push_back( (-1.0f* glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) - glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front bottom left
-    mesh.normals.push_back( (glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) - glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front bottom right
+    mesh.normals.push_back( glm::normalize(-1.0f*  glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) + (glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom left
+    mesh.normals.push_back( glm::normalize(glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) +(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom right
 
-    mesh.normals.push_back( (-1.0f*  glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) - glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front top left
-    mesh.normals.push_back( (pos + glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) - glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //front top right
-    
-    mesh.normals.push_back( (-1.0f*  glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) + glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom left
-    mesh.normals.push_back( (glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size[1]/2.0f, 0.0f) + glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom right
-
-    mesh.normals.push_back( (-1.0f*  glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) + glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom left
-    mesh.normals.push_back( (glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) + glm::normalize(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom right
-
+    mesh.normals.push_back( glm::normalize(-1.0f*  glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) + (glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom left
+    mesh.normals.push_back( glm::normalize(glm::vec3(size[0.0f]/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size[1]/2.0f, 0.0f) +(glm::vec3(0.0f, 0.0f, size[2]/2.0f))) ); //back bottom right
+    */
     mesh.uvs.push_back( glm::vec2(0.0f, 0.0f)); //front bottom left
     mesh.uvs.push_back( glm::vec2(1.0f, 0.0f) ); //front bottom right
 
@@ -78,7 +78,7 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, glm::vec3 size, int face_mask){
 
 
 
-void C_voxelMesh::voxelize(std::function<int(glm::vec3)> f){
+void C_voxelMesh::voxelize(std::function<int(glm::vec3, float)> f){
 
     glm::vec3 AABB_v1 = -glm::vec3(sX, sY, sZ) * size/2.0f;
     glm::vec3 AABB_v2 = glm::vec3(sX, sY, sZ) * size/2.0f;
@@ -91,7 +91,7 @@ void C_voxelMesh::voxelize(std::function<int(glm::vec3)> f){
             for (int k = 0; k < sZ; ++k){
 
                 container.set(i, j, k,
-                    f(glm::vec3(i, j, k) / size)
+                    f(glm::vec3(i, j, k) / size, size)
                 );
             }
         }
@@ -138,4 +138,6 @@ void C_voxelMesh::voxelize(std::function<int(glm::vec3)> f){
             }
         }
     }
+
+    mesh.recomputeNormals();
 }
