@@ -4,17 +4,20 @@
 #include <vector>
 #include <functional>
 
+
 using VOXEL_IDX_TYPE = uint8_t;
 
-/*
-public int[] to3D( int idx ) {
-    final int z = idx / (xMax * yMax);
-    idx -= (z * xMax * yMax);
-    final int y = idx / xMax;
-    final int x = idx % xMax;
-    return new int[]{ x, y, z };
-}
-*/
+
+
+static const unsigned int  voxelTextureSize = 16;
+
+struct VoxelType {
+
+    VOXEL_IDX_TYPE textureIndex = 0;
+
+    unsigned int solidity;
+};
+
 
 // externalized to be able to swap it easily. Maybe do an octree in the end (or a mix octree above surface / grid below ?)
 struct VoxelContainer {
@@ -56,6 +59,8 @@ public:
         this->size = size;
         container = VoxelContainer(sX, sY, sZ);
         voxelize(f);
+
+        std::vector< VoxelType > types;
 
         //std::cout << "points size: " << mesh.triangles.size() << std::endl;
     }

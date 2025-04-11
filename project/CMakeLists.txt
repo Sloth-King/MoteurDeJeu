@@ -95,6 +95,7 @@ add_executable(Game
 	
 	game/src/voxel/voxel.h
 	game/src/voxel/voxel.cpp
+	game/src/voxel/mapGeneration.cpp
 )
 
 target_link_libraries(Game
