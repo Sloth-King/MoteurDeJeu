@@ -30,8 +30,8 @@ public:
 
     void loadTexture(const std::string path){
         data = stbi_load(path.c_str(), &width, &height, &nbChannels, 0);
-        if (!data) std::cout << " TEXTURE MAL CHARGEE" << std::endl;
-        //std::cout << "nbchannels: " << nbChannels << std::endl;
+        if (!data || nbChannels != 3) std::cout << " TEXTURE MAL CHARGEE" << std::endl;
+        std::cout << "nbchannels: " << nbChannels << std::endl;
 
         synchronize();
 
@@ -58,6 +58,9 @@ public:
     void bind(GLuint slot = 0){
         glActiveTexture(GL_TEXTURE0+slot); // activate the texture unit first before binding texture
         glBindTexture(GL_TEXTURE_2D, _texture_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     }
 };
 

@@ -34,50 +34,14 @@ using Utils::print;
 int main( void )
 {
 
-    std::string path_prefix_from_build = "../game/";
-
-    std::string vertex_shader_filename = path_prefix_from_build + "resources/shaders/vertex_shader.glsl";
-
-    std::string fragment_shader_filename = path_prefix_from_build + "resources/shaders/fragment_shader.glsl";
-    
     Game game;
 
     game.init();
-
-    Mesh mesh = Mesh::gen_tesselatedSquare(20, 20);
-    //Mesh mesh = ResourceLoader::load_mesh_off("/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/TP1_code/sphere1.off");
-    mesh.rotate(-90, glm::vec3(1.0, 0.0, 0.0));
-
-    mesh.setShader(vertex_shader_filename, fragment_shader_filename);
-
-    // load textures
-    
-    Texture heightmap(path_prefix_from_build + "resources/textures/heightmap.jpg");
-    Texture rock(path_prefix_from_build + "resources/textures/rock.png");
-    Texture grass(path_prefix_from_build + "resources/textures/grass.png");
-    Texture snow(path_prefix_from_build + "resources/textures/snowrocks.png");
-
-    mesh.addTexture(heightmap, "heightmap");
-    mesh.addTexture(rock, "rock");
-    mesh.addTexture(grass, "grass");
-    mesh.addTexture(snow, "snow");
-    
-
 
     Camera camera;
     camera.transform = glm::translate(camera.transform, glm::vec3(0, 0, 0));
 
     game.setCurrentCamera(camera);
-
-
-    std::function<int(glm::vec3, float)> f = [](glm::vec3 v, float size){
-        if (sin((v.z + v.x) / 20.0) * 3 >= v.y  * size - 3.0){
-            return 1;
-        }
-        else{
-            return 0;
-        }
-    };
 
     // gameobjects
 
@@ -87,17 +51,7 @@ int main( void )
     object1.addComponent<C_Transform>();
 
     object1.addComponent<C_voxelMesh>();
-    object1.getComponent<C_voxelMesh>()->create(30, 5, 30, 0.050000, f);
-
-    GameObject object2;
-    
-    object2.addComponent<C_Transform>();
-    object2.addComponent<C_Mesh>();
-    object2.getComponent<C_Mesh>()->mesh = mesh;
-
-
-    object1.addChild(std::move(object2));
-
+    object1.getComponent<C_voxelMesh>()->create_chunk();
 
 
     game.current_scene.setRoot(std::move(object1)); // do last because it moves !

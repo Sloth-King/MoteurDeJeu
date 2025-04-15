@@ -97,7 +97,11 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
 
     int i = 0;
     for (auto t: textures){
+
         t.first.bind(i);
+
+
+
         glUniform1i(
             glGetUniformLocation(shaderPID, t.second.c_str()),
             i

@@ -3,21 +3,17 @@
 #include "engine/includes/components.h"
 #include <vector>
 #include <functional>
-
+#include <string>
 
 using VOXEL_IDX_TYPE = uint8_t;
-
-
-
-static const unsigned int  voxelTextureSize = 16;
 
 struct VoxelType {
 
     VOXEL_IDX_TYPE textureIndex = 0;
 
     unsigned int solidity;
+    std::string name;
 };
-
 
 // externalized to be able to swap it easily. Maybe do an octree in the end (or a mix octree above surface / grid below ?)
 struct VoxelContainer {
@@ -36,31 +32,52 @@ struct VoxelContainer {
     inline void set(size_t x, size_t y, size_t z, VOXEL_IDX_TYPE val) {
         data.at((z * sX * sY) + (y * sX) + x) = val;
     }
+
+    VoxelContainer() = default;
 };
 
 
+void generateMap(VoxelContainer & container, glm::ivec3 offset);
+
 class C_voxelMesh: public C_Mesh{
 
-    size_t sX = 1;
-    size_t sY = 1;
-    size_t sZ = 1;
-    float size = 1.0;
-
-    VoxelContainer container = VoxelContainer(sX, sY, sZ);
-
-
-    void voxelize(std::function<int(glm::vec3, float)> f);
+    void voxelize();
 
 public:
-    void create ( size_t x, size_t y, size_t z, float size, std::function<int(glm::vec3, float)> f ){
-        sX = x;
-        sY = y;
-        sZ = z;
-        this->size = size;
-        container = VoxelContainer(sX, sY, sZ);
-        voxelize(f);
 
-        std::vector< VoxelType > types;
+    static const unsigned int  voxelTextureSize = 8; // nb of blocks. CHANGE IN THE SHADER ASWELL !
+    const float size = 0.05;
+
+    std::vector< VoxelType > types;
+
+    VoxelContainer container;
+
+    //VoxelType v = {1, 500, "debug"};
+    C_voxelMesh() {
+        types = {
+            {1, 500, "debug"},
+            {2, 100, "basalt"},
+            {3, 10, "sand"}
+        };
+    }
+
+    void create_chunk(glm::ivec3 offset = glm::ivec3(0)){
+
+        generateMap(container, offset);
+
+        voxelize();
+
+        // not ideal to have the shader + texture part here since it's gonna create it each time. We could do better 
+        std::string path_prefix_from_build = "../game/";
+        std::string vertex_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_vert.glsl";
+        std::string fragment_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_frag.glsl";
+
+        mesh.setShader(vertex_shader_filename, fragment_shader_filename);
+
+        // load textures
+        Texture atlas(path_prefix_from_build + "resources/textures/voxelAtlas.png");
+
+        mesh.addTexture(atlas, "atlas");
 
         //std::cout << "points size: " << mesh.triangles.size() << std::endl;
     }
