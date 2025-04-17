@@ -42,6 +42,16 @@ inline void limit_fps(int FPS){
     last_time = current_time;
 }
 
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
+
+
 void GLAPIENTRY
 MessageCallback( GLenum source,
                  GLenum type,
@@ -109,7 +119,7 @@ void Game::init()
     glEnable(GL_DEPTH_TEST);
     glEnable (GL_PROGRAM_POINT_SIZE);
     glDepthFunc(GL_LESS);
-
+    GLFWframebuffersizefun(framebuffer_size_callback); // doesnt work. TODO
     //glEnable(GL_CULL_FACE);
 
 }

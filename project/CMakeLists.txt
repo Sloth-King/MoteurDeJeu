@@ -52,8 +52,6 @@ add_definitions(
 add_executable(Game
 	engine/external/common/shader.cpp
 	engine/external/common/shader.hpp
-	engine/external/common/controls.cpp
-	engine/external/common/controls.hpp
 	engine/external/common/objloader.cpp
 	engine/external/common/objloader.hpp
 	engine/external/common/vboindexer.cpp
