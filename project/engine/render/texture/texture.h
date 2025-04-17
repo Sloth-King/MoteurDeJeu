@@ -40,7 +40,7 @@ public:
 
     void synchronize(){ // TODO unsynchronize if already synchronized. Otherwise this is a memory leak :)
         
-        
+        // see anisotropic filtering, samplers objects, etc
         glGenTextures(1, &_texture_id);
         glBindTexture(GL_TEXTURE_2D, _texture_id);
 
@@ -60,8 +60,6 @@ public:
         glBindTexture(GL_TEXTURE_2D, _texture_id);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_LINEAR);
     }
 };
-
-

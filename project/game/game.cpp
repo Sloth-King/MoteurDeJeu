@@ -41,6 +41,8 @@ int main( void )
     Camera camera;
     camera.transform = glm::translate(camera.transform, glm::vec3(0, 0, 0));
 
+    Mesh m = ResourceLoader::load_mesh_obj("../game/resources/")
+
     game.setCurrentCamera(camera);
 
     // gameobjects
