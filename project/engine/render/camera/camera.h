@@ -39,6 +39,16 @@ public:
         );
     }
 
+    void resize(int u, int v){
+        std::cout << "camera" << std::endl;
+        projection = glm::perspective(
+            glm::radians(45.0f),
+            (float)u / (float)v,
+            0.1f,
+            100.0f
+        );
+    }
+
     inline glm::mat4 getProjectionMatrix(){
         return projection;
     }

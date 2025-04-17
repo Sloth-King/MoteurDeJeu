@@ -24,9 +24,16 @@
 #include "engine/core/scene/scene.h"
 
 
-
+struct GameSettings {
+    int windowWidth;
+    int windowHeight;
+    float windowAspect;
+    float fov;
+};
 
 class Game {
+
+friend void handleWindowResizedCallback(GLFWwindow* window, int width, int height);
 protected:
 
     void renderloop();
@@ -36,7 +43,12 @@ protected:
     GLFWwindow* window;
     bool running = false;
 
+    void handleWindowResized(GLFWwindow* window, int width, int height);
+
+
 public:
+    // updated automatically when a camera is added or the window is changed
+    GameSettings settings;
 
     inline bool isRunning() const { return running;}
 
@@ -45,7 +57,7 @@ public:
     }
 
     void setCurrentCamera(Camera& c){
-        c.window = window;
+        c.resize(settings.windowWidth, settings.windowHeight);
         current_scene.setCurrentCamera(c);
     }
 

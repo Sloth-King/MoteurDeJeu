@@ -32,6 +32,8 @@ int main( void )
 {
 
     Game game;
+    game.settings.windowWidth = 1280;
+    game.settings.windowHeight = 720;
 
     game.init();
 

@@ -42,15 +42,19 @@ inline void limit_fps(int FPS){
     last_time = current_time;
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
+void Game::handleWindowResized(GLFWwindow* window, int width, int height){
+    settings.windowWidth = width;
+    settings.windowHeight = height;
+    glViewport(0, 0, width, height);   
+    if (current_scene.current_camera){
+        current_scene.current_camera->resize(width, height);
+    }
 }
 
+Game* current_game; // for this, because methods cant be glfw callbacks
+void handleWindowResizedCallback(GLFWwindow* window, int width, int height){
+    current_game->handleWindowResized(window, height, width);
+}
 
 void GLAPIENTRY
 MessageCallback( GLenum source,
@@ -87,7 +91,7 @@ void Game::init()
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow( 1024, 768, "TP1 - GLFW", NULL, NULL);
+    window = glfwCreateWindow( settings.windowWidth, settings.windowHeight, "Game", NULL, NULL);
     if( window == NULL ){
         fprintf( stderr, "Failed to open GLFW window." );
         getchar();
@@ -119,7 +123,10 @@ void Game::init()
     glEnable(GL_DEPTH_TEST);
     glEnable (GL_PROGRAM_POINT_SIZE);
     glDepthFunc(GL_LESS);
-    GLFWframebuffersizefun(framebuffer_size_callback); // doesnt work. TODO
+
+    current_game = this;
+
+    glfwSetWindowSizeCallback(window, handleWindowResizedCallback);
     //glEnable(GL_CULL_FACE);
 
 }
