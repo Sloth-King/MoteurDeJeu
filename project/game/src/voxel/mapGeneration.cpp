@@ -6,7 +6,7 @@ const unsigned int CHUNK_SIZE_Y = 16;
 
 
 uint8_t generateVoxel(const glm::ivec3 & global_position){
-    // return 1; // debug
+    return 1; // debug
     if (global_position.y < -45){
         return 0;
     }

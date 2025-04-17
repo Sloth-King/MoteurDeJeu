@@ -57,7 +57,12 @@ public:
         types = {
             {1, 500, "debug"},
             {2, 100, "basalt"},
-            {3, 10, "sand"}
+            {3, 75, "sandstone"},
+            {4, 5, "sand"},
+            {5, 10, "glorksmorf"},
+            {6, 100, "copper"},
+            {7, 150, "stone"},
+            {8, 120, "ivory"},
         };
     }
 
