@@ -24,16 +24,21 @@ const glm::mat4 & C_Transform::getLocalTransformationMatrix(){
             glm::scale(glm::mat4(1.0f), scale);
     
     local_dirty = false;
+    global_dirty = true;
+
 
 }
 const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
+
 
     if (!global_dirty){
         return global;
     }
 
+
     // if dirty
 
+    std::cout << "here" << std::endl;
     GameObject * parent = getOwner().parent;
 
     if (parent && parent->hasComponent<C_Transform>()){
@@ -49,7 +54,6 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
 
 void C_Transform::setLocalDirty(){
     local_dirty = true;
-
     for (const auto & [ptr, owning_ptr] : getOwner().children){ // not ideal. waiting for a better idea. Maybe an apply_to_children(func f) method?
         GameObject & child = *owning_ptr;
         if (child.hasComponent<C_Transform>()){

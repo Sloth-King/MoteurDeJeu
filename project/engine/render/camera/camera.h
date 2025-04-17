@@ -61,7 +61,7 @@ public:
     float speed = 1.0;
 
     void computeMatricesFromInputs(){
-        if (!window) return;
+        if (!glfwGetCurrentContext()) return;
 
         // glfwGetTime is called only once, the first time this function is called
         static double lastTime = glfwGetTime();
@@ -73,14 +73,14 @@ public:
         // Get mouse position
         static double xpos_last, ypos_last;
         double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
+        glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
 
         // Reset mouse position for next frame
         //glfwSetCursorPos(window, 1024/2, 768/2);
 
         // Compute new orientation
 
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
+        if (glfwGetMouseButton(glfwGetCurrentContext(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
 
             float horizontalAngle = mouseSpeed * (xpos - xpos_last) / 1000.0;
             float verticalAngle   = mouseSpeed * (ypos - ypos_last) / 1000.0;
@@ -123,35 +123,35 @@ public:
 
         // Move forward
 
-        if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
+        if (glfwGetKey( glfwGetCurrentContext(), GLFW_KEY_UP ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
                 glm::vec3(0.0, 0.0, -1.0) * deltaTime * speed
             );
         }
         // Move backward
-        if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
+        if (glfwGetKey( glfwGetCurrentContext(), GLFW_KEY_DOWN ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
                 glm::vec3(0.0, 0.0, 1.0) * deltaTime * speed
             );
         }
         // Strafe right
-        if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
+        if (glfwGetKey( glfwGetCurrentContext(), GLFW_KEY_RIGHT ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
                 glm::vec3(1.0, 0.0, 0.0) * deltaTime * speed
             );
         }
         // Strafe left
-        if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
+        if (glfwGetKey( glfwGetCurrentContext(), GLFW_KEY_LEFT ) == GLFW_PRESS){
             transform = glm::translate(
                 transform,
                 glm::vec3(-1.0, 0.0, 0) * deltaTime * speed
             );
         }
         // Activate rotation
-        if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS){
+        if (glfwGetKey( glfwGetCurrentContext(), GLFW_KEY_R ) == GLFW_PRESS){
             rotating = !rotating;
         }
 	}
