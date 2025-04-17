@@ -54,8 +54,6 @@ add_executable(Game
 	engine/external/common/shader.hpp
 	engine/external/common/controls.cpp
 	engine/external/common/controls.hpp
-	engine/external/common/texture.cpp
-	engine/external/common/texture.hpp
 	engine/external/common/objloader.cpp
 	engine/external/common/objloader.hpp
 	engine/external/common/vboindexer.cpp
@@ -63,6 +61,9 @@ add_executable(Game
 
 	engine/core/resourceLoader/resourceLoader.h
 	engine/core/resourceLoader/resourceLoader.cpp
+
+	engine/render/texture/texture.h
+	engine/render/texture/texture.cpp
 
 	engine/core/component/component.h
 	engine/core/component/component.cpp

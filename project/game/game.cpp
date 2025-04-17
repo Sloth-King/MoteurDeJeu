@@ -38,15 +38,13 @@ int main( void )
 
     game.init();
 
-    Camera camera;
-    camera.transform = glm::translate(camera.transform, glm::vec3(0, 0, 0));
-
     // gameobjects
     Mesh mesh1 = ResourceLoader::load_mesh_off("../game/resources/meshes/sphere1.off");
 
     GameObject object1;
     GameObject object2;
-
+    
+    /*
     object2.addComponent<C_Transform>();
     object2.getComponent<C_Transform>()->setScale(glm::vec3(0.2, 0.2, 0.2));
     object2.addComponent<C_Mesh>();
@@ -56,6 +54,7 @@ int main( void )
     object2.addComponent<C_Camera>();
     object2.getComponent<C_Camera>()->camera = camera;
     object2.getComponent<C_Camera>()->offset = glm::vec3(0.0,0.0,5.0);
+    */
 
     // scene setup
     object1.addComponent<C_Transform>();
@@ -63,8 +62,6 @@ int main( void )
     object1.getComponent<C_voxelMesh>()->create_chunk();
     
     object1.addChild(std::move(object2));
-
-    //game.setCurrentCamera(camera);
 
     game.current_scene.setRoot(std::move(object1)); // do last because it moves !
 

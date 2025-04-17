@@ -169,8 +169,6 @@ void C_voxelMesh::voxelize(){
                     // si la case d'après en z est vide
                     if (k == container.sZ-1 || ( k < container.sZ && container.get(i, j, k+1) == 0)) SET_BIT(mask, 1);
 
-                    // TODO check if we could remove points depending on those values and others around them.
-
                     // create the voxel
 
                     glm::vec3 pos = AABB_v1 + glm::vec3(
