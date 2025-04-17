@@ -31,6 +31,7 @@ public:
     // local funcs
     void move(glm::vec3 speed_per_coord){
         pos += speed_per_coord;
+        std::cout << "position (" << pos.x << "," << pos.y << "," << pos.z << ")" << std::endl; 
         setLocalDirty();
     }
 
