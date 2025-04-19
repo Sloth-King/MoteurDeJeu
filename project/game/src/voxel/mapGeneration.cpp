@@ -1,5 +1,5 @@
 #include "voxel.h"
-
+#include "im3d.h"
 
 
 Texture heightmap;
@@ -52,5 +52,26 @@ void generateChunk(VoxelContainer & container, const glm::ivec3 offset){
     for (int k = 0; k < CHUNK_SIZE_Y; ++k){
         
         generateStrate(container, k, offset);
+    }
+}
+
+
+
+void generateFrom3DTexture(VoxelContainer & container, std::string path, int dimX, int dimY, int dimZ, int threshold, int trueValue){
+    
+
+    Image im = read_img_file(path.c_str() , dimX , dimY , dimZ);
+
+    saveHistogramData(im, path + "HISTO.dat", dimX, dimY, dimZ);
+
+    container = VoxelContainer(dimX, dimY, dimZ);
+
+
+
+    for(int i = 0 ; i < dimX * dimY * dimZ ; i++){
+        auto v = (unsigned int)im.data[i];
+        
+        //on met à trueValue les valeurs au dessus du seuil et à 0 les autres
+        container.data[i] = (v >= threshold)? trueValue : 0;
     }
 }

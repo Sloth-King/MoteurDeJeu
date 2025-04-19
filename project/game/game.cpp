@@ -28,42 +28,56 @@
 
 using Utils::print;
 
+// juste une petite structure par praticité. La génération de voxel fonctionne sans, donc il faut donner les paramètres à la main
+struct Img3DData{
+    std::string path;
+    int sx, sy, sz;
+    float  scalex, scaley, scalez;
+};
+
+
 int main( void )
 {
 
     Game game;
-    game.settings.windowWidth = 1280;
+    game.settings.windowWidth = 720;
     game.settings.windowHeight = 720;
 
     game.init();
 
+
     // gameobjects
-    Mesh mesh1 = ResourceLoader::load_mesh_off("../game/resources/meshes/sphere1.off");
 
     GameObject object1;
-    GameObject object2;
-    
-    /*
-    object2.addComponent<C_Transform>();
-    object2.getComponent<C_Transform>()->setScale(glm::vec3(0.2, 0.2, 0.2));
-    object2.addComponent<C_Mesh>();
-    object2.getComponent<C_Mesh>()->mesh = mesh1;
-    object2.addComponent<C_Movement>();
-
-    object2.addComponent<C_Camera>();
-    object2.getComponent<C_Camera>()->camera = camera;
-    object2.getComponent<C_Camera>()->offset = glm::vec3(0.0,0.0,5.0);
-    */
 
     // scene setup
     object1.addComponent<C_Transform>();
     object1.addComponent<C_voxelMesh>();
-    object1.getComponent<C_voxelMesh>()->create_chunk();
-    
-    object1.addChild(std::move(object2));
 
-    game.current_scene.setRoot(std::move(object1)); // do last because it moves !
+    // generation
 
+    Img3DData engine = {"../game/resources/engine.256x256x128.1.0x1.0x1.0.img", 256, 256, 128, 1.0, 1.0, 1.0};
+    Img3DData manix = {"../game/resources/manixSansIV.512x512x48.0.4570x0.4570x3.0.img", 512, 512, 48, 0.470, 0.470, 3.0};
+    Img3DData cube = {"../game/resources/cube.128x128x64.1.0x1.0x2.0.img", 128, 128, 64, 1.0, 1.0, 2.0};
+    Img3DData statueLeg = {"../game/resources/statueLeg.341x341x93.1.0x1.0x4.0.img", 341, 341, 93, 1.0, 1.0, 4.0};
+
+    int threshold_engine = 200;
+    int threshold_manix = 800;
+    int threshold_cube = 3000;
+    int threshold_satueLeg = 15;
+
+    // en mettre qu'un à la fois, sinon ça va override et prendre du temps pour rien
+
+    // engine
+    //object1.getComponent<C_voxelMesh>()->createFrom3DImg(engine.path, engine.sx, engine.sy, engine.sz, engine.scalex, engine.scaley, engine.scalez, threshold_engine, 7);
+    // manix
+    object1.getComponent<C_voxelMesh>()->createFrom3DImg(manix.path, manix.sx, manix.sy, manix.sz, manix.scalex, manix.scaley, manix.scalez, threshold_manix, 4);
+    // cube
+    //object1.getComponent<C_voxelMesh>()->createFrom3DImg(cube.path, cube.sx, cube.sy, cube.sz, cube.scalex, cube.scaley, cube.scalez, threshold_cube);
+    // statueLeg
+    //object1.getComponent<C_voxelMesh>()->createFrom3DImg(statueLeg.path, statueLeg.sx, statueLeg.sy, statueLeg.sz, statueLeg.scalex, statueLeg.scaley, statueLeg.scalez, threshold_satueLeg);
+
+    game.current_scene.setRoot(std::move(object1));
     game.start();
 
     game.waitGameStopped();
