@@ -1,9 +1,6 @@
 #include "voxel.h"
 
 
-const unsigned int CHUNK_SIZE_XZ = 200;
-const unsigned int CHUNK_SIZE_Y = 32;
-
 
 Texture heightmap;
 
@@ -46,7 +43,7 @@ void generateStrate(VoxelContainer & container, int k, const glm::ivec3 & offset
     }
 }
 
-void generateMap(VoxelContainer & container, const glm::ivec3 offset){
+void generateChunk(VoxelContainer & container, const glm::ivec3 offset){
 
     heightmap.loadTexture(std::string("../game/resources/textures/heightmap.jpg"), false);
 

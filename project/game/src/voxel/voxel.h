@@ -36,8 +36,10 @@ struct VoxelContainer {
     VoxelContainer() = default;
 };
 
+const unsigned int CHUNK_SIZE_XZ = 32;
+const unsigned int CHUNK_SIZE_Y = 16;
 
-void generateMap(VoxelContainer & container, glm::ivec3 offset);
+void generateChunk(VoxelContainer & container, glm::ivec3 offset);
 
 class C_voxelMesh: public C_Mesh{
 
@@ -68,7 +70,7 @@ public:
 
     void create_chunk(glm::ivec3 offset = glm::ivec3(0)){
 
-        generateMap(container, offset);
+        generateChunk(container, offset);
 
         voxelize();
 

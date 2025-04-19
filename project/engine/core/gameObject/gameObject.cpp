@@ -6,7 +6,7 @@
 
 unsigned long  GameObject::next_id = 0;
 
-void GameObject::addChild(GameObject && child){
+GameObject* GameObject::addChild(GameObject && child){
 
 
     auto p = child.id;
@@ -22,5 +22,7 @@ void GameObject::addChild(GameObject && child){
     children[p] = std::move(ptr);
     children[p]->parent = this;
     if (scene) children[p]->__enterScene(scene);
+
+    return children[p].get();
 }
 
