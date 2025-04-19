@@ -46,6 +46,17 @@ public:
         loadTexture(path);
     }
 
+    Texture(const Texture & other)
+    : data(other.data),
+    width(other.width),
+    height(other.height),
+    nbChannels(other.nbChannels)
+    {
+        __synchronized = false;
+        synchronize();
+
+    }
+
     Texture() = default;
 
     void loadTexture(const std::string path, bool cpuOnly = false){

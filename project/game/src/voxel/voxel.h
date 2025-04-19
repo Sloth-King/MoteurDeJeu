@@ -5,9 +5,9 @@
 #include <functional>
 #include <string>
 
-using VOXEL_IDX_TYPE = uint8_t;
+using VOXEL_IDX_TYPE = uint16_t;//uint8_t;
 
-struct VoxelType {
+struct VoxelType { 
 
     VOXEL_IDX_TYPE textureIndex = 0;
 
@@ -38,11 +38,13 @@ struct VoxelContainer {
 
 
 void generateMap(VoxelContainer & container, glm::ivec3 offset);
+void generateFrom3DTexture(VoxelContainer & container, std::string path, int dimX, int dimY, int dimZ, int threshold, int trueValue = 2);
 
 class C_voxelMesh: public C_Mesh{
 
     void voxelize();
 
+    void voxelizeMarching(glm::vec3 scale);
 public:
 
     static const unsigned int  voxelTextureSize = 8; // nb of blocks. CHANGE IN THE SHADER ASWELL !
@@ -85,6 +87,24 @@ public:
         mesh.addTexture(atlas, "atlas");
 
         //std::cout << "points size: " << mesh.triangles.size() << std::endl;
+    }
+
+    void createFrom3DImg(std::string path, int sX, int sY, int sZ, float scalex, float scaley, float scalez, int threshold, int trueValue = 2){
+        generateFrom3DTexture(container, path, sX, sY, sZ, threshold, trueValue);
+
+        voxelizeMarching(glm::vec3(scalex, scaley, scalez));
+
+        // not ideal to have the shader + texture part here since it's gonna create it each time. We could do better 
+        std::string path_prefix_from_build = "../game/";
+        std::string vertex_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_vert.glsl";
+        std::string fragment_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_frag.glsl";
+
+        mesh.setShader(vertex_shader_filename, fragment_shader_filename);
+
+        // load textures
+        Texture atlas(path_prefix_from_build + "resources/textures/voxelAtlas.png");
+
+        mesh.addTexture(atlas, "atlas");
     }
 
 };
