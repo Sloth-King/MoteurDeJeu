@@ -20,6 +20,9 @@ void print(Args... args)
     std::cout << std::endl;
 }
 
+inline int posmod(int i, int n) {
+    return (i % n + n) % n;
+}
 
 
 }

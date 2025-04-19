@@ -109,7 +109,7 @@ public:
     T* addComponent(){
         components[std::type_index(typeid(T))] = std::make_unique<T>();
         components[std::type_index(typeid(T))]->owner = this;
-        return components[std::type_index(typeid(T))];
+        return dynamic_cast<T*>(components[std::type_index(typeid(T))].get());
     }
 
     void __engineUpdate(float deltaTime){
