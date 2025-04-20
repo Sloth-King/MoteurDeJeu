@@ -20,7 +20,7 @@ class C_MapManager: public Component{
 
 public:
     
-    const int chunkRadius = 4;
+    const int chunkRadius = 0;
 
     std::vector < GameObject* > chunks; // for now a pointer. this is NOT safe because things can reparent.
     // acceptable refactor : include in the scene a hashmap of the objects id against a pointer to them, which is updated when needed.
@@ -32,7 +32,7 @@ public:
     glm::ivec3 current_player_chunk_in_map;
 
     C_MapManager(){
-        chunks.resize((chunkRadius+1) * (chunkRadius+1) * (chunkRadius+1));
+        chunks.resize((2*chunkRadius+1) * (2*chunkRadius+1) * (2*chunkRadius+1));
     }
 
     GameObject* getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
@@ -51,6 +51,7 @@ public:
             Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadius + 1),
             Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadius + 1)
         };
+        std::cout << "creating chunk in " <<  v.x << " " << v.y << " " << v.z << std::endl;
 
         chunks.at((v.z * chunkRadius * chunkRadius) + (v.y * chunkRadius) + v.x) = chunk;
     }
@@ -85,8 +86,8 @@ public:
         for (int i = -chunkRadius; i <= chunkRadius; ++i){
             for (int j = -chunkRadius; j <= chunkRadius; ++j){
                 for (int k = -chunkRadius; k <= chunkRadius; ++k){
-                    std::cout << "creating chunk in " << i << " " << j << " " << k << std::endl;
                     auto chunkIdx = glm::ivec3(i, j, k);
+
                     setChunkAt(
                         chunkIdx,
                         createChunk(chunkIdxToChunkCoord(chunkIdx))

@@ -12,7 +12,7 @@
 #include "engine/includes/components.h"
 
 
-//#include "src/mapManager/mapManager.h"
+#include "src/mapManager/mapManager.h"
 
 using Utils::print;
 
@@ -33,8 +33,8 @@ int main( void )
 
     // scene setup
     object1.addComponent<C_Transform>();
-    //auto* v = object1.addComponent<C_MapManager>();
-    //v->initChunks();
+    auto* v = object1.addComponent<C_MapManager>();
+    v->initChunks();
 
     game.current_scene.setRoot(std::move(object1));
     game.start();
