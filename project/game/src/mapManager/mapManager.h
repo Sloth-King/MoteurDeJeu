@@ -90,7 +90,6 @@ public:
                         chunkIdx,
                         createChunk(chunkIdxToChunkCoord(chunkIdx))
                     );
-                    std::cout << "creating chunk in " <<  i << " " << j<< " " << k << std::endl;
                 }
             }
         }

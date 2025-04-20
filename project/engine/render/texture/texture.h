@@ -101,7 +101,7 @@ public:
     }
 
     // IN CASE STRANGE THINGS HAPPEN: ALWAYS REMEMBER https://learnopengl.com/Getting-started/Textures
-    void bind(GLuint slot = 0){
+    void bind(GLuint slot = 0) const {
         glActiveTexture(GL_TEXTURE0+slot); // activate the texture unit first before binding texture
         glBindTexture(GL_TEXTURE_2D, _texture_id);
 

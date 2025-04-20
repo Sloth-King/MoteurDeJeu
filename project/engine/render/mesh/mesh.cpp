@@ -96,7 +96,7 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
     glUseProgram(shaderPID);
 
     int i = 0;
-    for (auto t: textures){
+    for (auto & t: textures){
 
         t.first.bind(i);
 
