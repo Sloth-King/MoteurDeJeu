@@ -268,7 +268,10 @@ void C_voxelMesh::voxelize(){
     glm::vec3 AABB_v1 = glm::vec3(0);
     glm::vec3 AABB_v2 = glm::vec3(container.sX, container.sY, container.sZ) * size;
 
-    mesh = Mesh();
+    mesh.vertices.clear();
+    mesh.uvs.clear();
+    mesh.normals.clear();
+    mesh.triangles.clear();
 
 
     //simplify

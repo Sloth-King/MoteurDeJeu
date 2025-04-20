@@ -50,7 +50,7 @@ class C_voxelMesh: public C_Mesh{
 public:
 
     static const unsigned int  voxelTextureSize = 8; // nb of blocks. CHANGE IN THE SHADER ASWELL !
-    const float size = 0.05;
+    float size = 0.05;
 
     std::vector< VoxelType > types;
 
@@ -75,18 +75,6 @@ public:
         generateChunk(container, offset);
 
         voxelize();
-
-        // not ideal to have the shader + texture part here since it's gonna create it each time. We could do better 
-        std::string path_prefix_from_build = "../game/";
-        std::string vertex_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_vert.glsl";
-        std::string fragment_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_frag.glsl";
-
-        mesh.setShader(vertex_shader_filename, fragment_shader_filename);
-
-        // load textures
-        Texture atlas(path_prefix_from_build + "resources/textures/voxelAtlas.png");
-
-        mesh.addTexture(atlas, "atlas");
 
         //std::cout << "points size: " << mesh.triangles.size() << std::endl;
     }

@@ -58,7 +58,6 @@ GLuint loadShaders(std::string VertexShaderCode, std::string FragmentShaderCode)
 
 
 	// Link the program
-	printf("Linking program\n");
 	GLuint ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);
@@ -96,7 +95,6 @@ GLuint loadShadersFromFileGLSL(const char * vertex_file_path,const char * fragme
 		sstr << VertexShaderStream.rdbuf();
 		VertexShaderCode = sstr.str();
 		VertexShaderStream.close();
-		printf("Loading shaders at : " , vertex_file_path);
 	}else{
 		printf("Could not open shader %s.\n", vertex_file_path);
 		getchar();

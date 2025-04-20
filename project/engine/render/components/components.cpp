@@ -7,6 +7,7 @@ void C_Mesh::_onUpdate(float deltaTime) {
 
     
     if (getOwner().hasComponent<C_Transform>()){
+        //getOwner().getComponent<C_Transform>()->printGlobal();
         mesh.render(
             getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(),
             getOwner().getComponent<C_Transform>()->getGlobalTransformationMatrix()

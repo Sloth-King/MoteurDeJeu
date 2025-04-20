@@ -196,6 +196,10 @@ void Mesh::setShader(std::string vertex_shader, std::string fragment_shader){
     shaderPID = loadShadersFromFileGLSL(vertex_shader.c_str(), fragment_shader.c_str());
 }
 
+void Mesh::setShaderPid(GLuint pid){
+    shaderPID = pid;
+}
+
 void Mesh::recomputeNormals () {
     normals.resize(vertices.size());
     for (unsigned int i = 0; i < vertices.size (); i++)

@@ -79,6 +79,8 @@ public:
     void recomputeNormals();
 
     void setShader(std::string vertex_shader, std::string fragment_shader);
+    void setShaderPid(GLuint pid);
+
     void render(const glm::mat4 & vpMatrix, glm::vec3 vp, const glm::mat4 & outside_transform) const;
 
     void rotate(float v, glm::vec3 axis){

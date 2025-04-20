@@ -16,11 +16,13 @@ three referentials:
 
 
 class C_MapManager: public Component{
-
+    GLuint shaderPID;
+    Texture atlas;
 
 public:
     
-    const int chunkRadius = 0;
+    const int chunkRadius = 2;
+    const float world_scale = 0.05f;
 
     std::vector < GameObject* > chunks; // for now a pointer. this is NOT safe because things can reparent.
     // acceptable refactor : include in the scene a hashmap of the objects id against a pointer to them, which is updated when needed.
@@ -33,6 +35,14 @@ public:
 
     C_MapManager(){
         chunks.resize((2*chunkRadius+1) * (2*chunkRadius+1) * (2*chunkRadius+1));
+
+        std::string path_prefix_from_build = "../game/";
+        std::string vertex_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_vert.glsl";
+        std::string fragment_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_frag.glsl";
+
+        shaderPID = loadShadersFromFileGLSL(vertex_shader_filename.c_str(), fragment_shader_filename.c_str());
+
+        atlas = Texture(path_prefix_from_build + "resources/textures/voxelAtlas.png");
     }
 
     GameObject* getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
@@ -67,14 +77,21 @@ public:
 
         glm::ivec3 global_pos = chunkCoord * glm::ivec3(CHUNK_SIZE_XZ, CHUNK_SIZE_Y, CHUNK_SIZE_XZ);
 
-        auto c_transform = g.addComponent<C_Transform>();
-        c_transform->setPosition(global_pos);
+        auto* c_transform = g.addComponent<C_Transform>();
+        c_transform->setPosition(glm::vec3(global_pos) * world_scale);
 
-        auto c_voxelmesh = g.addComponent<C_voxelMesh>();
+        auto* c_voxelmesh = g.addComponent<C_voxelMesh>();
+        c_voxelmesh->size = world_scale;
+
+        c_voxelmesh->mesh.setShaderPid(shaderPID);
+
+        c_voxelmesh->mesh.addTexture(atlas, "atlas");
+
+
         c_voxelmesh->create_chunk(global_pos);
         return getOwner().addChild(std::move(g));
     }
-
+    
     inline glm::ivec3 chunkIdxToChunkCoord(glm::ivec3 chunkIdx){
         return getPlayerChunkCoords() + chunkIdx;
     }

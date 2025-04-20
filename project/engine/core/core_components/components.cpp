@@ -26,22 +26,24 @@ const glm::mat4 & C_Transform::getLocalTransformationMatrix(){
     local_dirty = false;
     global_dirty = true;
 
+    return local;
+
 
 }
 const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
 
 
-    if (!global_dirty){
+    if (!global_dirty && !local_dirty){
         return global;
     }
 
 
     // if dirty
 
-    std::cout << "here" << std::endl;
     GameObject * parent = getOwner().parent;
 
     if (parent && parent->hasComponent<C_Transform>()){
+        
         global = parent->getComponent<C_Transform>()->getGlobalTransformationMatrix() * getLocalTransformationMatrix();
     } else { // if our parent has no transform or we're the root, just assume we're the base transform.
         global = getLocalTransformationMatrix();
@@ -49,11 +51,13 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
     
     global_dirty = false;
 
+    return global;
 }
 
 
 void C_Transform::setLocalDirty(){
     local_dirty = true;
+    global_dirty = true;
     for (const auto & [ptr, owning_ptr] : getOwner().children){ // not ideal. waiting for a better idea. Maybe an apply_to_children(func f) method?
         GameObject & child = *owning_ptr;
         if (child.hasComponent<C_Transform>()){
