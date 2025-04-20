@@ -26,15 +26,13 @@ int main( void )
 
     game.init();
 
-
-    // gameobjects
-
     GameObject object1;
 
     // scene setup
     object1.addComponent<C_Transform>();
-    auto* v = object1.addComponent<C_MapManager>();
-    v->initChunks();
+    auto* v = object1.addComponent<C_voxelMesh>();
+    v->create_chunk();
+    //v->initChunks();
 
     game.current_scene.setRoot(std::move(object1));
     game.start();

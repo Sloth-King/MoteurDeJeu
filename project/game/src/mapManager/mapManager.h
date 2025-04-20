@@ -51,7 +51,6 @@ public:
             Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadius + 1),
             Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadius + 1)
         };
-        std::cout << "creating chunk in " <<  v.x << " " << v.y << " " << v.z << std::endl;
 
         chunks.at((v.z * chunkRadius * chunkRadius) + (v.y * chunkRadius) + v.x) = chunk;
     }
@@ -68,10 +67,10 @@ public:
 
         glm::ivec3 global_pos = chunkCoord * glm::ivec3(CHUNK_SIZE_XZ, CHUNK_SIZE_Y, CHUNK_SIZE_XZ);
 
-        auto* c_transform = g.addComponent<C_Transform>();
+        auto c_transform = g.addComponent<C_Transform>();
         c_transform->setPosition(global_pos);
 
-        auto* c_voxelmesh = g.addComponent<C_voxelMesh>();
+        auto c_voxelmesh = g.addComponent<C_voxelMesh>();
         c_voxelmesh->create_chunk(global_pos);
         return getOwner().addChild(std::move(g));
     }
@@ -82,7 +81,6 @@ public:
     
     void initChunks(){
 
-
         for (int i = -chunkRadius; i <= chunkRadius; ++i){
             for (int j = -chunkRadius; j <= chunkRadius; ++j){
                 for (int k = -chunkRadius; k <= chunkRadius; ++k){
@@ -92,10 +90,10 @@ public:
                         chunkIdx,
                         createChunk(chunkIdxToChunkCoord(chunkIdx))
                     );
+                    std::cout << "creating chunk in " <<  i << " " << j<< " " << k << std::endl;
                 }
             }
         }
 
     }
-    
 };

@@ -5,7 +5,7 @@
 #include <functional>
 #include <string>
 
-using VOXEL_IDX_TYPE = uint16_t;//uint8_t;
+using VOXEL_IDX_TYPE = uint8_t;
 
 struct VoxelType { 
 
