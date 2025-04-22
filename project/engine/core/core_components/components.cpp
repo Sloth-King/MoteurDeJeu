@@ -24,10 +24,8 @@ const glm::mat4 & C_Transform::getLocalTransformationMatrix(){
             glm::scale(glm::mat4(1.0f), scale);
     
     local_dirty = false;
-    global_dirty = true;
 
     return local;
-
 
 }
 const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
@@ -52,6 +50,7 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
     global_dirty = false;
 
     return global;
+
 }
 
 
