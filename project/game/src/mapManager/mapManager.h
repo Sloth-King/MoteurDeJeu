@@ -18,6 +18,8 @@ three referentials:
 class C_MapManager: public Component{
     GLuint shaderPID;
     Texture atlas;
+    Texture roughness;
+    Texture metallic;
 
 public:
     
@@ -43,6 +45,8 @@ public:
         shaderPID = loadShadersFromFileGLSL(vertex_shader_filename.c_str(), fragment_shader_filename.c_str());
 
         atlas = Texture(path_prefix_from_build + "resources/textures/voxelAtlas.png");
+        roughness = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Roughness.png");
+        metallic = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Metallic.png");
     }
 
     GameObject* getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
@@ -86,6 +90,8 @@ public:
         c_voxelmesh->mesh.setShaderPid(shaderPID);
 
         c_voxelmesh->mesh.addTexture(atlas, "atlas");
+        c_voxelmesh->mesh.addTexture(roughness, "roughness");
+        c_voxelmesh->mesh.addTexture(metallic, "metallic");
 
 
         c_voxelmesh->create_chunk(global_pos);
