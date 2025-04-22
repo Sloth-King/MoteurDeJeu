@@ -233,7 +233,6 @@ void addVoxelNonUniform(Mesh & mesh, glm::vec3 pos, glm::vec3 size, uint8_t vert
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
 
         mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
-
         
         mesh.uvs.push_back( glm::vec2(column_start, 5*face_offset - uv_secure_offset)); //front top left
         mesh.uvs.push_back( glm::vec2(column_end, 5*face_offset - uv_secure_offset) ); //front top right
