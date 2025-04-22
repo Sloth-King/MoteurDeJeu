@@ -1,5 +1,6 @@
 #pragma once
 #include "../cubemap/cubemap.h"
+#include <common/shader.hpp>
 
 static float skyboxVertices[] = {
     // positions          
@@ -84,8 +85,13 @@ struct Skybox {
     Skybox(CubeMap && c){
         cubemap = std::move(c);
 
-        glGenBuffers(1, &_VBO);
+        synchronize();
         // gen VAO and bind all that shi together
+    }
+
+    Skybox& operator=(Skybox&& other){
+        cubemap = std::move(other.cubemap);
+        synchronize();
     }
 
     Skybox() = default;
@@ -96,8 +102,25 @@ struct Skybox {
         glDeleteVertexArrays(1, &_VAO);
 
     }
+
+    void synchronize(){
+
+        glGenVertexArrays(1, &_VAO);
+        glBindVertexArray(_VAO);
+
+        glGenBuffers(1, &_VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, _VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, 36 * sizeof(float), skyboxVertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+
+        glEnableVertexAttribArray(0);
+
+        _shaderPID = loadShaders(skyboxShaderVert, skyboxShaderFrag);
+    }
     
-    void render(glm::mat4 view, glm::mat4 projection){
+    void render(const glm::mat4 & view, const glm::mat4 & projection){
         glUseProgram(_shaderPID);
         // https://learnopengl.com/Advanced-OpenGL/Cubemaps
         glBindVertexArray(_VAO);
@@ -111,12 +134,9 @@ struct Skybox {
 class Environment {
 
 public:
-    enum BackgroundType {SKYBOX};
-
-    BackgroundType backgroundType = BackgroundType::SKYBOX;
-
     Skybox skybox;
 
-    // create a function that sets the skybox texture using a moved cubemap
-
+    void render(const glm::mat4 & view, const glm::mat4 & projection){
+        skybox.render(view, projection);
+    }
 };

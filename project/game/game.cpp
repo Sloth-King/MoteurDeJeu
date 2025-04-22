@@ -35,6 +35,8 @@ int main( void )
     v->initChunks();
 
     game.current_scene.setRoot(std::move(object1));
+
+    
     game.start();
 
     game.waitGameStopped();

@@ -25,6 +25,7 @@
 #include "engine/core/gameObject/gameObject.h"
 #include "engine/utils/utils.h"
 #include "engine/render/camera/camera.h"
+#include "engine/render/environment/environment.h"
 
 class Scene{
 
@@ -35,6 +36,8 @@ public:
     std::unique_ptr< GameObject > root = nullptr;
 
 public:
+
+    Environment environment;
 
     Scene() = default;
 
