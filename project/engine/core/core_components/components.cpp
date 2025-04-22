@@ -38,10 +38,10 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
 
     // if dirty
 
-    std::cout << "here" << std::endl;
     GameObject * parent = getOwner().parent;
 
     if (parent && parent->hasComponent<C_Transform>()){
+        
         global = parent->getComponent<C_Transform>()->getGlobalTransformationMatrix() * getLocalTransformationMatrix();
     } else { // if our parent has no transform or we're the root, just assume we're the base transform.
         global = getLocalTransformationMatrix();

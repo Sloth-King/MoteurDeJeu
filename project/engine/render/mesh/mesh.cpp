@@ -96,7 +96,7 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
     glUseProgram(shaderPID);
 
     int i = 0;
-    for (auto t: textures){
+    for (auto & t: textures){
 
         t.first.bind(i);
 
@@ -194,6 +194,10 @@ void Mesh::unsynchronize() const {
 
 void Mesh::setShader(std::string vertex_shader, std::string fragment_shader){
     shaderPID = loadShadersFromFileGLSL(vertex_shader.c_str(), fragment_shader.c_str());
+}
+
+void Mesh::setShaderPid(GLuint pid){
+    shaderPID = pid;
 }
 
 void Mesh::recomputeNormals () {

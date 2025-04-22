@@ -9,37 +9,84 @@
 #include <GL/glew.h>
 #include "engine/external/stb_image.h"
 
+#include <cstring> // for memcpy...
 
-
+struct Color {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    Color(unsigned char a, unsigned char b, unsigned char c)
+        : r(a),
+        g(b),
+        b(c)
+        {}
+};
 
 class Texture {
 // https://learnopengl.com/Getting-started/Textures
 
 protected:
-    unsigned char * data; // maybe duplicated and we could free it but keep it just in case for now
+
+    std::vector< unsigned char > data;
     GLuint _texture_id;
+    bool __synchronized = false;
+
+    Color getPixel(size_t u, size_t v) const;
+
 
 public:
+
+    enum RepeatMode {TILE, EXTEND, MIRROR};
+
     int width, height;
     int nbChannels;
 
-    Texture(const std::string path){
+    Texture(const std::string path, bool cpuOnly = false){
+
         loadTexture(path);
-        
     }
 
-    void loadTexture(const std::string path){
-        data = stbi_load(path.c_str(), &width, &height, &nbChannels, 0);
-        if (!data || nbChannels != 3) std::cout << " TEXTURE MAL CHARGEE" << std::endl;
-        std::cout << "nbchannels: " << nbChannels << std::endl;
-
+    Texture(const Texture & other)
+    : data(other.data),
+    width(other.width),
+    height(other.height),
+    nbChannels(other.nbChannels)
+    {
+        __synchronized = false;
         synchronize();
 
     }
+
+    Texture() = default;
+
+    void loadTexture(const std::string path, bool cpuOnly = false){
+        unsigned char * new_data = stbi_load(path.c_str(), &width, &height, &nbChannels, 0);
+        if (!new_data || nbChannels != 3) std::cout << "[Texture] Problem Loading the texture at " << path << "\n\tAre you sure the path is right & the number of channels (" << nbChannels << ") is supported?" << std::endl;
+
+        data.resize(width * height * nbChannels);
+
+        memcpy(data.data(), new_data, width * height * nbChannels); // order seems "inverted" but it's normal
+
+        stbi_image_free(new_data);
+
+        if (!cpuOnly) synchronize();
+    }
+
+    Color getPixelSafe(size_t u, size_t v, RepeatMode repeat_mode) const;
+
+    Color operator() (size_t i, size_t j) {
+
+        return getPixelSafe(i, j, RepeatMode::MIRROR);
+    }
+
+
+
     GLuint getTextureId(){ return _texture_id;};
 
     void synchronize(){ // TODO unsynchronize if already synchronized. Otherwise this is a memory leak :)
         
+        if (__synchronized) return; // TODO if we allow modification of the texture, make it desynchronize etc
+
         // see anisotropic filtering, samplers objects, etc
         glGenTextures(1, &_texture_id);
         glBindTexture(GL_TEXTURE_2D, _texture_id);
@@ -49,13 +96,12 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,  data.data());
         glGenerateMipmap(GL_TEXTURE_2D); 
     }
 
-
     // IN CASE STRANGE THINGS HAPPEN: ALWAYS REMEMBER https://learnopengl.com/Getting-started/Textures
-    void bind(GLuint slot = 0){
+    void bind(GLuint slot = 0) const {
         glActiveTexture(GL_TEXTURE0+slot); // activate the texture unit first before binding texture
         glBindTexture(GL_TEXTURE_2D, _texture_id);
 

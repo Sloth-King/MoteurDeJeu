@@ -27,9 +27,11 @@
 #include "engine/render/camera/camera.h"
 
 class Scene{
+
+    Camera debugCamera;
 //private:
 public:
-    Camera* current_camera;
+    Camera* current_camera = nullptr;
     std::unique_ptr< GameObject > root = nullptr;
 
 public:
@@ -51,7 +53,14 @@ public:
     }
     
     void __engineUpdate(float deltaTime){
-        if (current_camera && root){
+
+        if (!current_camera){
+            std::cout << "[SCENE] No camera detected. Defaulting to degubCamera." << std::endl;
+            setCurrentCamera(debugCamera);
+        }
+        
+
+        if (root){
             current_camera->computeMatricesFromInputs();
             root->__engineUpdate(deltaTime);
         }

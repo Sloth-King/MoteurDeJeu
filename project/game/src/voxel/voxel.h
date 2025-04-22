@@ -7,7 +7,7 @@
 
 using VOXEL_IDX_TYPE = uint8_t;
 
-struct VoxelType {
+struct VoxelType { 
 
     VOXEL_IDX_TYPE textureIndex = 0;
 
@@ -36,17 +36,21 @@ struct VoxelContainer {
     VoxelContainer() = default;
 };
 
+const unsigned int CHUNK_SIZE_XZ = 32;
+const unsigned int CHUNK_SIZE_Y = 16;
 
-void generateMap(VoxelContainer & container, glm::ivec3 offset);
+void generateChunk(VoxelContainer & container, glm::ivec3 offset);
+void generateFrom3DTexture(VoxelContainer & container, std::string path, int dimX, int dimY, int dimZ, int threshold, int trueValue = 2);
 
 class C_voxelMesh: public C_Mesh{
 
     void voxelize();
 
+    void voxelizeMarching(glm::vec3 scale);
 public:
 
     static const unsigned int  voxelTextureSize = 8; // nb of blocks. CHANGE IN THE SHADER ASWELL !
-    const float size = 0.05;
+    float size = 0.05;
 
     std::vector< VoxelType > types;
 
@@ -57,15 +61,28 @@ public:
         types = {
             {1, 500, "debug"},
             {2, 100, "basalt"},
-            {3, 10, "sand"}
+            {3, 75, "sandstone"},
+            {4, 5, "sand"},
+            {5, 10, "glorksmorf"},
+            {6, 100, "copper"},
+            {7, 150, "stone"},
+            {8, 120, "ivory"},
         };
     }
 
     void create_chunk(glm::ivec3 offset = glm::ivec3(0)){
 
-        generateMap(container, offset);
+        generateChunk(container, offset);
 
         voxelize();
+
+        //std::cout << "points size: " << mesh.triangles.size() << std::endl;
+    }
+
+    void createFrom3DImg(std::string path, int sX, int sY, int sZ, float scalex, float scaley, float scalez, int threshold, int trueValue = 2){
+        generateFrom3DTexture(container, path, sX, sY, sZ, threshold, trueValue);
+
+        voxelizeMarching(glm::vec3(scalex, scaley, scalez));
 
         // not ideal to have the shader + texture part here since it's gonna create it each time. We could do better 
         std::string path_prefix_from_build = "../game/";
@@ -78,8 +95,6 @@ public:
         Texture atlas(path_prefix_from_build + "resources/textures/voxelAtlas.png");
 
         mesh.addTexture(atlas, "atlas");
-
-        //std::cout << "points size: " << mesh.triangles.size() << std::endl;
     }
 
 };

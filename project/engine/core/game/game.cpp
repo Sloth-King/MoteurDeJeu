@@ -42,6 +42,20 @@ inline void limit_fps(int FPS){
     last_time = current_time;
 }
 
+void Game::handleWindowResized(GLFWwindow* window, int width, int height){
+    settings.windowWidth = width;
+    settings.windowHeight = height;
+    glViewport(0, 0, width, height);   
+    if (current_scene.current_camera){
+        current_scene.current_camera->resize(width, height);
+    }
+}
+
+Game* current_game; // for this, because methods cant be glfw callbacks
+void handleWindowResizedCallback(GLFWwindow* window, int width, int height){
+    current_game->handleWindowResized(window, height, width);
+}
+
 void GLAPIENTRY
 MessageCallback( GLenum source,
                  GLenum type,
@@ -77,7 +91,7 @@ void Game::init()
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow( 1024, 768, "TP1 - GLFW", NULL, NULL);
+    window = glfwCreateWindow( settings.windowWidth, settings.windowHeight, "Game", NULL, NULL);
     if( window == NULL ){
         fprintf( stderr, "Failed to open GLFW window." );
         getchar();
@@ -110,6 +124,9 @@ void Game::init()
     glEnable (GL_PROGRAM_POINT_SIZE);
     glDepthFunc(GL_LESS);
 
+    current_game = this;
+
+    glfwSetWindowSizeCallback(window, handleWindowResizedCallback);
     //glEnable(GL_CULL_FACE);
 
 }

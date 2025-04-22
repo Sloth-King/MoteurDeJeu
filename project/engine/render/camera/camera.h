@@ -39,6 +39,15 @@ public:
         );
     }
 
+    void resize(int u, int v){
+        projection = glm::perspective(
+            glm::radians(45.0f),
+            (float)u / (float)v,
+            0.1f,
+            100.0f
+        );
+    }
+
     inline glm::mat4 getProjectionMatrix(){
         return projection;
     }
@@ -58,7 +67,7 @@ public:
     }
 
     float mouseSpeed = 2.0;
-    float speed = 1.0;
+    float speed = 4.0;
 
     void computeMatricesFromInputs(){
         if (!glfwGetCurrentContext()) return;
@@ -88,12 +97,12 @@ public:
             glm::vec3 t0 = glm::vec3(transform[0]);
 
             // in global space
-            transform = glm::rotate(glm::mat4(1.0), horizontalAngle, glm::vec3(transform[1])) * transform;
-            transform = glm::rotate(glm::mat4(1.0), verticalAngle, t0) * transform;
+            // transform = glm::rotate(glm::mat4(1.0), horizontalAngle, glm::vec3(transform[1])) * transform;
+            // transform = glm::rotate(glm::mat4(1.0), verticalAngle, t0) * transform;
 
             // in local space
-            // transform = glm::rotate(transform, horizontalAngle, glm::vec3(0.0, 1.0, 0.0));
-            // transform =  glm::rotate(transform, verticalAngle, glm::vec3(1.0, 0.0, 0.0));
+            transform = glm::rotate(transform, -horizontalAngle, glm::vec3(0.0, 1.0, 0.0));
+            transform =  glm::rotate(transform, -verticalAngle, glm::vec3(1.0, 0.0, 0.0));
 
 
             glm::vec3 global_up = glm::vec3(0, 1, 0);
@@ -115,9 +124,6 @@ public:
         }
         lastTime = currentTime;
 
-        if (rotating){
-            transform = glm::rotate(transform, deltaTime, glm::vec3(transform[1]));
-        }
         xpos_last = xpos;
         ypos_last = ypos;
 

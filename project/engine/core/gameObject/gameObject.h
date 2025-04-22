@@ -58,7 +58,7 @@ public:
 
     GameObject(): id(next_id++) {};
 
-    void addChild(GameObject && child);
+    GameObject* addChild(GameObject && child);
 
     bool isRoot() const { return (bool)parent; };
 
@@ -106,9 +106,10 @@ public:
 
     // copies the component instead
     template <DerivedFromComponent T>
-    void addComponent(){
+    T* addComponent(){
         components[std::type_index(typeid(T))] = std::make_unique<T>();
         components[std::type_index(typeid(T))]->owner = this;
+        return dynamic_cast<T*>(components[std::type_index(typeid(T))].get());
     }
 
     void __engineUpdate(float deltaTime){
