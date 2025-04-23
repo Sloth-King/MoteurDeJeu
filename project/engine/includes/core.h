@@ -5,4 +5,5 @@
 #include "engine/render/mesh/mesh.h"
 #include "engine/render/camera/camera.h"
 #include "engine/render/texture/texture.h"
+#include "engine/render/cubemap/cubemap.h"
 #include "engine/core/game/game.h"
