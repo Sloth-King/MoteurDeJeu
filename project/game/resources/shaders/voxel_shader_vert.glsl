@@ -14,7 +14,8 @@ void main(){
 
         uv = raw_uv;
         mat4 norm_transform = transpose(inverse(Model));
-        normal = (norm_transform * vec4(raw_normals, 0)).xyz;
+        normal = normalize((norm_transform * vec4(raw_normals, 0)).xyz);
+
 
 
         vec4 pos = vec4(vertices_position_modelspace,1);
