@@ -27,5 +27,5 @@ void main(){
         vec3 T = normalize(vec3(Model * vec4(aTangent,   0.0)));
         vec3 B = normalize(vec3(Model * vec4(aBitangent, 0.0)));
         vec3 N = normalize(vec3(Model * vec4(normal,    0.0)));
-        mat3 TBN = mat3(T, B, N);
+        TBN = mat3(T, B, N);
 }

@@ -99,10 +99,11 @@ void Mesh::synchronize() const {
 void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & outside_transform) const{
 
     if (vertices.empty()) return;
-
     if (!_synchronized){ // FIXME branch prediction may bottleneck a little here? idk
         synchronize();
     }
+
+
     glUseProgram(shaderPID);
 
     int i = 0;
@@ -139,6 +140,8 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE,  &transform[0][0]);
     }
 
+
+
     glBindVertexArray(_VAO);
     glEnableVertexAttribArray(0);
     
@@ -162,12 +165,22 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 
 
-
-
     // normals
     glEnableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, _NORMALS);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+
+    // tangents
+    glEnableVertexAttribArray(3);
+    glBindBuffer(GL_ARRAY_BUFFER, _TANGENT);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+
+
+    // bitangents
+    glEnableVertexAttribArray(4);
+    glBindBuffer(GL_ARRAY_BUFFER, _BITANGENT);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+
 
 
     // Index buffer
