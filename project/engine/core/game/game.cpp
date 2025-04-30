@@ -127,7 +127,7 @@ void Game::init()
     current_game = this;
 
     glfwSetWindowSizeCallback(window, handleWindowResizedCallback);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
 }
 
