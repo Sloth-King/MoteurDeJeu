@@ -71,8 +71,10 @@ void main(){
    float metallic = texture(metallic_map, uv).r; //metallic map
    
    vec3 normal = texture(normal_map, uv).xyz; //normal map
+
    normal = normal * 2.0 - 1.0;   
    normal = normalize(TBN * normal); //convert to tangent spage
+
 
    //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
    //set the normal map to the world space normal

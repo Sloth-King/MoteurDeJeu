@@ -32,7 +32,12 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.uvs.push_back( glm::vec2(column_end, 0.0f) ); //front bottom right
 
         const glm::vec3 normal = glm::vec3(0, 0, -1);
+        const glm::vec3 tangent = glm::vec3(1, 0, 0);
+        const glm::vec3 bitangent = glm::vec3(0, -1, 0);
+
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent );
+        mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent );
 
 
         mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
@@ -46,8 +51,13 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.vertices.push_back( pos + glm::vec3(size/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size/2.0f, 0.0f) + glm::vec3(0.0f, 0.0f, size/2.0f) ); //back bottom right
 
         const glm::vec3 normal = glm::vec3(0, 0, 1);
-        mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        const glm::vec3 tangent = glm::vec3(-1, 0, 0);
+        const glm::vec3 bitangent = glm::vec3(0, 1, 0);
 
+
+        mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent );
+        mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent );
         
         mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
@@ -65,8 +75,15 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.vertices.push_back( pos + glm::vec3(size/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size/2.0f, 0.0f) + glm::vec3(0.0f, 0.0f, size/2.0f) ); //back top right
 
         const glm::vec3 normal = glm::vec3(1, 0, 0);
-        mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        const glm::vec3 tangent = glm::vec3(0, 1, 0);
+        const glm::vec3 bitangent = glm::vec3(0, 0, -1);
 
+
+        mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent );
+        mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent );
+
+        
         mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
 
         mesh.uvs.push_back( glm::vec2(column_start, 3*face_offset)); //front top left
@@ -83,7 +100,13 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.vertices.push_back( pos - glm::vec3(size/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size/2.0f, 0.0f) + glm::vec3(0.0f, 0.0f, size/2.0f) ); //back top left
 
         const glm::vec3 normal = glm::vec3(-1, 0, 0);
+        const glm::vec3 tangent = glm::vec3(0, -1, 0);
+        const glm::vec3 bitangent = glm::vec3(0, 0, 1);
+
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent );
+        mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent );
+
 
         mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
@@ -101,7 +124,13 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.vertices.push_back( pos + glm::vec3(size/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size/2.0f, 0.0f) + glm::vec3(0.0f, 0.0f, size/2.0f) ); //back top right
 
         const glm::vec3 normal = glm::vec3(0, 1, 0);
+        const glm::vec3 tangent = glm::vec3(0, 0, 1);
+        const glm::vec3 bitangent = glm::vec3(-1, 0, 0);
+
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent );
+        mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent );
+
 
         mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
 
@@ -121,7 +150,13 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.vertices.push_back( pos + glm::vec3(size/2.0f, 0.0f, 0.0f) - glm::vec3(0.0f, size/2.0f, 0.0f) + glm::vec3(0.0f, 0.0f, size/2.0f) ); //back bottom right
 
         const glm::vec3 normal = glm::vec3(0, -1, 0);
+        const glm::vec3 tangent = glm::vec3(0, 0, -1);
+        const glm::vec3 bitangent = glm::vec3(1, 0, 0);
+
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
+        mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent ); mesh.tangents.push_back(tangent );
+        mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent ); mesh.bitangents.push_back(bitangent );
+
         
         mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
@@ -312,7 +347,7 @@ void C_voxelMesh::voxelize(){
             }
         }
     }
-    mesh.recomputeTangents();
+    //mesh.recomputeTangents();
 }
 
 
