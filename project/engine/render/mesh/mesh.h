@@ -50,6 +50,10 @@ protected:
     mutable GLuint _UV;
     mutable GLuint _NORMALS;
 
+    mutable GLuint _TANGENT;
+    mutable GLuint _BITANGENT;
+    
+
 public:
     static GLuint base_shader;
 
@@ -61,6 +65,10 @@ public:
     std::vector< glm::vec3 > normals;
     std::vector< Triangle > triangles;
     std::vector< glm::vec3 > colors;
+
+    //tangent / bitangent
+    std::vector<glm::vec3> tangents;
+	std::vector<glm::vec3> bitangents;
 
     std::vector< std::pair<Texture, std::string> > textures;
 
@@ -77,6 +85,7 @@ public:
     }
 
     void recomputeNormals();
+    void recomputeTangents();
 
     void setShader(std::string vertex_shader, std::string fragment_shader);
     void setShaderPid(GLuint pid);

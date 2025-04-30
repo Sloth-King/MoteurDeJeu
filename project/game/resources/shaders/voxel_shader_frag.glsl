@@ -13,7 +13,8 @@ uniform sampler2D normal_map;
 
 
 in vec2 uv;
-in vec3 normal;
+in mat3 TBN;
+//in vec3 normal;
 
 // uniform float metallic;
 // uniform float roughness;
@@ -68,6 +69,10 @@ void main(){
 
    float roughness = texture(roughness_map, uv).r; //roughness map
    float metallic = texture(metallic_map, uv).r; //metallic map
+   
+   vec3 normal = texture(normal_map, uv).xyz; //normal map
+   normal = normal * 2.0 - 1.0;   
+   normal = normalize(TBN * normal); //convert to tangent spage
 
    //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
    //set the normal map to the world space normal

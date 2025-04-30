@@ -312,6 +312,7 @@ void C_voxelMesh::voxelize(){
             }
         }
     }
+    mesh.recomputeTangents();
 }
 
 

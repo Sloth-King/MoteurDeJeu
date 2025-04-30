@@ -87,6 +87,9 @@ add_executable(Game
 	engine/render/mesh/mesh.cpp # order is important!!!
 	engine/render/mesh/mesh_gen.cpp
 
+	engine/external/common/tangentspace.cpp
+	engine/external/common/tangentspace.hpp
+
 	engine/external/stb_image.cpp
 
 	# game

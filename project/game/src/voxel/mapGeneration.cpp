@@ -106,6 +106,8 @@ uint8_t generateVoxel(const glm::ivec3 & global_position){
         result = 7;
     }
 
+    result = 6;
+
     return result;
 }
 

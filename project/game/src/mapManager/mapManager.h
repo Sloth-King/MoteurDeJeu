@@ -49,6 +49,7 @@ public:
         roughness = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Roughness.png");
         metallic = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Metallic.png");
         normal = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Normal.png");
+        
     }
 
     GameObject* getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
@@ -94,7 +95,7 @@ public:
         c_voxelmesh->mesh.addTexture(atlas, "atlas");
         c_voxelmesh->mesh.addTexture(roughness, "roughness_map");
         c_voxelmesh->mesh.addTexture(metallic, "metallic_map");
-        c_voxelmesh->mesh.addTexture(normal, "normal_map");
+        c_voxelmesh->mesh.addTexture(normal, "normal_map"); 
 
 
         c_voxelmesh->create_chunk(global_pos);

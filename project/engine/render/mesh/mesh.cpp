@@ -23,6 +23,8 @@
 #include "engine/core/resourceLoader/resourceLoader.h"
 #include "engine/utils/utils.h"
 
+#include "engine/external/common/tangentspace.hpp"
+
 
 GLuint TRI_GL_TYPE = GL_UNSIGNED_INT; // change with TRI_IDX_TYPE in mesh.h!
 
@@ -59,6 +61,14 @@ void Mesh::synchronize() const {
     glGenBuffers(1, &_NORMALS);
     glBindBuffer(GL_ARRAY_BUFFER, _NORMALS);
     glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0] , GL_STATIC_DRAW);
+
+    glGenBuffers(1, &_TANGENT);
+    glBindBuffer(GL_ARRAY_BUFFER, _TANGENT);
+    glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(glm::vec3), &tangents[0] , GL_STATIC_DRAW);
+
+    glGenBuffers(1, &_BITANGENT);
+    glBindBuffer(GL_ARRAY_BUFFER, _BITANGENT);
+    glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0] , GL_STATIC_DRAW);
 
 
 
@@ -214,8 +224,13 @@ void Mesh::recomputeNormals () {
     }
     for (unsigned int i = 0; i < vertices.size (); i++)
         normals[i] = glm::normalize(normals[i]);
+
+    recomputeTangents();
 }
 
+void Mesh::recomputeTangents(){
+    computeTangentBasis(vertices, uvs, normals, tangents, bitangents);
+}
 
 
 GLuint Mesh::base_shader = 0;
