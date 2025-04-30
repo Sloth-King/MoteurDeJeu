@@ -49,7 +49,7 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
 
         
-        mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
+        mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
         mesh.uvs.push_back( glm::vec2(column_start, 2*face_offset)); //front top left
         mesh.uvs.push_back( glm::vec2(column_end, 2*face_offset) ); //front top right
@@ -85,7 +85,7 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         const glm::vec3 normal = glm::vec3(-1, 0, 0);
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
 
-        mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
+        mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
         mesh.uvs.push_back( glm::vec2(column_start, 4*face_offset)); //front top left
         mesh.uvs.push_back( glm::vec2(column_end, 4*face_offset) ); //front top right
@@ -123,7 +123,7 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         const glm::vec3 normal = glm::vec3(0, -1, 0);
         mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal ); mesh.normals.push_back(normal );
         
-        mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
+        mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
         mesh.uvs.push_back( glm::vec2(column_start, 6*face_offset)); //front top left
         mesh.uvs.push_back( glm::vec2(column_end, 6*face_offset) ); //front top right
