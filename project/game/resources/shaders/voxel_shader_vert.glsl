@@ -16,7 +16,8 @@ out mat3 TBN;
 void main(){
 
         uv = raw_uv;
-        mat4 norm_transform = transpose(inverse(Model));
+        mat4 norm_transform = Model;
+
         normal = normalize((norm_transform * vec4(raw_normals, 0)).xyz);
         vec3 tangent = normalize((norm_transform * vec4(raw_aBitangent, 0)).xyz);
         vec3 biTangent = normalize((norm_transform * vec4(raw_aBitangent, 0)).xyz);
