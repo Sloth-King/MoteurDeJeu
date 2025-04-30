@@ -5,6 +5,16 @@ uniform vec3 view;
 const float PI = 3.14159265359;
 const int atlas_nb_textures = 8;
 const int atlas_size_textures = 8;
+const int num_lights = 1;
+
+struct Light{
+   uint type;
+   vec3 lightDir;
+   vec3 lightPos;
+   vec3 lightColor;
+};
+
+Light lights[num_lights]; 
 
 uniform sampler2D atlas;
 uniform sampler2D roughness_map;
@@ -21,8 +31,10 @@ in mat3 TBN;
 
 //light (for now using placeholder)
 //TODO : create and manage lights properly (ie. send them to the shader and manager their number)
-vec3 light = vec3(0.1,1.0,0.1); //placeholder light pos
-vec3  lightColor  = vec3(23.47, 21.31, 20.79);
+
+Light sun = {0, vec3(1.0,1.0,1.0) , vec3(1.0,1.0,1.0), vec3(23.47, 21.31, 20.79)};
+// vec3 light = vec3(1.0,1.0,1.0); //placeholder light pos
+// vec3  lightColor  = vec3(23.47, 21.31, 20.79);
 
 out vec3 color;
 
@@ -63,33 +75,13 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-
-//mostly from here : https://learnopengl.com/PBR/Lighting
-void main(){
-
-   float roughness = texture(roughness_map, uv).r; //roughness map
-   float metallic = texture(metallic_map, uv).r; //metallic map
-   
-   vec3 normal = texture(normal_map, uv).xyz; //normal map
-
-   normal = normal * 2.0 - 1.0;   
-   normal = normalize(TBN * normal); //convert to tangent spage
-
-
-   //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-   //set the normal map to the world space normal
-   
-  
-
-   //Our roughness map is brifhtness map 
-   roughness = 1 - roughness; 
-
-
-   //calculating our albedo map
-   vec3 albedo = texture(atlas, uv).xyz;
+vec3 pbr_lighting(vec3 albedo, vec3 normal, float roughness, float metallic, Light light_struct){
 
    vec3 N = normalize(normal); 
    vec3 V = normalize(view);
+
+   vec3 light = light_struct.lightDir;
+   vec3 lightColor = light_struct.lightColor;
 
    vec3 Lo = vec3(0.0);
 
@@ -125,7 +117,38 @@ void main(){
    vec3 tempColor = ambient + Lo;
 
    tempColor = tempColor / (tempColor + vec3(1.0));
-   color = pow(tempColor, vec3(1.0/2.2));  
+   return pow(tempColor, vec3(1.0/2.2));  
+
+}
+
+//mostly from here : https://learnopengl.com/PBR/Lighting
+void main(){
+   
+   color = vec3(0.0,0.0,0.0);
+
+   float roughness = texture(roughness_map, uv).r; //roughness map
+   float metallic = texture(metallic_map, uv).r; //metallic map
+   
+   vec3 normal = texture(normal_map, uv).xyz; //normal map
+
+   normal = normal * 2.0 - 1.0;   
+   normal = normalize(TBN * normal); //convert to tangent spage
 
 
+   //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+   //set the normal map to the world space normal
+   
+  lights[0] = sun;
+
+   //Our roughness map is brifhtness map 
+   roughness = 1 - roughness; 
+
+
+   //calculating our albedo map
+   vec3 albedo = texture(atlas, uv).xyz;
+
+   for(int i = 0 ; i < num_lights ; i++){
+      color+= pbr_lighting(albedo, normal, roughness, metallic, lights[i]);
+   }
+   
 }
