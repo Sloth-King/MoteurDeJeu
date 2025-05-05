@@ -16,9 +16,12 @@
 
 using Utils::print;
 
+std::string path_prefix_from_build = "../game/";
 
 int main( void )
 {
+
+
 
     Game game;
     game.settings.windowWidth = 720;
@@ -26,17 +29,25 @@ int main( void )
 
     game.init();
 
-    GameObject object1;
 
-    // scene setup
-    //auto* transform = object1.addComponent<C_Transform>();
+    // world
+    GameObject world;
 
-    auto* v = object1.addComponent<C_MapManager>();
+    auto* v = world.addComponent<C_MapManager>();
     v->initChunks();
 
-    game.current_scene.setRoot(std::move(object1));
+    game.current_scene.setRoot(std::move(world));
 
-    
+    Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v1.obj");
+
+    GameObject player;
+
+    player.addComponent<C_Transform>();
+    auto* playerMesh = player.addComponent<C_Mesh>();
+    playerMesh->mesh = submarine;
+
+    world.addChild(std::move(player));
+
     game.start();
 
     game.waitGameStopped();
