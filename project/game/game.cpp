@@ -20,6 +20,7 @@
 
 int main( void )
 {
-    tom();
+    //tom(); // tom
+    andrew(); // andrew
 }
 
