@@ -46,15 +46,16 @@ void Game::handleWindowResized(GLFWwindow* window, int width, int height){
     settings.windowWidth = width;
     settings.windowHeight = height;
     glViewport(0, 0, width, height);
-    //glfwSetWindowAspectRatio(window, width, height);
+    std::cout << width << "  " << height << std::endl;
+
     if (current_scene.current_camera){
-        current_scene.current_camera->resize(width, height);
+        current_scene.current_camera->resize(width, height); //
     }
 }
 
 Game* current_game; // for this, because methods cant be glfw callbacks
 void handleWindowResizedCallback(GLFWwindow* window, int width, int height){
-    current_game->handleWindowResized(window, height, width);
+    current_game->handleWindowResized(window, width, height);
 }
 
 void GLAPIENTRY
