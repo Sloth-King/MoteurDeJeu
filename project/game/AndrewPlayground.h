@@ -18,11 +18,8 @@
 
 using Utils::print;
 
-
 int andrew( void )
 {
-
-    std::string path_prefix_from_build = "../game/";
 
     Game game;
     game.settings.windowWidth = 720;
