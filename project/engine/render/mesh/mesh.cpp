@@ -77,8 +77,6 @@ void Mesh::synchronize() const {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
-
     // textures
 
     // TODO synchronize texture here aswell but not now since texture still can't "unsychronize"
@@ -274,6 +272,8 @@ const std::string base_shader_vert = R"(#version 330 core
 
 const std::string base_shader_frag = R"(#version 330 core
 
+    uniform sampler2D albedo;
+
     uniform vec3 view;
 
     in vec2 uv;
@@ -282,8 +282,9 @@ const std::string base_shader_frag = R"(#version 330 core
     out vec3 color;
     void main(){
 
+        color = texture(albedo, uv).xyz;
 
-        color = vec3(0.8, 0.6, 0.2) * clamp(dot(view, normal)+0.2, 0.0, 1.0);
+        //color = vec3(0.8, 0.6, 0.2) * clamp(dot(view, normal)+0.2, 0.0, 1.0);
     }
     )";
 

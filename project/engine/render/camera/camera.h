@@ -25,7 +25,7 @@ public:
 
     GLFWwindow* window;
 
-    float width = 500; // pas encore utilisés
+    float width = 500;
     float height = 500;
 
     Camera(){
@@ -41,11 +41,12 @@ public:
 
     void resize(int u, int v){
         projection = glm::perspective(
-            glm::radians(45.0f),
+            glm::radians(60.0f),
             (float)u / (float)v,
             0.1f,
             100.0f
         );
+
     }
 
     inline glm::mat4 getProjectionMatrix(){

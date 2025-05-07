@@ -1,9 +1,12 @@
 
 #include "engine/render/mesh/mesh.h"
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <cstring>
+
 #include <string>
+#include <unordered_map>
 
 namespace ResourceLoader{
 
@@ -41,6 +44,19 @@ Mesh load_mesh_off(std::string filename) {
     return res;
 }
 
+// for the uonrdered map in obj loader
+struct KeyFuncs
+{
+    size_t operator()(const glm::ivec3& k)const
+    {
+        return std::hash<int>()(k.x) ^ std::hash<int>()(k.y) ^ std::hash<int>()(k.z);
+    }
+
+    bool operator()(const glm::ivec3& a, const glm::ivec3& b)const
+    {
+            return a == b;
+    }
+};
 
 
 Mesh load_mesh_obj(std::string path){
@@ -102,22 +118,39 @@ Mesh load_mesh_obj(std::string path){
             char stupidBuffer[1000];
             fgets(stupidBuffer, 1000, file);
         }
-
     }
-    mesh.vertices = temp_vertices; // TODO move?
-    mesh.normals = temp_normals;
-    mesh.uvs = temp_uvs;
+
+    std::unordered_map< glm::ivec3, size_t, KeyFuncs, KeyFuncs> already_seen_triplets;
+
+
     // For each vertex of each triangle
-    for( unsigned int i=0; i<vertexIndices.size(); i+= 3 ){
+
+    glm::ivec3 final_tri_idx;
+
+    for( unsigned int i=0; i<vertexIndices.size(); i+=3 ){
 
         for (size_t j = 0; j < 3; ++j){
-            mesh.triangles.push_back(Triangle(vertexIndices[i], vertexIndices[i+1], vertexIndices[i+2]));
+            glm::ivec3 indices(vertexIndices[i+j], uvIndices[i+j], normalIndices[i+j]);
+
+            if (already_seen_triplets.contains(indices)){
+                final_tri_idx[j] = already_seen_triplets[indices];
+
+            } else { // on ajoute le point
+                final_tri_idx[j] = mesh.vertices.size();
+                already_seen_triplets[indices] = mesh.vertices.size();
+                mesh.vertices.push_back(temp_vertices[indices[0]-1]);
+                mesh.uvs.push_back(temp_uvs[indices[1]-1]);
+                mesh.normals.push_back(temp_normals[indices[2]-1]);
+
+            }
+
         }
+        mesh.triangles.push_back(Triangle(final_tri_idx[0], final_tri_idx[1], final_tri_idx[2]));
     }
 
     fclose(file);
+
     return mesh;
 }
 
 }
-

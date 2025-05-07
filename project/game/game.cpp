@@ -11,34 +11,15 @@
 #include "engine/includes/core.h"
 #include "engine/includes/components.h"
 
-
 #include "src/mapManager/mapManager.h"
 
-using Utils::print;
 
+
+#include "TomPlayground.h"
+#include "AndrewPlayground.h"
 
 int main( void )
 {
-
-    Game game;
-    game.settings.windowWidth = 720;
-    game.settings.windowHeight = 720;
-
-    game.init();
-
-    GameObject object1;
-
-    // scene setup
-    //auto* transform = object1.addComponent<C_Transform>();
-
-    auto* v = object1.addComponent<C_MapManager>();
-    v->initChunks();
-
-    game.current_scene.setRoot(std::move(object1));
-
-    
-    game.start();
-
-    game.waitGameStopped();
+    tom();
 }
 

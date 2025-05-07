@@ -45,7 +45,8 @@ inline void limit_fps(int FPS){
 void Game::handleWindowResized(GLFWwindow* window, int width, int height){
     settings.windowWidth = width;
     settings.windowHeight = height;
-    glViewport(0, 0, width, height);   
+    glViewport(0, 0, width, height);
+    //glfwSetWindowAspectRatio(window, width, height);
     if (current_scene.current_camera){
         current_scene.current_camera->resize(width, height);
     }
@@ -126,7 +127,7 @@ void Game::init()
 
     current_game = this;
 
-    glfwSetWindowSizeCallback(window, handleWindowResizedCallback);
+    glfwSetFramebufferSizeCallback(window, handleWindowResizedCallback);
     glEnable(GL_CULL_FACE);
 
 }
