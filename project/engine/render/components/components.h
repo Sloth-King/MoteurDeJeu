@@ -31,7 +31,7 @@ public:
 };
 
 
-//TODO : Make a seperate class to simplify the code in components
+//TODO : Make a simpler control generalisation function
 class C_Movement: public Component {
     protected:
         float movement_speed;

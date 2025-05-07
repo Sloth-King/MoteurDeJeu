@@ -92,6 +92,14 @@ add_executable(Game
 
 	engine/external/stb_image.cpp
 
+	# physics
+
+	engine/physics/collider/collider.h
+	engine/physics/components/components.h
+
+	engine/physics/physics_server/physics_server.h
+	engine/physics/physics_server/physics_server.cpp
+
 	# game
     	game/game.cpp
 	
