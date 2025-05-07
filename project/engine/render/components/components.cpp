@@ -5,7 +5,6 @@
 #include <stdio.h>
 void C_Mesh::_onUpdate(float deltaTime) {
 
-    
     if (getOwner().hasComponent<C_Transform>()){
         //getOwner().getComponent<C_Transform>()->printGlobal();
         mesh.render(

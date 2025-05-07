@@ -12,6 +12,7 @@ void computeTangentBasis(
 	std::vector<glm::vec3> & tangents,
 	std::vector<glm::vec3> & bitangents
 ){
+	if (uvs.empty()) return;
 
 	for (unsigned int i=0; i<vertices.size(); i+=3 ){
 

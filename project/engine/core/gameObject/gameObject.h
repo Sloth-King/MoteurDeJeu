@@ -119,7 +119,7 @@ public:
         
         for (const auto & [ti, comp] : components)
             comp->_onUpdate(deltaTime);
-        
+
     }
 
     void __enginePhysicsUpdate(float deltaTime){
