@@ -13,6 +13,7 @@
 class C_RigidBody : public Component{
 
     // FIXME : unsure if these need to be stored here or elsewhere
+public:
     glm::vec3 linear_velocity; 
     glm::vec3 angular_velocity;
     float mass; 

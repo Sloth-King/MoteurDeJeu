@@ -11,6 +11,7 @@
 // All the collision types we have
 enum ColliderType{
     SPHERE,
+    PLANE
 };
 
 struct Collider{
@@ -22,4 +23,10 @@ struct SphereCollider : public Collider{
     ColliderType type = SPHERE;
 	glm::vec3 center;
 	float radius;
+};
+
+struct PlaneCollider : public Collider{
+    ColliderType type = PLANE;
+    glm::vec3 normal;
+    float distance;
 };
