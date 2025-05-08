@@ -22,6 +22,7 @@
 
 #include "engine/utils/utils.h"
 #include "engine/core/scene/scene.h"
+#include "engine/physics/physics_server/physics_server.h"
 
 
 struct GameSettings {
@@ -62,6 +63,8 @@ public:
     }
 
     Scene current_scene;
+
+    PhysicsServer physics_server;
 
     void start();
 
