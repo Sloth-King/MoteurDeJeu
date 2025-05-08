@@ -45,11 +45,8 @@ Environment createEnvironment(){
             path_prefix_from_build + "resources/textures/skybox"
         );
 
-    std::cout << "avant " << cubemap.__synchronized << std::endl;
-
     env.skybox = Skybox( std::move(cubemap));
 
-    std::cout << "avant " << env.skybox.cubemap.__synchronized << std::endl;
     return env;
 }
 

@@ -13,6 +13,7 @@ struct VoxelType {
 
     unsigned int solidity;
     std::string name;
+    bool randomizeFaces = false;
 };
 
 // externalized to be able to swap it easily. Maybe do an octree in the end (or a mix octree above surface / grid below ?)
@@ -60,13 +61,13 @@ public:
     C_voxelMesh() {
         types = {
             {1, 500, "debug"},
-            {2, 100, "basalt"},
-            {3, 75, "sandstone"},
-            {4, 5, "sand"},
-            {5, 10, "glorksmorf"},
-            {6, 100, "copper"},
-            {7, 150, "stone"},
-            {8, 120, "ivory"},
+            {2, 100, "basalt", true},
+            {3, 75, "sandstone", true},
+            {4, 5, "sand", true},
+            {5, 10, "glorksmorf", true},
+            {6, 100, "copper", true},
+            {7, 150, "stone", true},
+            {8, 120, "ivory", true},
         };
     }
 

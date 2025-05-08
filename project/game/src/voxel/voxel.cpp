@@ -1,11 +1,16 @@
 
 #include "voxel.h"
+#include <algorithm>
+#include <random>
+#include <array>
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 #define SET_BIT(var,pos) (var = (var) | (1<<(pos)))
 
-void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int face_mask){
+auto rng = std::default_random_engine();
+
+void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t voxelIndex, int face_mask, bool randomize_faces){
 
     constexpr float uv_secure_offset = 0.001;  // prevents bleeding
 
@@ -13,10 +18,14 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
 
     int v;
 
-    float column_start =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (vertex_index -1) + uv_secure_offset;
-    float column_end =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (vertex_index) - uv_secure_offset;
+    float column_start =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (voxelIndex -1) + uv_secure_offset;
+    float column_end =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (voxelIndex) - uv_secure_offset;
 
     float face_offset = 1.0 / 6.0;
+
+    std::array<int, 6> faceIndices = {0, 1, 2, 3, 4, 5};
+
+    if (randomize_faces) std::ranges::shuffle(faceIndices, rng);;
 
     //face front
     if (CHECK_BIT(face_mask, 0)){
@@ -26,10 +35,10 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.vertices.push_back( pos - glm::vec3(size/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size/2.0f, 0.0f) - glm::vec3(0.0f, 0.0f, size/2.0f) ); //front top left
         mesh.vertices.push_back( pos + glm::vec3(size/2.0f, 0.0f, 0.0f) + glm::vec3(0.0f, size/2.0f, 0.0f) - glm::vec3(0.0f, 0.0f, size/2.0f) ); //front top right
 
-        mesh.uvs.push_back( glm::vec2(column_start, face_offset)); //front top left
-        mesh.uvs.push_back( glm::vec2(column_end, face_offset) ); //front top right
-        mesh.uvs.push_back( glm::vec2(column_start, 0.0f)); //front bottom left
-        mesh.uvs.push_back( glm::vec2(column_end, 0.0f) ); //front bottom right
+        mesh.uvs.push_back( glm::vec2(column_start, (faceIndices[0]+1) * face_offset)); //front top left
+        mesh.uvs.push_back( glm::vec2(column_end, (faceIndices[0]+1) * face_offset) ); //front top right
+        mesh.uvs.push_back( glm::vec2(column_start, faceIndices[0] * face_offset)); //front bottom left
+        mesh.uvs.push_back( glm::vec2(column_end, faceIndices[0] * face_offset) ); //front bottom right
 
         const glm::vec3 normal = glm::vec3(0, 0, -1);
         const glm::vec3 tangent = glm::vec3(1, 0, 0);
@@ -61,10 +70,10 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         
         mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
-        mesh.uvs.push_back( glm::vec2(column_start, 2*face_offset)); //front top left
-        mesh.uvs.push_back( glm::vec2(column_end, 2*face_offset) ); //front top right
-        mesh.uvs.push_back( glm::vec2(column_start, face_offset)); //front bottom left
-        mesh.uvs.push_back( glm::vec2(column_end, face_offset) ); //front bottom right
+        mesh.uvs.push_back( glm::vec2(column_start, (faceIndices[1]+1)*face_offset)); //front top left
+        mesh.uvs.push_back( glm::vec2(column_end, (faceIndices[1]+1)*face_offset) ); //front top right
+        mesh.uvs.push_back( glm::vec2(column_start, faceIndices[1]*face_offset)); //front bottom left
+        mesh.uvs.push_back( glm::vec2(column_end, faceIndices[1]*face_offset) ); //front bottom right
     }
     // face right
     if (CHECK_BIT(face_mask, 2)){
@@ -86,10 +95,10 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         
         mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
 
-        mesh.uvs.push_back( glm::vec2(column_start, 3*face_offset)); //front top left
-        mesh.uvs.push_back( glm::vec2(column_end, 3*face_offset) ); //front top right
-        mesh.uvs.push_back( glm::vec2(column_start, 2*face_offset)); //front bottom left
-        mesh.uvs.push_back( glm::vec2(column_end, 2*face_offset) ); //front bottom right
+        mesh.uvs.push_back( glm::vec2(column_start, (faceIndices[2]+1)*face_offset)); //front top left
+        mesh.uvs.push_back( glm::vec2(column_end, (faceIndices[2]+1)*face_offset) ); //front top right
+        mesh.uvs.push_back( glm::vec2(column_start, faceIndices[2]*face_offset)); //front bottom left
+        mesh.uvs.push_back( glm::vec2(column_end, faceIndices[2]*face_offset) ); //front bottom right
     }
     // face left
     if (CHECK_BIT(face_mask, 3)){
@@ -110,10 +119,10 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
 
         mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
-        mesh.uvs.push_back( glm::vec2(column_start, 4*face_offset)); //front top left
-        mesh.uvs.push_back( glm::vec2(column_end, 4*face_offset) ); //front top right
-        mesh.uvs.push_back( glm::vec2(column_start, 3*face_offset)); //front bottom left
-        mesh.uvs.push_back( glm::vec2(column_end, 3*face_offset) ); //front bottom right
+        mesh.uvs.push_back( glm::vec2(column_start, (faceIndices[3]+1)*face_offset)); //front top left
+        mesh.uvs.push_back( glm::vec2(column_end, (faceIndices[3]+1)*face_offset) ); //front top right
+        mesh.uvs.push_back( glm::vec2(column_start, faceIndices[3]*face_offset)); //front bottom left
+        mesh.uvs.push_back( glm::vec2(column_end, faceIndices[3]*face_offset) ); //front bottom right
     }
     // top
     if (CHECK_BIT(face_mask, 4)){
@@ -135,10 +144,10 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         mesh.triangles.push_back( Triangle(v+1, v+0, v+2) ); mesh.triangles.push_back( Triangle(v+1, v+2, v+3) );
 
         
-        mesh.uvs.push_back( glm::vec2(column_start, 5*face_offset)); //front top left
-        mesh.uvs.push_back( glm::vec2(column_end, 5*face_offset) ); //front top right
-        mesh.uvs.push_back( glm::vec2(column_start, 4*face_offset)); //front bottom left
-        mesh.uvs.push_back( glm::vec2(column_end, 4*face_offset) ); //front bottom right
+        mesh.uvs.push_back( glm::vec2(column_start, (faceIndices[4]+1)*face_offset)); //front top left
+        mesh.uvs.push_back( glm::vec2(column_end, (faceIndices[4]+1)*face_offset) ); //front top right
+        mesh.uvs.push_back( glm::vec2(column_start, faceIndices[4]*face_offset)); //front bottom left
+        mesh.uvs.push_back( glm::vec2(column_end, faceIndices[4]*face_offset) ); //front bottom right
 
     }
     // bottom
@@ -160,16 +169,16 @@ void add_voxel(Mesh & mesh, glm::vec3 pos, float size, uint8_t vertex_index, int
         
         mesh.triangles.push_back( Triangle(v+1, v+2, v+0) ); mesh.triangles.push_back( Triangle(v+1, v+3, v+2) );
 
-        mesh.uvs.push_back( glm::vec2(column_start, 6*face_offset)); //front top left
-        mesh.uvs.push_back( glm::vec2(column_end, 6*face_offset) ); //front top right
-        mesh.uvs.push_back( glm::vec2(column_start, 5*face_offset)); //front bottom left
-        mesh.uvs.push_back( glm::vec2(column_end, 5*face_offset) ); //front bottom right
+        mesh.uvs.push_back( glm::vec2(column_start, (faceIndices[5]+1)*face_offset)); //front top left
+        mesh.uvs.push_back( glm::vec2(column_end, (faceIndices[5]+1)*face_offset) ); //front top right
+        mesh.uvs.push_back( glm::vec2(column_start, faceIndices[5]*face_offset)); //front bottom left
+        mesh.uvs.push_back( glm::vec2(column_end, faceIndices[5]*face_offset) ); //front bottom right
     }
 }
 
 
 
-void addVoxelNonUniform(Mesh & mesh, glm::vec3 pos, glm::vec3 size, uint8_t vertex_index, int face_mask){
+void addVoxelNonUniform(Mesh & mesh, glm::vec3 pos, glm::vec3 size, uint8_t voxelIndex, int face_mask){
 
     constexpr float uv_secure_offset = 0.001;  // prevents bleeding
 
@@ -177,8 +186,8 @@ void addVoxelNonUniform(Mesh & mesh, glm::vec3 pos, glm::vec3 size, uint8_t vert
 
     int v;
 
-    float column_start =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (vertex_index -1) + uv_secure_offset;
-    float column_end =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (vertex_index) - uv_secure_offset;
+    float column_start =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (voxelIndex -1) + uv_secure_offset;
+    float column_end =  (1.0 / (C_voxelMesh::voxelTextureSize)) * (voxelIndex) - uv_secure_offset;
 
     float face_offset = 1.0 / 6.0;
 
@@ -342,7 +351,7 @@ void C_voxelMesh::voxelize(){
                         size * j,
                         size * k
                     );
-                    add_voxel(mesh, pos + glm::vec3(size/2.0), size, container.get(i, j, k), mask);
+                    add_voxel(mesh, pos + glm::vec3(size/2.0), size, container.get(i, j, k), mask, types[container.get(i, j, k)].randomizeFaces);
                 }
             }
         }
