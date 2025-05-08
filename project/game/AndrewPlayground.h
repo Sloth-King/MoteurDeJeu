@@ -18,7 +18,7 @@
 
 using Utils::print;
 
-int andrew( void )
+void andrew( void )
 {
 
     Game game;

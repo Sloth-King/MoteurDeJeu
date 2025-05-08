@@ -26,13 +26,16 @@
 #include "engine/utils/utils.h"
 #include "engine/render/camera/camera.h"
 #include "engine/render/environment/environment.h"
-
+class Game;
 class Scene{
 
     Camera debugCamera;
 //private:
 public:
     Camera* current_camera = nullptr;
+
+    Game * current_game = nullptr;
+
     std::unique_ptr< GameObject > root = nullptr;
 
 public:
@@ -40,6 +43,25 @@ public:
     Environment environment;
 
     Scene() = default;
+
+    Scene& operator=(Scene&& other) noexcept{
+        // Make sure we're not assigning to ourselves
+        if (this != &other) {
+
+
+            current_camera = other.current_camera;
+            //current_game = other.current_game;
+            root = std::move(other.root);
+
+            other.current_camera = nullptr;
+            other.current_game = nullptr;
+        }
+        return *this;
+    }
+
+    Scene(Scene && other){
+        *this = std::move(other);
+    }
 
     Camera& getCurrentCamera(){
         return *current_camera;
@@ -61,6 +83,8 @@ public:
             std::cout << "[SCENE] No camera detected. Defaulting to degubCamera." << std::endl;
             setCurrentCamera(debugCamera);
         }
+
+        environment.render(current_camera->getViewMatrix(), current_camera->getProjectionMatrix());
         
 
         if (root){
@@ -72,5 +96,13 @@ public:
     void __enginePhysicsUpdate(float deltaTime){
         if (root)
             root->__enginePhysicsUpdate(deltaTime);
+    }
+
+    void __loaded(){
+        if (root) root->__enterScene(this);
+    }
+
+    void __unloaded(){
+        if (root) root->__exitScene();
     }
 };

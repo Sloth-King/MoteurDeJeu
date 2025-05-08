@@ -74,7 +74,6 @@ public:
 
         for (const auto & [ti, comp] : components)
             comp->_onEnterScene();
-
     }
 
     void __exitScene(){
@@ -85,7 +84,6 @@ public:
             comp->_onExitScene();
         
         scene = nullptr;
-
     }
 
 

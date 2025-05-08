@@ -47,8 +47,6 @@ void Game::handleWindowResized(GLFWwindow* window, int width, int height){
     settings.windowHeight = height;
     // important
     glViewport(0, 0, width, height);
-    std::cout << width << "  " << height << std::endl;
-
     if (current_scene.current_camera){
         current_scene.current_camera->resize(width, height); // update projection matrix
     }
@@ -125,7 +123,7 @@ void Game::init()
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     glEnable (GL_PROGRAM_POINT_SIZE);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_LEQUAL);
 
     current_game = this;
 
@@ -136,7 +134,7 @@ void Game::init()
 
 void Game::renderloop(){
     glfwMakeContextCurrent(window);
-    while (running) render_update();
+    while (running) renderUpdate();
 }
 
 void Game::start(){
@@ -151,12 +149,12 @@ void Game::start(){
 }
 
 float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-void Game::render_update(){
+double lastFrame = 0.0f;
+void Game::renderUpdate(){
     // Measure speed
     // per-frame time logic
     // --------------------
-    float currentFrame = glfwGetTime();
+    double currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
@@ -165,13 +163,29 @@ void Game::render_update(){
 
     current_scene.__engineUpdate(deltaTime);
 
-    current_scene.__enginePhysicsUpdate(deltaTime);
+    physicsUpdate(); // called here for now
 
     // Swap buffers
     glfwSwapBuffers(window);
     glfwPollEvents();
 
     //limit_fps(60);
+}
+
+float physDeltaTime = 0.0f;
+double physLastFrame = 0.0f;
+
+void Game::physicsUpdate(){
+    // Measure speed
+    // per-frame time logic
+    // --------------------
+    double currentFrame = glfwGetTime();
+    physDeltaTime = currentFrame - physLastFrame;
+    lastFrame = currentFrame;
+
+    // ANDREw call ton machin ici !
+
+    current_scene.__enginePhysicsUpdate(physDeltaTime);
 }
 
 void Game::stop(){

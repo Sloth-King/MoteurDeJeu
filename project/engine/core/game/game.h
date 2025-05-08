@@ -50,6 +50,10 @@ public:
     // updated automatically when a camera is added or the window is changed
     GameSettings settings;
 
+    Game(){
+        current_scene.current_game = this;
+    }
+
     inline bool isRunning() const { return running;}
 
     GLFWwindow* getWindow() {
@@ -63,13 +67,22 @@ public:
 
     Scene current_scene;
 
+    Scene * setScene(Scene && scene){ // TODO call enter and exitscene if comp added at runtime
+        current_scene.__unloaded();
+        current_scene = std::move(scene);
+        current_scene.current_game = this;
+        current_scene.__loaded();
+        return &current_scene;
+    }
+
+
     void start();
 
     void init();
 
-    void render_update();
+    void renderUpdate();
 
-    //void fixed_update();
+    void physicsUpdate();
 
     void stop();
 

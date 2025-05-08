@@ -38,15 +38,28 @@ GameObject createPlayer(){
     return player;
 }
 
-int tom( void )
-{
+Environment createEnvironment(){
+    Environment env;
 
-    Game game;
-    game.settings.windowWidth = 720;
-    game.settings.windowHeight = 720;
+    auto cubemap = CubeMap(
+            path_prefix_from_build + "resources/textures/skybox"
+        );
 
-    game.init();
+    std::cout << "avant " << cubemap.__synchronized << std::endl;
 
+    env.skybox = Skybox( std::move(cubemap));
+
+    std::cout << "avant " << env.skybox.cubemap.__synchronized << std::endl;
+    return env;
+}
+
+
+Scene createScene(){
+    Scene scene;
+
+    scene.environment = std::move(
+        createEnvironment()
+    );
 
     // world
     GameObject world;
@@ -59,7 +72,23 @@ int tom( void )
 
     world.addChild(std::move(player));
 
-    game.current_scene.setRoot(std::move(world));
+    scene.setRoot(std::move(world));
+
+    return scene;
+}
+
+void tom( void )
+{
+
+    Game game;
+    game.settings.windowWidth = 720;
+    game.settings.windowHeight = 720;
+
+    game.init();
+
+    game.setScene(
+        createScene()
+    );
 
     game.start();
 

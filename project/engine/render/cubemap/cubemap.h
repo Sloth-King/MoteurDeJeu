@@ -13,7 +13,9 @@ class CubeMap {
 // https://learnopengl.com/Getting-started/Textures
 
 protected:
+public:
     GLuint _texture_id;
+
     bool __synchronized = false;
 
 public:
@@ -56,12 +58,12 @@ public:
     void loadCubemap(std::string path){ // from learnopengl
 
         const std::vector<std::string> filenames = {
-            "px.png",
-            "nx.png",
-            "py.png",
-            "ny.png",
-            "pz.png",
-            "nz.png"
+            "/px.png",
+            "/nx.png",
+            "/py.png",
+            "/ny.png",
+            "/pz.png",
+            "/nz.png"
         };
 
         glGenTextures(1, &_texture_id);
@@ -100,9 +102,7 @@ public:
     // IN CASE STRANGE THINGS HAPPEN: ALWAYS REMEMBER https://learnopengl.com/Getting-started/Textures
     void bind(GLuint slot = 0) const {
         glActiveTexture(GL_TEXTURE0+slot); // activate the texture unit first before binding texture
-        glBindTexture(GL_TEXTURE_2D, _texture_id);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, _texture_id);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_LINEAR);
     }
 };
