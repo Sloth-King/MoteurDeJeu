@@ -10,7 +10,7 @@
 #include <memory>
 #include <typeindex>
 #include <cassert>
-
+#include <variant>
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,24 +23,106 @@
 template<typename T> // https://stackoverflow.com/questions/65969224/c-templates-and-inheritance-can-templates-be-more-selective
 concept DerivedFromComponent = std::is_base_of_v<Component,T>;
 
-class Scene;
+class GameObjectData;
+
+using GameObjectHandle = std::unique_ptr<GameObjectData>;
+
+// kinda a handle object to wrap around the owning-or-not pointer
 class GameObject{
+
+    bool owning = true; // if it's owning the data
+
+    std::variant< GameObjectData*, GameObjectHandle > _ptr;
+
+    inline GameObjectData* getData() const {
+        return (owning) ? std::get<1>(_ptr).get() : std::get<0>(_ptr);
+    }
+
+public:
+
+    GameObject()
+        :_ptr(std::make_unique<GameObjectData>())
+        {}
+
+    GameObject& operator=(const GameObject & other){
+        owning = false;
+        _ptr = other.getData();
+        return *this;
+    }
+    GameObject(const GameObject & other){
+        *this = other;
+    }
+
+    explicit operator bool() const {
+        return static_cast<bool>(getData());
+    }
+
+    GameObject& operator=(GameObject&& other){
+        //TODO do we allow moving from nonowning ptr?
+        if (&other == this) return *this;
+
+        assert(("Gameobject must be owning in order to be moved from. ", other.isOwning()));
+
+        _ptr = std::move(std::get<1>(other._ptr));
+        other._ptr = std::get<1>(_ptr).get();
+        owning = true;
+        other.owning = false;
+
+        return *this;
+    }
+
+    explicit GameObject(GameObject && other){
+        *this = std::move(other);
+    }
+
+    inline bool isOwning() const {return owning;}
+    
+    inline GameObjectData* operator -> () const{
+        return getData();
+    }
+    inline GameObjectData& operator * () const{
+        return *getData();
+    }
+
+
+
+    GameObject copy() const { //TODO replace with a real, deep copy of the object and rename this one
+        return *this;
+    }
+    /*
+    template <DerivedFromComponent T>
+    inline T* addComponent() const{
+        return getData()->addComponent<T>();
+    }
+    inline void addChild(GameObject && object){
+        getData()->addChild(std::move(object));
+    }
+    */
+};
+
+class Scene;
+class GameObjectData{
     friend Scene;
+    friend GameObject;
+    friend GameObjectHandle std::make_unique<GameObjectData>();
 
     static unsigned long next_id;
 
     unsigned long id = 0;
 
+    GameObjectData(): id(next_id++) {};
+
 public:
-    GameObject * parent = nullptr; // null in case it's root of a scene
+    GameObjectData * parent = nullptr; // null in case it's root of a scene
     
-    std::map< unsigned long, std::unique_ptr<GameObject> > children = std::map< unsigned long, std::unique_ptr<GameObject> >();
+    std::map< unsigned long, GameObject > children = std::map< unsigned long, GameObject >();
 
     std::map<std::type_index, std::unique_ptr<Component> > components = std::map<std::type_index, std::unique_ptr<Component> >();
 
     Scene * scene = nullptr;
 
-    GameObject( GameObject&& rcOther )
+    
+    GameObjectData( GameObjectData&& rcOther )
     : children( std::move(rcOther.children) )
     , components( std::move(rcOther.components) )
     , scene(rcOther.scene)
@@ -52,13 +134,12 @@ public:
         for (const auto & [ti, comp] : components)
             comp->owner = this;
     }
+    
 
     bool hidden = false;
     // bool deactivated = false;
 
-    GameObject(): id(next_id++) {};
-
-    GameObject* addChild(GameObject && child);
+    void addChild(GameObject && child);
 
     bool isRoot() const { return (bool)parent; };
 
@@ -128,6 +209,4 @@ public:
         for (const auto & [ti, comp] : components)
             comp->_onPhysicsUpdate(deltaTime);
     }
-
-
 };

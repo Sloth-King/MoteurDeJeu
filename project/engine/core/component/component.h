@@ -4,20 +4,21 @@
 #include <memory>
 #include <typeindex> // for rtti use
 
-class GameObject; // forward declaration
+// forward declaration
+class GameObjectData;
 class Scene;
 
 class Component {
-    friend GameObject;
+    friend GameObjectData;
 protected:
-    GameObject* owner;
+    GameObjectData* owner;
 public:
 
     virtual ~Component() = default;
     Component(Component && v) = default;
     Component(const Component & v) = default;
 
-    GameObject& getOwner();
+    GameObjectData* getOwner() const noexcept;
 
     Scene& getScene();
     

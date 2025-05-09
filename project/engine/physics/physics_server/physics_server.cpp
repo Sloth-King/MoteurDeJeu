@@ -208,16 +208,16 @@ void PhysicsServer::solveCollisions(std::vector<intersectionData> collisions){
     }
 }
 
-void PhysicsServer::addObject(GameObject* go){
+void PhysicsServer::addObject(GameObjectData* go){
     Objects.insert(go);
 }
 
-void PhysicsServer::removeObject(GameObject* go){
+void PhysicsServer::removeObject(GameObjectData* go){
     Objects.erase(go);
 }
 
 void PhysicsServer::applyPhysics(float deltatime){
-    std::cout << "hello" << std::endl;
+    //std::cout << "hello" << std::endl;
     int cpt = 0;
     for(const auto& object : Objects){
         std::cout << "Object type : " << object->getComponent<C_Collider>()->collider.type << std::endl;
@@ -226,7 +226,7 @@ void PhysicsServer::applyPhysics(float deltatime){
             object->getComponent<C_Transform>()->move(-gravity*deltatime);
         }
     }
-    std::cout << "Num spheres : " << cpt << std::endl;
+    //std::cout << "Num spheres : " << cpt << std::endl;
 }
 
 void PhysicsServer::step(float deltatime){

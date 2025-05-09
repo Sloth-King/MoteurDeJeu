@@ -4,25 +4,43 @@
 #include <map>
 #include "gameObject.h"
 
-unsigned long  GameObject::next_id = 0;
+unsigned long  GameObjectData::next_id = 0;
 
-GameObject* GameObject::addChild(GameObject && child){
+void GameObjectData::addChild(GameObject && child){
 
+    assert(("child is not an owning gameobject. ", child.isOwning()));
+    auto p = child->id;
+    GameObject ptr;
 
-    auto p = child.id;
-    std::unique_ptr<GameObject> ptr = nullptr;
-
-    if (child.parent != nullptr){
-        ptr = std::move(child.parent->children[child.id]);
-        child.parent->children.erase(p);
+    if (child->parent != nullptr){
+        ptr = std::move(child->parent->children[child->id]);
+        child->parent->children.erase(p);
     } else {
-        ptr = std::make_unique<GameObject>(std::move(child));
+        ptr = std::move(child);
 
     }
     children[p] = std::move(ptr);
     children[p]->parent = this;
     if (scene) children[p]->__enterScene(scene);
 
-    return children[p].get();
-}
 
+}
+/*
+void GameObjectData::addChild(GameObjectHandle && child){
+
+
+    auto p = child->id;
+    GameObjectHandle ptr = nullptr;
+
+    if (child->parent != nullptr){
+        ptr = std::move(child->parent->children[child->id]);
+        child->parent->children.erase(p);
+    } else {
+        ptr = std::move(child);
+    }
+
+    children[p] = std::move(ptr);
+    children[p]->parent = this;
+    if (scene) children[p]->__enterScene(scene);
+
+}*/

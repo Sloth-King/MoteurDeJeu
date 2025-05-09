@@ -36,7 +36,7 @@ public:
 
     Game * current_game = nullptr;
 
-    std::unique_ptr< GameObject > root = nullptr;
+    GameObject root;
 
 public:
 
@@ -73,7 +73,7 @@ public:
     void setRoot(GameObject && g){ // async for now, probably not a good idea but we'll manage that later
         if (root) root->__exitScene();
 
-        root = std::make_unique<GameObject>(std::move(g));
+        root = std::move(g);
         root->__enterScene(this);
     }
     
