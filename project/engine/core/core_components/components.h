@@ -56,6 +56,14 @@ public:
         setLocalDirty();
     }
 
+    glm::vec3 getPosition(){
+        return pos;
+    }
+
+    glm::vec3 getScale(){
+        return scale;
+    }
+
     // global funcs TDOO
     
     void moveGlobal(glm::vec3 speed_per_coord){

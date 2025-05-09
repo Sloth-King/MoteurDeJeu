@@ -38,11 +38,11 @@ GameObject createPlayer(){
     return player;
 }
 
-Environment createEnvironment(){
+Environment createEnvironment(char* skybox_path = "resources/textures/skybox"){
     Environment env;
 
     auto cubemap = CubeMap(
-            path_prefix_from_build + "resources/textures/skybox"
+            path_prefix_from_build + skybox_path
         );
 
     env.skybox = Skybox( std::move(cubemap));
