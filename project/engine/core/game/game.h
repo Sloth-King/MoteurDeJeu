@@ -67,6 +67,7 @@ public:
     }
 
     Scene current_scene;
+    PhysicsServer physics_server;
 
     Scene * setScene(Scene && scene){ // TODO call enter and exitscene if comp added at runtime
         current_scene.__unloaded();
@@ -75,9 +76,6 @@ public:
         current_scene.__loaded();
         return &current_scene;
     }
-
-
-    PhysicsServer physics_server;
 
     void start();
 

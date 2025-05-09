@@ -54,6 +54,14 @@ public:
         setLocalDirty();
     }
 
+    glm::vec3 getPosition(){
+        return pos;
+    }
+
+    glm::vec3 getScale(){
+        return scale;
+    }
+
     virtual void _onUpdate(float deltaTime) override{
         //pos[0] += 0.1 * deltaTime;
     }

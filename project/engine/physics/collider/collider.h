@@ -14,19 +14,24 @@ enum ColliderType{
     PLANE
 };
 
-struct Collider{
+struct Collider {
     ColliderType type;
-};
- 
-// FIXME : We'll see later lmaoo
-struct SphereCollider : public Collider{
-    ColliderType type = SPHERE;
-	glm::vec3 center;
-	float radius;
+    //Collider(ColliderType type) : type(type) {}
 };
 
-struct PlaneCollider : public Collider{
-    ColliderType type = PLANE;
+// FIXME : We'll see later lmaoo
+struct SphereCollider : public Collider {
+    glm::vec3 center;
+    float radius;
+
+    SphereCollider(const glm::vec3& center, float radius)
+        : Collider(SPHERE), center(center), radius(radius) {}
+};
+
+struct PlaneCollider : public Collider {
     glm::vec3 normal;
     float distance;
+
+    PlaneCollider(const glm::vec3& normal, float distance)
+        : Collider(PLANE), normal(normal), distance(distance) {}
 };

@@ -20,7 +20,7 @@ struct intersectionData{
 class PhysicsServer{
 private:
     std::set<GameObject*> Objects;
-    glm::vec3 gravity = glm::vec3(0.0,0.0,0.0);
+    glm::vec3 gravity = glm::vec3(0.0,9.8,0.0);
 
 public:
     void addObject(GameObject* go);                                  // Add an object to the phys world

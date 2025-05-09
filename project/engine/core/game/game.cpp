@@ -128,7 +128,7 @@ void Game::init()
     current_game = this;
 
     glfwSetFramebufferSizeCallback(window, handleWindowResizedCallback);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE); 
 
 }
 
@@ -185,6 +185,7 @@ void Game::physicsUpdate(){
     lastFrame = currentFrame;
 
     // ANDREw call ton machin ici !
+    physics_server.step(deltaTime);
 
     current_scene.__enginePhysicsUpdate(physDeltaTime);
 }

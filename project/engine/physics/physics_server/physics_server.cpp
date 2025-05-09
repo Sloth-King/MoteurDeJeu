@@ -38,6 +38,8 @@ intersectionData intersectionSphereSphere(const Collider *a, const Collider *b){
     glm::vec3 intersectionA = aCenter + normal * aRadius;
     glm::vec3 intersectionB = bCenter - normal * bRadius;
 
+    std::cout << "Intersection : Sphere Sphere" << std::endl;
+
     res.isIntersection = true;
     res.intersectionNormal = normal;
     res.intersectionPointA = intersectionA;
@@ -74,7 +76,7 @@ intersectionData intersectionSpherePlane(const Collider* a, const Collider* b){
     glm::vec3 intersectionPointA = sphereCenter - planeNormal * distance;
     glm::vec3 intersectionPointB = sphereCenter - planeNormal * sphereRadius;
 
-
+    std::cout << "Intersection : Sphere Plane" << std::endl;
     res.isIntersection = true;
     res.intersectionPointA = intersectionPointA;
     res.intersectionPointB = intersectionPointB;
@@ -117,6 +119,8 @@ intersectionData intersectionPlanePlane(const Collider* a, const Collider* b){
     glm::vec3 pointOnLine = ((bDistance * glm::cross(direction, aNormal)) +
                              (aDistance * glm::cross(bNormal, direction))) / det;
 
+    std::cout << "Intersection : Plane Plane" << std::endl;
+
     res.isIntersection = true;
     res.intersectionNormal = glm::normalize(direction);
     res.intersectionPointA = pointOnLine;
@@ -141,14 +145,12 @@ std::vector<intersectionData> PhysicsServer::computeCollisions(){
     };
 
     for(const auto& objectA : Objects){
-
         if(!objectA->hasComponent<C_Collider>() || !objectA->hasComponent<C_RigidBody>()) continue;
-
         for(const auto& objectB : Objects){
 
+            //Check if the object has the right components AND that they're not the same object
+            if((!objectB->hasComponent<C_Collider>() || !objectB->hasComponent<C_RigidBody>()) && objectA == objectB) continue;
 
-            if(!objectB->hasComponent<C_Collider>() || !objectB->hasComponent<C_RigidBody>()) continue;
-            
             intersectionData intersection;
 
             //check if it can work in our table, if not, flip it
@@ -156,17 +158,31 @@ std::vector<intersectionData> PhysicsServer::computeCollisions(){
             Collider* colliderA = &objectA->getComponent<C_Collider>()->collider;
             Collider* colliderB = &objectB->getComponent<C_Collider>()->collider;
 
-
-            bool swap = (objectB->getComponent<C_Collider>()->collider.type) > (objectA->getComponent<C_Collider>()->collider.type);
+            bool swap = (objectB->getComponent<C_Collider>()->collider.type) < (objectA->getComponent<C_Collider>()->collider.type);
 
             //flip it (or not)
             if(swap){
-                intersection = functionTables[colliderB->type][colliderA->type](colliderB, colliderA);
+
+                //safety check
+                auto func = functionTables[colliderB->type][colliderA->type];
+                if (!func){
+                    std::cout << "func[" << colliderB->type << "][" << colliderA->type << "] does not exist" << std::endl;
+                    continue;  
+                }               
+
+                intersection = func(colliderB, colliderA);
                 intersection.objectA = objectB;
                 intersection.objectB = objectA;
-
             } else {
-                intersection = functionTables[colliderA->type][colliderB->type](colliderA, colliderB);
+
+                //same safety check
+                auto func = functionTables[colliderA->type][colliderB->type];
+                if (!func){
+                    std::cout << "func[" << colliderA->type << "][" << colliderB->type << "] does not exist" << std::endl;
+                    continue;  
+                }
+
+                intersection = func(colliderA, colliderB);
                 intersection.objectA = objectA;
                 intersection.objectB = objectB;
             }
@@ -201,9 +217,16 @@ void PhysicsServer::removeObject(GameObject* go){
 }
 
 void PhysicsServer::applyPhysics(float deltatime){
+    std::cout << "hello" << std::endl;
+    int cpt = 0;
     for(const auto& object : Objects){
-        object->getComponent<C_Transform>()->move(object->getComponent<C_RigidBody>()->linear_velocity * deltatime);
+        std::cout << "Object type : " << object->getComponent<C_Collider>()->collider.type << std::endl;
+        if(object->getComponent<C_Collider>()->collider.type == SPHERE){
+            cpt++;
+            object->getComponent<C_Transform>()->move(-gravity*deltatime);
+        }
     }
+    std::cout << "Num spheres : " << cpt << std::endl;
 }
 
 void PhysicsServer::step(float deltatime){
