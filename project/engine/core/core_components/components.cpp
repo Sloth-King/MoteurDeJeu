@@ -46,11 +46,18 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
     } else { // if our parent has no transform or we're the root, just assume we're the base transform.
         global = getLocalTransformationMatrix();
     }
+
+    global_inv = glm::inverse(global);
     
     global_dirty = false;
 
     return global;
 
+}
+
+inline const glm::mat4 & C_Transform::getGlobalInverse(){
+    getGlobalTransformationMatrix();
+    return global_inv;
 }
 
 

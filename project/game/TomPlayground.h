@@ -67,9 +67,36 @@ Scene createScene(){
 
     GameObject player = createPlayer();
 
-    world.addChild(std::move(player));
+    //world.addChild(std::move(player));
+
+
+    // tests transforms
+
+    Mesh submarine = Mesh::gen_tesselatedSquare(1.0, 1.0);
+
+    GameObject transformtest1;
+    transformtest1.addComponent<C_Transform>() -> move(glm::vec3(0.0, 1.0, 0.0));
+    
+    GameObject transformtest2;
+    transformtest1.addComponent<C_Transform>();
+    /*
+    GameObject transformtest1_1;
+    auto* t1_1 = transformtest1.addComponent<C_Transform>();
+    transformtest1.addComponent<C_Mesh>()->mesh = Mesh::gen_tesselatedSquare(1.0, 1.0);
+
+    world.addChild(std::move(transformtest1));
+
+    transformtest1.getComponent<C_Transform>()->move(glm::vec3(2.0, 0.0, 0.0));
+    //t1_1->move(glm::vec3(-2.0, 0.0, 0.0));
+    */
+
+    GameObject * t = transformtest1.addChild(std::move(transformtest2));
+    world.addChild(std::move(transformtest1));
+
+    t->getComponent<C_Transform>()->printGlobal();
 
     scene.setRoot(std::move(world));
+    //t2->printGlobal();
 
     return scene;
 }

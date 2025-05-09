@@ -12,6 +12,7 @@ private:
 
     glm::mat4 local = glm::mat4(1.0f);
     glm::mat4 global = glm::mat4(1.0f);
+    glm::mat4 global_inv = glm::mat4(1.0f);
 
     bool local_dirty = false;
     bool global_dirty = true;
@@ -27,6 +28,7 @@ private:
 public:
     const glm::mat4 & getLocalTransformationMatrix();
     const glm::mat4 & getGlobalTransformationMatrix();
+    const glm::mat4 & getGlobalInverse();
 
 
     // local funcs
@@ -54,34 +56,30 @@ public:
         setLocalDirty();
     }
 
-    virtual void _onUpdate(float deltaTime) override{
-        //pos[0] += 0.1 * deltaTime;
-    }
-
     // global funcs TDOO
-    /*
+    
     void moveGlobal(glm::vec3 speed_per_coord){
-        pos += speed_per_coord;
-        global = true;
+        pos += glm::vec3(getGlobalInverse() * glm::vec4(speed_per_coord, 0));
+        setGlobalDirty();
     }
 
     void rotateGlobal(glm::vec3 speed_per_coord){
-        eulerRot += speed_per_coord;
-        local_dirty = true;
+        eulerRot += glm::vec3(getGlobalInverse() * glm::vec4(speed_per_coord, 0));
+        setGlobalDirty();
     }
 
     void setPositionGlobal(glm::vec3 newpos){
-        pos = newpos;
-        local_dirty = true;
+        pos = glm::vec3(getGlobalInverse() * glm::vec4(newpos, 1));
+        setGlobalDirty();
     }
     void setScaleGlobal(glm::vec3 newScale){
-        scale = newScale;
-        local_dirty = true;
+        scale = glm::vec3(getGlobalInverse() * glm::vec4(newScale, 0));
+        setGlobalDirty();
     }
     void setRotationGlobal(glm::vec3 newRot){
-        eulerRot = newRot;
-        local_dirty = true;
-    }*/
+        eulerRot = glm::vec3(getGlobalInverse() * glm::vec4(newRot, 0));
+        setGlobalDirty();
+    }
 
     void printGlobal(){
         auto g = getGlobalTransformationMatrix();
