@@ -220,9 +220,7 @@ void PhysicsServer::solveCollisions(std::vector<intersectionData> collisions){
 // https://books.google.fr/books?hl=en&lr=&id=dSbMBQAAQBAJ&oi=fnd&pg=PP1&dq=3d+physics+engine&ots=qe2HUKonLp&sig=JMjj1CI9Jnisktw-MRhHuGTIczg&redir_esc=y#v=onepage&q&f=true
 void PhysicsServer::integrate(float deltatime){
     for(const auto& object : Objects){
-
         if(object->getComponent<C_Collider>()->collider.type == SPHERE){
-
             auto* objectBody = object->getComponent<C_RigidBody>();
             objectBody->acceleration = gravity; // for now thats all it is
             std::cout << "acceleration : (" << objectBody->acceleration.x << "," << objectBody->acceleration.y  << "," << objectBody->acceleration.z << ")" << std::endl;
@@ -240,7 +238,6 @@ void PhysicsServer::integrate(float deltatime){
 }
 
 void PhysicsServer::step(float deltatime){
-    
     std::vector<intersectionData> collisions = computeCollisions();
     solveCollisions(collisions);
     integrate(deltatime);
