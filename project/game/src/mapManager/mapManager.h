@@ -27,12 +27,12 @@ public:
     const int chunkRadius = 2;
     const float world_scale = 0.05f;
 
-    std::vector < GameObject* > chunks; // for now a pointer. this is NOT safe because things can reparent.
+    std::vector < GameObject > chunks; // for now a pointer. this is NOT safe because things can reparent.
     // acceptable refactor : include in the scene a hashmap of the objects id against a pointer to them, which is updated when needed.
     // then any component in the scene can access the gameobject with its id in O(1)
 
 
-    GameObject* player;
+    GameObject player;
 
     glm::ivec3 current_player_chunk_in_map;
 
@@ -52,7 +52,7 @@ public:
         
     }
 
-    GameObject* getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
+    GameObject getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
         v = {
             Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadius + 1),
             Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadius + 1),
@@ -62,7 +62,7 @@ public:
         return chunks.at((v.z * chunkRadius * chunkRadius) + (v.y * chunkRadius) + v.x);
     }
 
-    void setChunkAt(glm::ivec3 v, GameObject* chunk){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
+    void setChunkAt(glm::ivec3 v, GameObject chunk){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
         v = {
             Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadius + 1),
             Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadius + 1),
@@ -78,16 +78,16 @@ public:
         return glm::ivec3(0); // worrying about this later lol
     }
 
-    inline GameObject* createChunk(glm::ivec3 chunkCoord){
+    inline GameObject createChunk(glm::ivec3 chunkCoord){
 
         GameObject g;
 
         glm::ivec3 global_pos = chunkCoord * glm::ivec3(CHUNK_SIZE_XZ, CHUNK_SIZE_Y, CHUNK_SIZE_XZ);
 
-        auto* c_transform = g.addComponent<C_Transform>();
+        auto* c_transform = g->addComponent<C_Transform>();
         c_transform->setPosition(glm::vec3(global_pos) * world_scale);
 
-        auto* c_voxelmesh = g.addComponent<C_voxelMesh>();
+        auto* c_voxelmesh = g->addComponent<C_voxelMesh>();
         c_voxelmesh->size = world_scale;
 
         c_voxelmesh->mesh.setShaderPid(shaderPID);
@@ -99,7 +99,8 @@ public:
 
 
         c_voxelmesh->create_chunk(global_pos);
-        return getOwner().addChild(std::move(g));
+        getOwner()->addChild(std::move(g));
+        return g;
     }
     
     inline glm::ivec3 chunkIdxToChunkCoord(glm::ivec3 chunkIdx){

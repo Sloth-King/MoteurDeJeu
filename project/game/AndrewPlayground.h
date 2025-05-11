@@ -17,7 +17,7 @@
 
 
 using Utils::print;
-
+/*
 void andrew( void )
 {
     //Setup game
@@ -80,4 +80,4 @@ void andrew( void )
     game.start();
 
     game.waitGameStopped();
-}
+}*/

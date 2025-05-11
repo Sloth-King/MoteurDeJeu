@@ -18,6 +18,13 @@ void Material::addUniform<float>(std::string name, float v){
     uniformFloats[name] = v;
 }
 
+void Material::setShaderFromSource(std::string shaderVert, std::string shaderFrag){
+
+    
+    loadShaders(shaderVert, shaderFrag);
+
+}
+
 
 void Material::bind() const{
 

@@ -131,11 +131,11 @@ intersectionData intersectionPlanePlane(const Collider* a, const Collider* b){
 
 /////////////////////////////////////////////////////////////////////////////
 
-void PhysicsServer::addObject(GameObject* go){
+void PhysicsServer::addObject(GameObjectData* go){
     Objects.insert(go);
 }
 
-void PhysicsServer::removeObject(GameObject* go){
+void PhysicsServer::removeObject(GameObjectData* go){
     Objects.erase(go);
 }
 

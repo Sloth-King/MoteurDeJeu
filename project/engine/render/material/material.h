@@ -27,12 +27,10 @@ class Material {
 
     void bind() const; // TODO prendre les matrices en arg
 
-    void setShaderFromSource(std::string shaderCode){
-        // TODO
-        // ajouter le calcul des matrices de base etc
-    }
+    void setShaderFromSource(std::string shaderVert, std::string shaderFrag);
+;
 
-     void setShaderFromFile(std::string path){
-        setShaderFromSource("le code loadé à partir du path");
+    void setShaderFromFile(std::string path){
+        setShaderFromSource("le code loadé à partir du path", "");
     }
 };

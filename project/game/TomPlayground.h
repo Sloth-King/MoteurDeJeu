@@ -25,24 +25,23 @@ GameObject createPlayer(){
     GameObject player;
 
     Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v1.obj");
+    submarine.addTexture( Texture(path_prefix_from_build + "resources/textures/submarine.jpg"), "albedo" );
 
-    auto* playerTransform = player.addComponent<C_Transform>();
+    auto* playerTransform = player->addComponent<C_Transform>();
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
     playerTransform->move(glm::vec3(0, 1, 0));
 
 
-    auto* playerMesh = player.addComponent<C_Mesh>();
-    playerMesh->mesh = submarine;
-    playerMesh->mesh.addTexture( Texture(path_prefix_from_build + "resources/textures/submarine.jpg"), "albedo" );
+    player->addComponent<C_Mesh>()->mesh = submarine;
     
     return player;
 }
 
-Environment createEnvironment(char* skybox_path = "resources/textures/skybox"){
+Environment createEnvironment(const std::string & skybox_path = "resources/textures/skybox"){
     Environment env;
 
     auto cubemap = CubeMap(
-            path_prefix_from_build + skybox_path
+            path_prefix_from_build + skybox_path.c_str()
         );
 
     env.skybox = Skybox( std::move(cubemap));
@@ -60,16 +59,43 @@ Scene createScene(){
 
     // world
     GameObject world;
-    world.addComponent<C_Transform>();
+    world->addComponent<C_Transform>();
 
-    auto* v = world.addComponent<C_MapManager>();
+    auto* v = world->addComponent<C_MapManager>();
     v->initChunks();
 
     GameObject player = createPlayer();
 
-    world.addChild(std::move(player));
+    //world.addChild(std::move(player));
+
+
+    // tests transforms
+    /*
+    Mesh submarine = Mesh::gen_tesselatedSquare(1.0, 1.0);
+
+    GameObject transformtest1;
+    transformtest1.addComponent<C_Transform>() -> move(glm::vec3(0.0, 1.0, 0.0));
+    
+    GameObject transformtest2;
+    transformtest1.addComponent<C_Transform>();
+    /*
+    GameObject transformtest1_1;
+    auto* t1_1 = transformtest1.addComponent<C_Transform>();
+    transformtest1.addComponent<C_Mesh>()->mesh = Mesh::gen_tesselatedSquare(1.0, 1.0);
+
+    world.addChild(std::move(transformtest1));
+
+    transformtest1.getComponent<C_Transform>()->move(glm::vec3(2.0, 0.0, 0.0));
+    //t1_1->move(glm::vec3(-2.0, 0.0, 0.0));
+    */
+
+    // GameObject * t = transformtest1.addChild(std::move(transformtest2));
+    // world.addChild(std::move(transformtest1));
+
+    // t->getComponent<C_Transform>()->printGlobal();
 
     scene.setRoot(std::move(world));
+    //t2->printGlobal();
 
     return scene;
 }

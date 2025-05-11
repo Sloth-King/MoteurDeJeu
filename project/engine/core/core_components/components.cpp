@@ -38,7 +38,7 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
 
     // if dirty
 
-    GameObject * parent = getOwner().parent;
+    GameObjectData * parent = getOwner()->parent;
 
     if (parent && parent->hasComponent<C_Transform>()){
         
@@ -46,6 +46,8 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
     } else { // if our parent has no transform or we're the root, just assume we're the base transform.
         global = getLocalTransformationMatrix();
     }
+
+    global_inv = glm::inverse(global);
     
     global_dirty = false;
 
@@ -53,12 +55,17 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
 
 }
 
+inline const glm::mat4 & C_Transform::getGlobalInverse(){
+    getGlobalTransformationMatrix();
+    return global_inv;
+}
+
 
 void C_Transform::setLocalDirty(){
     local_dirty = true;
     global_dirty = true;
-    for (const auto & [ptr, owning_ptr] : getOwner().children){ // not ideal. waiting for a better idea. Maybe an apply_to_children(func f) method?
-        GameObject & child = *owning_ptr;
+    for (const auto & [ptr, object] : getOwner()->children){ // not ideal. waiting for a better idea. Maybe an apply_to_children(func f) method?
+        GameObjectData & child = *object;
         if (child.hasComponent<C_Transform>()){
             child.getComponent<C_Transform>()->setGlobalDirty();
         }
@@ -68,8 +75,8 @@ void C_Transform::setLocalDirty(){
 void C_Transform::setGlobalDirty(){
     global_dirty = true;
 
-    for (const auto & [ptr, owning_ptr] : getOwner().children){ // not ideal. waiting for a better idea. Maybe an apply_to_children(func f) method?
-        GameObject & child = *owning_ptr;
+    for (const auto & [ptr, object] : getOwner()->children){ // not ideal. waiting for a better idea. Maybe an apply_to_children(func f) method?
+        GameObjectData & child = *object;
         if (child.hasComponent<C_Transform>()){
             child.getComponent<C_Transform>()->setGlobalDirty();
         }
