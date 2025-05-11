@@ -97,6 +97,7 @@ add_executable(Game
 
 	engine/physics/collider/collider.h
 	engine/physics/components/components.h
+	engine/physics/components/components.cpp
 
 	engine/physics/physics_server/physics_server.h
 	engine/physics/physics_server/physics_server.cpp

@@ -27,7 +27,7 @@ public:
     void removeObject(GameObjectData* go);                               // Remove an object from the phys world
     std::vector<intersectionData> computeCollisions();              // Compute all collisions in our world
     void solveCollisions(std::vector<intersectionData> collisions); // Resolve collisions
-    void applyPhysics(float deltatime);                             // Apply physics calculations to the object
+    void integrate(float deltatime);                             // Apply physics calculations to the object
     void step(float deltaTime);                                     // Per frame calculations
 
 };

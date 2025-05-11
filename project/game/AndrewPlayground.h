@@ -17,7 +17,7 @@
 
 
 using Utils::print;
-/*
+
 void andrew( void )
 {
     //Setup game
@@ -29,7 +29,7 @@ void andrew( void )
 
     // world
     GameObject world;
-    world.addComponent<C_Transform>();
+    world->addComponent<C_Transform>();
 
     //scene objects
 
@@ -39,17 +39,17 @@ void andrew( void )
     GameObject ball;
     GameObject floor;
 
-    auto* ballTransofrm = ball.addComponent<C_Transform>();
-    auto* floorTransofrm = floor.addComponent<C_Transform>();
+    auto* ballTransofrm = ball->addComponent<C_Transform>();
+    auto* floorTransofrm = floor->addComponent<C_Transform>();
 
     ballTransofrm->setScale(glm::vec3(0.2,0.2,0.2));
-    ballTransofrm->setPosition(glm::vec3(0.0,2.0,0.0));
+    ballTransofrm->setPosition(glm::vec3(-20,300,0.0));
 
     floorTransofrm->setPosition(glm::vec3(0.0,-0.5,0.0));
 
-    auto* ballMesh = ball.addComponent<C_Mesh>();
+    auto* ballMesh = ball->addComponent<C_Mesh>();
     //ballMesh->mesh.addTexture(Texture(path_prefix_from_build + "resources/textures/submarine.jpg"), "albedo");
-    auto* floorMesh = floor.addComponent<C_Mesh>();
+    auto* floorMesh = floor->addComponent<C_Mesh>();
     floorMesh->mesh.addTexture(Texture(path_prefix_from_build + "resources/textures/submarine.jpg"), "albedo");
 
 
@@ -57,16 +57,17 @@ void andrew( void )
     floorMesh->mesh = plane;
 
     // Add physics
-    ball.addComponent<C_RigidBody>();
-    ball.addComponent<C_Collider>();
-    ball.getComponent<C_Collider>()->collider = SphereCollider(ballTransofrm->getPosition(), 2.0f);
+    ball->addComponent<C_RigidBody>();
+    ball->getComponent<C_RigidBody>()->setVelocity(glm::vec3(0.05,-1.0,0.0));
+    ball->addComponent<C_Collider>();
+    ball->getComponent<C_Collider>()->collider = SphereCollider(ballTransofrm->getPosition(), 2.0f);
 
-    floor.addComponent<C_RigidBody>();
-    floor.addComponent<C_Collider>();
-    floor.getComponent<C_Collider>()->collider = PlaneCollider(glm::vec3(0.0,1.0,0.0), -0.5f);
+    floor->addComponent<C_RigidBody>();
+    floor->addComponent<C_Collider>();
+    floor->getComponent<C_Collider>()->collider = PlaneCollider(glm::vec3(0.0,1.0,0.0), -0.5f);
 
-    world.addChild(std::move(ball));
-    world.addChild(std::move(floor));
+    world->addChild(std::move(ball));
+    world->addChild(std::move(floor));
 
 
     // Create scene
@@ -79,4 +80,4 @@ void andrew( void )
     game.start();
 
     game.waitGameStopped();
-}*/
+}
