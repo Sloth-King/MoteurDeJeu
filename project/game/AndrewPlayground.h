@@ -58,6 +58,7 @@ void andrew( void )
 
     // Add physics
     ball.addComponent<C_RigidBody>();
+    ball.getComponent<C_RigidBody>()->setVelocity(glm::vec3(0.05,-1.0,0.0));
     ball.addComponent<C_Collider>();
     ball.getComponent<C_Collider>()->collider = SphereCollider(ballTransofrm->getPosition(), 2.0f);
 

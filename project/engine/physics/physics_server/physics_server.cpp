@@ -131,6 +131,14 @@ intersectionData intersectionPlanePlane(const Collider* a, const Collider* b){
 
 /////////////////////////////////////////////////////////////////////////////
 
+void PhysicsServer::addObject(GameObject* go){
+    Objects.insert(go);
+}
+
+void PhysicsServer::removeObject(GameObject* go){
+    Objects.erase(go);
+}
+
 std::vector<intersectionData> PhysicsServer::computeCollisions(){
     std::vector<intersectionData> intersectionList;
 
@@ -208,31 +216,33 @@ void PhysicsServer::solveCollisions(std::vector<intersectionData> collisions){
     }
 }
 
-void PhysicsServer::addObject(GameObject* go){
-    Objects.insert(go);
-}
-
-void PhysicsServer::removeObject(GameObject* go){
-    Objects.erase(go);
-}
-
-void PhysicsServer::applyPhysics(float deltatime){
-    std::cout << "hello" << std::endl;
-    int cpt = 0;
+// Source is this book :
+// https://books.google.fr/books?hl=en&lr=&id=dSbMBQAAQBAJ&oi=fnd&pg=PP1&dq=3d+physics+engine&ots=qe2HUKonLp&sig=JMjj1CI9Jnisktw-MRhHuGTIczg&redir_esc=y#v=onepage&q&f=true
+void PhysicsServer::integrate(float deltatime){
     for(const auto& object : Objects){
-        std::cout << "Object type : " << object->getComponent<C_Collider>()->collider.type << std::endl;
+
         if(object->getComponent<C_Collider>()->collider.type == SPHERE){
-            cpt++;
-            object->getComponent<C_Transform>()->move(-gravity*deltatime);
+
+            auto* objectBody = object->getComponent<C_RigidBody>();
+            objectBody->acceleration = gravity; // for now thats all it is
+            std::cout << "acceleration : (" << objectBody->acceleration.x << "," << objectBody->acceleration.y  << "," << objectBody->acceleration.z << ")" << std::endl;
+            // update the position
+            object->getComponent<C_Transform>()->move(objectBody->linear_velocity);
+
+            // update de velocity
+            objectBody->linear_velocity += objectBody->acceleration * deltatime * deltatime * 0.5f;
+            objectBody->linear_velocity *= pow(objectBody->damping, deltatime);
+            std::cout << "velocity : (" << objectBody->linear_velocity .x << "," << objectBody->linear_velocity .y  << "," << objectBody->linear_velocity .z << ")" << std::endl;
+
+
         }
     }
-    std::cout << "Num spheres : " << cpt << std::endl;
 }
 
 void PhysicsServer::step(float deltatime){
     
     std::vector<intersectionData> collisions = computeCollisions();
     solveCollisions(collisions);
-    applyPhysics(deltatime);
+    integrate(deltatime);
 
 }
