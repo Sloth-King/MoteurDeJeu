@@ -127,8 +127,8 @@ struct Skybox {
 
 
         _shaderPID = loadShaders(skyboxShaderVert, skyboxShaderFrag);
-
-        glDisableVertexAttribArray(0);
+        glUseProgram(_shaderPID);
+        glBindVertexArray(0);
     }
     
     void render(glm::mat4 view, const glm::mat4 & projection){
@@ -139,6 +139,7 @@ struct Skybox {
         // removes translation
         view[3] = glm::vec4(0);
 
+        glBindVertexArray(_VAO);
         glUseProgram(_shaderPID);
 
         glUniformMatrix4fv(
@@ -162,13 +163,9 @@ struct Skybox {
             0
         );
 
-        glBindVertexArray(_VAO);
-        glEnableVertexAttribArray(0);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        glDisableVertexAttribArray(0);
-        glBindVertexArray(0);
         glUseProgram(0);
+        glBindVertexArray(0);
     }
 };
 

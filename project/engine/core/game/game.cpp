@@ -42,6 +42,23 @@ inline void limit_fps(int FPS){
     last_time = current_time;
 }
 
+inline void showFPS(GLFWwindow* window){
+
+    static const float timeBetweenUpdates = 0.5;
+    static double last_time = glfwGetTime();
+    static unsigned int nbframes = 0;
+    static const std::string windowTitle ("FPS - ");
+    double current_time = glfwGetTime();
+
+    nbframes++;
+    
+    if (current_time - last_time > timeBetweenUpdates){ // seconds
+        glfwSetWindowTitle(window, (windowTitle + std::to_string((uint32_t)(nbframes/timeBetweenUpdates))).c_str());
+        last_time = current_time;
+        nbframes = 0;
+    }
+}
+
 void Game::handleWindowResized(GLFWwindow* window, int width, int height){
     settings.windowWidth = width;
     settings.windowHeight = height;
@@ -125,6 +142,8 @@ void Game::init()
     glEnable (GL_PROGRAM_POINT_SIZE);
     glDepthFunc(GL_LEQUAL);
 
+    glfwSwapInterval(settings.VSync);
+
     current_game = this;
 
     glfwSetFramebufferSizeCallback(window, handleWindowResizedCallback);
@@ -170,7 +189,9 @@ void Game::renderUpdate(){
     glfwSwapBuffers(window);
     glfwPollEvents();
 
+    showFPS(window);
     //limit_fps(60);
+    
 }
 
 float physDeltaTime = 0.0f;

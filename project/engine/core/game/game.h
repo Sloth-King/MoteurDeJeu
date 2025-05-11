@@ -30,6 +30,8 @@ struct GameSettings {
     int windowHeight;
     float windowAspect;
     float fov;
+
+    bool VSync = false;
 };
 
 class Game {

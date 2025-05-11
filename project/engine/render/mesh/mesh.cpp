@@ -71,11 +71,50 @@ void Mesh::synchronize() const {
     glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0] , GL_STATIC_DRAW);
 
 
+    glEnableVertexAttribArray(0);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, _VBO);
 
-    glDisableVertexAttribArray(0);
+    // Positions attribute buffer
+
+    glVertexAttribPointer(
+        0,                  // attribute
+        3,    // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,  // stride
+        (void*)0            // array buffer offset
+    );
+
+
+    // Uvs attribute buffer
+    glBindBuffer(GL_ARRAY_BUFFER, _UV);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(1);
+
+
+    // normals
+    glBindBuffer(GL_ARRAY_BUFFER, _NORMALS);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(2);
+
+    // tangents
+    glBindBuffer(GL_ARRAY_BUFFER, _TANGENT);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(3);
+
+
+    // bitangents
+    glBindBuffer(GL_ARRAY_BUFFER, _BITANGENT);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(4);
+
+
+
+    // Index buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
+
     glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // textures
 
@@ -101,8 +140,9 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
         synchronize();
     }
 
-
+    glBindVertexArray(_VAO);
     glUseProgram(shaderPID);
+
 
     int i = 0;
     for (auto & t: textures){
@@ -127,62 +167,14 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
 
 
 
-    if (mvpUniformLocation != -1){
-        glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &MVP[0][0]);
-    }
+    glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &MVP[0][0]);
 
-    if (camForardLocation != -1){
-        glUniform3fv(camForardLocation, 1, &fv[0]);
-    }
-    if (modelLocation != -1){
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE,  &transform[0][0]);
-    }
+    glUniform3fv(camForardLocation, 1, &fv[0]);
+
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE,  &transform[0][0]);
 
 
 
-    glBindVertexArray(_VAO);
-    glEnableVertexAttribArray(0);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-
-    // Positions attribute buffer
-
-    glVertexAttribPointer(
-        0,                  // attribute
-        3,    // size
-        GL_FLOAT,           // type
-        GL_FALSE,           // normalized?
-        0,  // stride
-        (void*)0            // array buffer offset
-    );
-
-
-    // Uvs attribute buffer
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, _UV);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-
-
-    // normals
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, _NORMALS);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-
-    // tangents
-    glEnableVertexAttribArray(3);
-    glBindBuffer(GL_ARRAY_BUFFER, _TANGENT);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-
-
-    // bitangents
-    glEnableVertexAttribArray(4);
-    glBindBuffer(GL_ARRAY_BUFFER, _BITANGENT);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-
-
-
-    // Index buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
     
     glDrawElements(
                 GL_TRIANGLES,      // mode
@@ -191,14 +183,8 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
                 (void*)0           // element array buffer offset
                 );
     
-
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-    glBindVertexArray(0);
     glUseProgram(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
 void Mesh::unsynchronize() const {

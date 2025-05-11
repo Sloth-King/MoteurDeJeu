@@ -34,7 +34,7 @@ public:
     // local funcs
     void move(glm::vec3 speed_per_coord){
         pos += speed_per_coord;
-        std::cout << "position (" << pos.x << "," << pos.y << "," << pos.z << ")" << std::endl; 
+
         setLocalDirty();
     }
 
@@ -68,25 +68,26 @@ public:
     
     void moveGlobal(glm::vec3 speed_per_coord){
         pos += glm::vec3(getGlobalInverse() * glm::vec4(speed_per_coord, 0));
-        setGlobalDirty();
+        // std::cout << " pos: " << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
+        setLocalDirty(); // c'est la local qui bouge même si on bouge dans l'espace global !
     }
 
     void rotateGlobal(glm::vec3 speed_per_coord){
         eulerRot += glm::vec3(getGlobalInverse() * glm::vec4(speed_per_coord, 0));
-        setGlobalDirty();
+        setLocalDirty();
     }
 
     void setPositionGlobal(glm::vec3 newpos){
-        pos = glm::vec3(getGlobalInverse() * glm::vec4(newpos, 1));
-        setGlobalDirty();
+        pos = glm::vec3(getGlobalInverse() * glm::vec4(newpos, 0));
+        setLocalDirty();
     }
     void setScaleGlobal(glm::vec3 newScale){
         scale = glm::vec3(getGlobalInverse() * glm::vec4(newScale, 0));
-        setGlobalDirty();
+        setLocalDirty();
     }
     void setRotationGlobal(glm::vec3 newRot){
         eulerRot = glm::vec3(getGlobalInverse() * glm::vec4(newRot, 0));
-        setGlobalDirty();
+        setLocalDirty();
     }
 
     void printGlobal(){

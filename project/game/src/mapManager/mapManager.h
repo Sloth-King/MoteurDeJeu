@@ -24,7 +24,7 @@ class C_MapManager: public Component{
 
 public:
     
-    const int chunkRadius = 2;
+    const int chunkRadius = 4;
     const float world_scale = 0.05f;
 
     std::vector < GameObject > chunks; // for now a pointer. this is NOT safe because things can reparent.
@@ -99,6 +99,8 @@ public:
 
 
         c_voxelmesh->create_chunk(global_pos);
+
+        
         getOwner()->addChild(std::move(g));
         return g;
     }
@@ -110,13 +112,14 @@ public:
     void initChunks(){
 
         for (int i = -chunkRadius; i <= chunkRadius; ++i){
-            for (int j = -chunkRadius; j <= chunkRadius; ++j){
+            for (int j = -1; j <= 1; ++j){
                 for (int k = -chunkRadius; k <= chunkRadius; ++k){
                     auto chunkIdx = glm::ivec3(i, j, k);
-
+                    GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
+                    //std::cout << chunk->getComponent<C_voxelMesh>()->mesh << std::endl;
                     setChunkAt(
                         chunkIdx,
-                        createChunk(chunkIdxToChunkCoord(chunkIdx))
+                        chunk
                     );
                 }
             }

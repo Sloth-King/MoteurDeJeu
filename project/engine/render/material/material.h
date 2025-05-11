@@ -21,7 +21,7 @@ class Material {
     std::map< std::string, float > uniformFloats;
 
 
-    // not secured. What if someone add same name in different types?
+    // not secured. What if someone adds same name in different types?
     template<typename T>
     void addUniform(std::string name, T v);
 

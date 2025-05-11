@@ -70,31 +70,30 @@ Scene createScene(){
 
 
     // tests transforms
-    /*
+    
     Mesh submarine = Mesh::gen_tesselatedSquare(1.0, 1.0);
 
     GameObject transformtest1;
-    transformtest1.addComponent<C_Transform>() -> move(glm::vec3(0.0, 1.0, 0.0));
+    auto* transformcomp1 = transformtest1->addComponent<C_Transform>();
+    transformcomp1 -> setScale(glm::vec3(0.5, 0.5, 0.5));
+    transformcomp1 -> setRotation(glm::vec3(M_PI, 0.0, 0.0));
+    transformcomp1 -> move(glm::vec3(0.0, 0.5, 0.0));
+    
     
     GameObject transformtest2;
-    transformtest1.addComponent<C_Transform>();
-    /*
-    GameObject transformtest1_1;
-    auto* t1_1 = transformtest1.addComponent<C_Transform>();
-    transformtest1.addComponent<C_Mesh>()->mesh = Mesh::gen_tesselatedSquare(1.0, 1.0);
+    transformtest2->addComponent<C_Transform>();
+    
+    
 
-    world.addChild(std::move(transformtest1));
-
-    transformtest1.getComponent<C_Transform>()->move(glm::vec3(2.0, 0.0, 0.0));
-    //t1_1->move(glm::vec3(-2.0, 0.0, 0.0));
-    */
-
-    // GameObject * t = transformtest1.addChild(std::move(transformtest2));
-    // world.addChild(std::move(transformtest1));
-
-    // t->getComponent<C_Transform>()->printGlobal();
+    transformtest1->addChild(std::move(transformtest2));
+    world->addChild(std::move(transformtest1));
 
     scene.setRoot(std::move(world));
+
+    transformtest2->getComponent<C_Transform>()->moveGlobal(glm::vec3(0.0, 1.0, 0.0));
+    transformtest2->getComponent<C_Transform>()->rotateGlobal(glm::vec3(-M_PI, 0, 0.0));
+
+    transformtest2->getComponent<C_Transform>()->printGlobal();
     //t2->printGlobal();
 
     return scene;

@@ -55,7 +55,7 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
 
 }
 
-inline const glm::mat4 & C_Transform::getGlobalInverse(){
+const glm::mat4 & C_Transform::getGlobalInverse(){
     getGlobalTransformationMatrix();
     return global_inv;
 }

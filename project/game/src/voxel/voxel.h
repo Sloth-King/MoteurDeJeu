@@ -37,8 +37,8 @@ struct VoxelContainer {
     VoxelContainer() = default;
 };
 
-const unsigned int CHUNK_SIZE_XZ = 32;
-const unsigned int CHUNK_SIZE_Y = 16;
+const unsigned int CHUNK_SIZE_XZ = 8;
+const unsigned int CHUNK_SIZE_Y = 4;
 
 void generateChunk(VoxelContainer & container, glm::ivec3 offset);
 void generateFrom3DTexture(VoxelContainer & container, std::string path, int dimX, int dimY, int dimZ, int threshold, int trueValue = 2);

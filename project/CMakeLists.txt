@@ -23,6 +23,7 @@ endif()
 # Compile external dependencies 
 add_subdirectory (engine/external/external/)
 
+#add_definitions(-O3) # compiler flag
 add_definitions(-g) # compiler flag
 
 include_directories(
