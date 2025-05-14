@@ -83,13 +83,21 @@ public:
             std::cout << "[SCENE] No camera detected. Defaulting to degubCamera." << std::endl;
             setCurrentCamera(debugCamera);
         }
-
-        environment.render(current_camera->getViewMatrix(), current_camera->getProjectionMatrix());
         
 
         if (root){
-            current_camera->computeMatricesFromInputs();
+            //current_camera->computeMatricesFromInputs();
             root->__engineUpdate(deltaTime);
+        }
+    }
+    void __engineLateUpdate(float deltaTime){
+
+
+        // here to prevent shakiness when moving camera in the update or physicsupdate
+        environment.render(current_camera->getViewMatrix(), current_camera->getProjectionMatrix());
+
+        if (root){
+            root->__lateUpdate(deltaTime);
         }
     }
 

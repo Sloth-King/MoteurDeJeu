@@ -76,6 +76,9 @@ add_executable(Game
 	engine/core/game/game.h
 	engine/core/game/game.cpp
 
+	engine/core/inputs/input.h
+	engine/core/inputs/input.cpp
+
 
 	# base components definitions
 	engine/core/core_components/components.h
@@ -108,6 +111,7 @@ add_executable(Game
 	game/src/voxel/voxel.h
 	game/src/voxel/voxel.cpp
 	game/src/voxel/mapGeneration.cpp
+	game/src/controller/playerController.h
 )
 
 target_link_libraries(Game

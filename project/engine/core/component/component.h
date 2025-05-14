@@ -29,5 +29,6 @@ public:
 
     virtual void _onUpdate(float deltaTime);
     virtual void _onPhysicsUpdate(float deltaTime);
+    virtual void _onLateUpdate(float deltaTime);
 
 };

@@ -209,4 +209,14 @@ public:
         for (const auto & [ti, comp] : components)
             comp->_onPhysicsUpdate(deltaTime);
     }
+
+    void __lateUpdate(float deltaTime){
+        
+        for (const auto & [id, owning_ptr] : children)
+            owning_ptr->__lateUpdate(deltaTime);
+        
+        for (const auto & [ti, comp] : components)
+            comp->_onLateUpdate(deltaTime);
+
+    }
 };

@@ -19,3 +19,4 @@ void Component::_onExitScene() {}
 
 void Component::_onUpdate(float deltaTime) {};
 void Component::_onPhysicsUpdate(float deltaTime) {};
+void Component::_onLateUpdate(float deltaTime) {};

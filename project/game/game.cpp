@@ -14,13 +14,14 @@
 #include "src/mapManager/mapManager.h"
 
 
-
-#include "TomPlayground.h"
+#include "sceneDef.h"
+//#include "TomPlayground.h"
 #include "AndrewPlayground.h"
 
 int main( void )
 {
     //tom(); // tom
-    andrew(); // andrew
+    //andrew(); // andrew
+    game();
 }
 

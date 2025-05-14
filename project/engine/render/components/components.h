@@ -25,26 +25,9 @@ public:
 
     C_Camera() = default;
 
-    virtual void _onUpdate(float deltaTime) override;   
+    virtual void _onLateUpdate(float deltaTime) override;   
 
     virtual void _onEnterScene() override;
 };
 
 
-//TODO : Make a simpler control generalisation function
-class C_Movement: public Component {
-    protected:
-        float movement_speed;
-    public:
-        inline void moveWithWASD(float deltaTime);
-
-        C_Movement(){
-            movement_speed = 0.5f;
-        }
-
-        inline void setMoveSpeed(float movespeed){
-            movement_speed = movespeed;
-        }
-
-        virtual void _onUpdate(float deltaTime) override;
-};
