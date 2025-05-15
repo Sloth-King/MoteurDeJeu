@@ -26,9 +26,6 @@ using namespace glm;
 #include <common/objloader.hpp>
 #include <common/vboindexer.hpp>
 
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
 
 inline void limit_fps(int FPS){
     static double last_time = glfwGetTime();

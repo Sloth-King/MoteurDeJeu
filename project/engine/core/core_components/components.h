@@ -10,12 +10,12 @@ class C_Transform: public Component {
 
 private:
 
-    glm::mat4 local = glm::mat4(1.0f);
-    glm::mat4 global = glm::mat4(1.0f);
-    glm::mat4 global_inv = glm::mat4(1.0f);
+    mutable glm::mat4 local = glm::mat4(1.0f);
+    mutable glm::mat4 global = glm::mat4(1.0f);
+    mutable glm::mat4 global_inv = glm::mat4(1.0f);
 
-    bool local_dirty = false;
-    bool global_dirty = true;
+    mutable bool local_dirty = false;
+    mutable bool global_dirty = true;
 
     glm::vec3 pos = { 0.0f, 0.0f, 0.0f };
     glm::vec3 eulerRot = { 0.0f, 0.0f, 0.0f };
@@ -26,10 +26,13 @@ private:
     void setGlobalDirty();
 
 public:
-    const glm::mat4 & getLocalTransformationMatrix();
-    const glm::mat4 & getGlobalTransformationMatrix();
-    const glm::mat4 & getGlobalInverse();
+    const glm::mat4 & getLocalTransformationMatrix() const;
+    const glm::mat4 & getGlobalTransformationMatrix() const;
+    const glm::mat4 & getGlobalInverse() const;
 
+    const glm::vec3 & getGlobalPosition() const;
+    const glm::vec3 & getGlobalScale() const;
+    const glm::vec3 & getGlobalRotation() const; // TODO
 
     // local funcs
     void move(glm::vec3 speed_per_coord){

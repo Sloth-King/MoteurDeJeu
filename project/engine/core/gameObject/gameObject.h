@@ -167,6 +167,10 @@ public:
         scene = nullptr;
     }
 
+    unsigned long getId() const {
+        return id;
+    }
+
 
     template <DerivedFromComponent T>
     bool hasComponent() const {
