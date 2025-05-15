@@ -19,7 +19,7 @@
 
 using Utils::print;
 
-static std::string path_prefix_from_build = "../game/";
+
 
 GameObject createPlayer(){
     GameObject player;

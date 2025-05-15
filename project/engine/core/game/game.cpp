@@ -1,5 +1,7 @@
 
 #include "game.h"
+#include "core/inputs/input.h"
+
 
 // Include standard headers
 #include <stdio.h>
@@ -7,7 +9,6 @@
 #include <vector>
 #include <iostream>
 #include <thread>
-
 
 // Include GLEW
 #include <GL/glew.h>
@@ -144,7 +145,10 @@ void Game::init()
     current_game = this;
 
     glfwSetFramebufferSizeCallback(window, handleWindowResizedCallback);
-    //glEnable(GL_CULL_FACE); 
+    glEnable(GL_CULL_FACE); 
+
+
+    Input::init();
 
 }
 
@@ -174,6 +178,8 @@ void Game::renderUpdate(){
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
+    glfwPollEvents();
+
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -182,9 +188,10 @@ void Game::renderUpdate(){
 
     physicsUpdate(); // called here for now
 
+    current_scene.__engineLateUpdate(deltaTime);
+
     // Swap buffers
     glfwSwapBuffers(window);
-    glfwPollEvents();
 
     showFPS(window);
     //limit_fps(60);

@@ -7,3 +7,4 @@
 #include "engine/render/texture/texture.h"
 #include "engine/render/cubemap/cubemap.h"
 #include "engine/core/game/game.h"
+#include "engine/core/inputs/input.h"
