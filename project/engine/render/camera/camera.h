@@ -35,7 +35,7 @@ public:
             glm::radians(45.0f),
             width / height,
             0.1f,
-            100.0f
+            300.0f
         );
     }
 
@@ -44,7 +44,7 @@ public:
             glm::radians(60.0f),
             (float)u / (float)v,
             0.1f,
-            100.0f
+            300.0f
         );
 
     }
@@ -66,7 +66,10 @@ public:
         //view = glm::inverse(getViewMatrix());
         return glm::vec3(transform[2][0], transform[2][1], transform[2][2]);
     }
+};
 
+class DebugCamera: public Camera{
+public:
     float mouseSpeed = 2.0;
     float speed = 4.0;
 

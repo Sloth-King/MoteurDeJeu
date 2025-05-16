@@ -24,20 +24,19 @@ class C_MapManager: public Component{
 
 public:
     
-    const int chunkRadius = 1;
+    const int chunkRadiusXZ = 0;
+    const int chunkRadiusY = 0;
+
     const float world_scale = 0.05f;
 
-    std::vector < GameObject > chunks; // for now a pointer. this is NOT safe because things can reparent.
-    // acceptable refactor : include in the scene a hashmap of the objects id against a pointer to them, which is updated when needed.
-    // then any component in the scene can access the gameobject with its id in O(1)
-
+    std::vector < GameObject > chunks;
 
     GameObject player;
 
     glm::ivec3 current_player_chunk_in_map;
 
     C_MapManager(){
-        chunks.resize((2*chunkRadius+1) * (2*chunkRadius+1) * (2*chunkRadius+1));
+        chunks.resize((2*chunkRadiusXZ+1) * (2*chunkRadiusY+1) * (2*chunkRadiusXZ+1));
 
         std::string path_prefix_from_build = "../game/";
         std::string vertex_shader_filename = path_prefix_from_build + "resources/shaders/voxel_shader_vert.glsl";
@@ -54,22 +53,22 @@ public:
 
     GameObject getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
         v = {
-            Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadius + 1),
-            Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadius + 1),
-            Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadius + 1)
+            Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadiusXZ + 1),
+            Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadiusY + 1),
+            Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadiusXZ + 1)
         };
 
-        return chunks.at((v.z * chunkRadius * chunkRadius) + (v.y * chunkRadius) + v.x);
+        return chunks.at((v.z * chunkRadiusXZ * chunkRadiusXZ) + (v.y * chunkRadiusY) + v.x);
     }
 
     void setChunkAt(glm::ivec3 v, GameObject chunk){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
         v = {
-            Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadius + 1),
-            Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadius + 1),
-            Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadius + 1)
+            Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadiusXZ + 1),
+            Utils::posmod(v.y + current_player_chunk_in_map.y, 2 * chunkRadiusY + 1),
+            Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadiusXZ + 1)
         };
 
-        chunks.at((v.z * chunkRadius * chunkRadius) + (v.y * chunkRadius) + v.x) = chunk;
+        chunks.at((v.z * chunkRadiusXZ * chunkRadiusXZ) + (v.y * chunkRadiusXZ) + v.x) = chunk;
     }
 
     glm::ivec3 getPlayerChunkCoords() const {
@@ -110,9 +109,14 @@ public:
     
     void initChunks(){
 
-        for (int i = -chunkRadius; i <= chunkRadius; ++i){
-            for (int j = -1; j <= 1; ++j){
-                for (int k = -chunkRadius; k <= chunkRadius; ++k){
+        Utils::time<'c'>(); // init (print pas la première fois)
+
+        Utils::time<'d'>(); // init (print pas la première fois)
+        int chcount = 0;
+        int chmax = chunks.size();
+        for (int i = -chunkRadiusXZ; i <= chunkRadiusXZ; ++i){
+            for (int j = -chunkRadiusY; j <= chunkRadiusY; ++j){
+                for (int k = -chunkRadiusXZ; k <= chunkRadiusXZ; ++k){
                     auto chunkIdx = glm::ivec3(i, j, k);
                     GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
                     //std::cout << chunk->getComponent<C_voxelMesh>()->mesh << std::endl;
@@ -120,9 +124,12 @@ public:
                         chunkIdx,
                         chunk
                     );
+
+
+                    Utils::time<'d'>(true, std::string("chuck ") + std::to_string(++chcount) + "/" + std::to_string(chmax)); // print, message custom et reset
                 }
             }
         }
-
+        Utils::time<'c'>(); // init (print et reset pas (donc les temps se cumulent si appelés plusieurs fois))
     }
 };
