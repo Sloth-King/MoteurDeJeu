@@ -12,6 +12,9 @@ struct intersectionData{
     glm::vec3 intersectionNormal;
     GameObjectData* objectA;
     GameObjectData* objectB;
+    Collider* colliderA;
+    Collider* colliderB;
+    float _overlapDistance; // _ for meta data
 };
 
 // Largely inspired by this
@@ -20,13 +23,14 @@ struct intersectionData{
 class PhysicsServer{
 private:
     std::set<GameObjectData*> Objects;
-    glm::vec3 gravity = glm::vec3(0.0,9.8,0.0);
+    glm::vec3 gravity = glm::vec3(0.0,-0.07,0.0);
 
 public:
     void addObject(GameObjectData* go);                                  // Add an object to the phys world
     void removeObject(GameObjectData* go);                               // Remove an object from the phys world
     std::vector<intersectionData> computeCollisions();              // Compute all collisions in our world
-    void solveCollisions(std::vector<intersectionData> collisions); // Resolve collisions
+    void resolveCollision(const intersectionData &a);
+    void solveCollisions(std::vector<intersectionData> collisions, float deltatime); // Resolve collisions
     void integrate(float deltatime);                             // Apply physics calculations to the object
     void step(float deltaTime);                                     // Per frame calculations
 

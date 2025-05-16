@@ -26,7 +26,6 @@ class C_RigidBody : public Component{
     // Constructor 
     C_RigidBody(glm::vec3 initial_velocity = glm::vec3(0.0f) , float m = 1.0f) 
     : linear_velocity(initial_velocity), mass(m) {
-        std::cout << "huh" << std::endl;
     }
 
     void setVelocity(glm::vec3 velocity){
@@ -40,10 +39,24 @@ class C_StaticBody : public Component{
 
 };
 
+
+union Colliders {
+    Collider base;
+    SphereCollider sphere;
+    PlaneCollider plane;
+
+    Colliders() : base() {}
+};
+
 // Collision shape 
 class C_Collider : public Component{
     public:
-    Collider collider; 
+
+        Colliders collider;
+        
+        C_Collider() {
+            collider.base = Collider(BASE);
+        }
 
     virtual void _onEnterScene() override;
     virtual void _onExitScene() override;

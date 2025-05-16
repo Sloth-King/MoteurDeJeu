@@ -10,7 +10,10 @@
 // Collision detection functions (Maybe move them to be somewhere else idk yet)
 
 // Sphere Vs Sphere intersection
-intersectionData intersectionSphereSphere(const Collider *a, const Collider *b){
+intersectionData intersectionSphereSphere(const Collider *a, const C_Transform *at,
+                                          const Collider *b, const C_Transform *bt){
+
+    //std::cout << "Sphere Sphere" << std::endl;
 
     assert(a->type == ColliderType::SPHERE && b->type == ColliderType::SPHERE);
 
@@ -19,11 +22,11 @@ intersectionData intersectionSphereSphere(const Collider *a, const Collider *b){
 
     intersectionData res;
 
-    glm::vec3 aCenter = sphere_a->center;
-    glm::vec3 bCenter= sphere_b->center;
+    glm::vec3 aCenter = sphere_a->center + at->getGlobalPosition();
+    glm::vec3 bCenter= sphere_b->center + bt->getGlobalPosition();
 
-    float aRadius = sphere_a->radius;
-    float bRadius = sphere_b->radius; 
+    float aRadius = sphere_a->radius * at->getGlobalScale().x;       
+    float bRadius = sphere_b->radius * bt->getGlobalScale().x; 
 
     glm::vec3 ab = bCenter - aCenter;
 
@@ -38,7 +41,7 @@ intersectionData intersectionSphereSphere(const Collider *a, const Collider *b){
     glm::vec3 intersectionA = aCenter + normal * aRadius;
     glm::vec3 intersectionB = bCenter - normal * bRadius;
 
-    std::cout << "Intersection : Sphere Sphere" << std::endl;
+    // std::cout << "Intersection : Sphere Sphere" << std::endl;
 
     res.isIntersection = true;
     res.intersectionNormal = normal;
@@ -49,7 +52,10 @@ intersectionData intersectionSphereSphere(const Collider *a, const Collider *b){
 }   
 
 
-intersectionData intersectionSpherePlane(const Collider* a, const Collider* b){
+intersectionData intersectionSpherePlane(const Collider* a, const C_Transform *at,
+                                         const Collider* b, const C_Transform *bt){
+
+    //std::cout << "Sphere Plane" << std::endl;
 
     assert(a->type == ColliderType::SPHERE && b->type == ColliderType::PLANE);
 
@@ -58,25 +64,36 @@ intersectionData intersectionSpherePlane(const Collider* a, const Collider* b){
     const SphereCollider* sphere = static_cast<const SphereCollider*>(a);
     const PlaneCollider* plane = static_cast<const PlaneCollider*>(b);
 
-    glm::vec3 sphereCenter = sphere->center;
-    float sphereRadius = sphere->radius;
+    glm::vec3 sphereCenter = sphere->center + at->getGlobalPosition();
+    float sphereRadius = sphere->radius * at->getGlobalScale().x; // Assuming our scale is uniform, if not juste use the max
 
-    glm::vec3 planeNormal = plane->normal;
+    //glm::vec3 planeNormal = glm::normalize(bt->getGlobalRotation() * plane->normal); //TODO when i code getRotation
+    glm::vec3 planeNormal = glm::normalize(plane->normal);
+    glm::vec3 planeNormal2 = plane->normal;
+    //glm::vec3 planeNormal = glm::normalize(glm::vec3(0.0,1.0,0.0));
+
     float planeDistance = plane->distance;
-    glm::vec3 onPlane = planeNormal * planeDistance; // + converted to world pos //TODO
+    glm::vec3 onPlane = planeNormal * planeDistance + bt->getGlobalPosition();
 
 
     float distance = glm::dot(sphereCenter - onPlane, planeNormal);
-
+    // std::cout << "----------------------------------------------------------------" << std::endl;
+    // std::cout << "planeNormal (not normalized): (" << planeNormal2.x << ", " << planeNormal2.y << ", " << planeNormal2.z << ")" << std::endl;
+    //std::cout << "planeNormal : (" << planeNormal.x << ", " << planeNormal.y << ", " << planeNormal.z << ")" << std::endl;
+    // std::cout << "plane global position: (" << bt->getGlobalPosition().x << ", " << bt->getGlobalPosition().y << ", " << bt->getGlobalPosition().z << ")" << std::endl;
+    // std::cout << "sphere global position : (" << at->getGlobalPosition().x << ", " << at->getGlobalPosition().y << ", " << at->getGlobalPosition().z << ")" << std::endl;
+    // std::cout << "onPlane : (" << onPlane.x << ", " << onPlane.y << ", " << onPlane.z << ")" << std::endl;
+    //std::cout << "distance : " << distance << std::endl;
+    // std::cout << "radius : " << sphereRadius << std::endl;
     if(distance > sphereRadius){
         res.isIntersection = false;
         return res;
     }
 
-    glm::vec3 intersectionPointA = sphereCenter - planeNormal * distance;
-    glm::vec3 intersectionPointB = sphereCenter - planeNormal * sphereRadius;
+    glm::vec3 intersectionPointB = sphereCenter - planeNormal * distance; //* (2.0f * (glm::dot(planeNormal, sphereCenter - onPlane) < 0) - 1.0f);
+    glm::vec3 intersectionPointA = sphereCenter - planeNormal * sphereRadius;
 
-    std::cout << "Intersection : Sphere Plane" << std::endl;
+    //std::cout << "Intersection : Sphere Plane" << std::endl;
     res.isIntersection = true;
     res.intersectionPointA = intersectionPointA;
     res.intersectionPointB = intersectionPointB;
@@ -86,7 +103,10 @@ intersectionData intersectionSpherePlane(const Collider* a, const Collider* b){
 }
 
 // FIXME : This might be useless maybe remove
-intersectionData intersectionPlanePlane(const Collider* a, const Collider* b){
+intersectionData intersectionPlanePlane(const Collider* a, const C_Transform *at,
+                                        const Collider* b, const C_Transform *bt){
+                                            
+    //std::cout << "Plane Plane" << std::endl;
 
     assert(a->type == ColliderType::PLANE && b->type == ColliderType::PLANE);
 
@@ -119,7 +139,7 @@ intersectionData intersectionPlanePlane(const Collider* a, const Collider* b){
     glm::vec3 pointOnLine = ((bDistance * glm::cross(direction, aNormal)) +
                              (aDistance * glm::cross(bNormal, direction))) / det;
 
-    std::cout << "Intersection : Plane Plane" << std::endl;
+    // std::cout << "Intersection : Plane Plane" << std::endl;
 
     res.isIntersection = true;
     res.intersectionNormal = glm::normalize(direction);
@@ -145,11 +165,12 @@ std::vector<intersectionData> PhysicsServer::computeCollisions(){
     // Check this out to understand this
     // https://winter.dev/articles/physics-engine
 
-    using FindContactFunc = intersectionData(*)(const Collider*, const Collider*);   
+    using FindContactFunc = intersectionData(*)(const Collider*, const C_Transform* , const Collider*, const C_Transform*);   
     
-    static const FindContactFunc functionTables[2][2] = {
-            {intersectionSphereSphere, intersectionSpherePlane},
-            {nullptr, intersectionPlanePlane}
+    static const FindContactFunc functionTables[3][3] = {
+            {nullptr, nullptr, nullptr},
+            {nullptr, intersectionSphereSphere, intersectionSpherePlane},
+            {nullptr, nullptr, intersectionPlanePlane}
     };
 
     for(const auto& objectA : Objects){
@@ -157,40 +178,53 @@ std::vector<intersectionData> PhysicsServer::computeCollisions(){
         for(const auto& objectB : Objects){
 
             //Check if the object has the right components AND that they're not the same object
-            if((!objectB->hasComponent<C_Collider>() || !objectB->hasComponent<C_RigidBody>()) && objectA == objectB) continue;
+            if(
+                !objectB->hasComponent<C_Collider>() ||
+                !objectB->hasComponent<C_RigidBody>() ||
+                objectA->getId() <= objectB->getId()
+            ) continue;
 
             intersectionData intersection;
 
             //check if it can work in our table, if not, flip it
 
-            Collider* colliderA = &objectA->getComponent<C_Collider>()->collider;
-            Collider* colliderB = &objectB->getComponent<C_Collider>()->collider;
+            Collider* colliderA = &objectA->getComponent<C_Collider>()->collider.base;
+            C_Transform* transformA = objectA->getComponent<C_Transform>();
 
-            bool swap = (objectB->getComponent<C_Collider>()->collider.type) < (objectA->getComponent<C_Collider>()->collider.type);
+            Collider* colliderB = &objectB->getComponent<C_Collider>()->collider.base;
+            C_Transform* transformB = objectB->getComponent<C_Transform>();
+
+            bool swap = (objectB->getComponent<C_Collider>()->collider.base.type) < (objectA->getComponent<C_Collider>()->collider.base.type);
 
             //flip it (or not)
             if(swap){
 
                 //safety check
+                // std::cout << "id 1st : " << objectB->getId() << std::endl;
+                // std::cout << "id 2nd : " << objectA->getId() << std::endl;
                 auto func = functionTables[colliderB->type][colliderA->type];
                 if (!func){
                     std::cout << "func[" << colliderB->type << "][" << colliderA->type << "] does not exist" << std::endl;
                     continue;  
                 }               
 
-                intersection = func(colliderB, colliderA);
+                intersection = func(colliderB, transformB, colliderA, transformA);
                 intersection.objectA = objectB;
                 intersection.objectB = objectA;
             } else {
 
                 //same safety check
+                // std::cout << "id 1st : " << objectA->getId() << std::endl;
+                // std::cout << "id 2nd : " << objectB->getId() << std::endl;
                 auto func = functionTables[colliderA->type][colliderB->type];
                 if (!func){
                     std::cout << "func[" << colliderA->type << "][" << colliderB->type << "] does not exist" << std::endl;
                     continue;  
                 }
 
-                intersection = func(colliderA, colliderB);
+                intersection = func(colliderA, transformA, colliderB, transformB);
+                intersection.colliderA = colliderA;
+                intersection.colliderB = colliderB;
                 intersection.objectA = objectA;
                 intersection.objectB = objectB;
             }
@@ -201,18 +235,45 @@ std::vector<intersectionData> PhysicsServer::computeCollisions(){
     return intersectionList;
 }
 
-void PhysicsServer::solveCollisions(std::vector<intersectionData> collisions){
+void PhysicsServer::resolveCollision(const intersectionData &a){
+
+    static const float MARGIN = 0.001f;
+
+    auto* objectA = a.objectA;
+    auto* objectB = a.objectB;
+
+    glm::vec3 overlapVector(a.intersectionPointB - a.intersectionPointA);
+    float mass_ratio = objectB->getComponent<C_RigidBody>()->mass / (objectB->getComponent<C_RigidBody>()->mass + objectA->getComponent<C_RigidBody>()->mass);
+    //std::cout << "MASS RATIO " << mass_ratio << std::endl;
+    glm::vec3 moveA = overlapVector * (mass_ratio + MARGIN);
+
+    auto v = objectA->getComponent<C_Transform>()->getGlobalPosition();
+    objectA->getComponent<C_Transform>()->moveGlobal(overlapVector * (mass_ratio + MARGIN));
+
+    //objectA->getComponent<C_Transform>()->setScale(glm::vec3(glm::length(overlapVector*20.0f)));
+    //objectB->getComponent<C_Transform>()->moveGlobal(-1.0f * overlapVector  * (1.0f - mass_ratio + MARGIN));
+
+}
+bool t = false;
+void PhysicsServer::solveCollisions(std::vector<intersectionData> collisions, float deltatime){
     for(const auto& collision : collisions){
+        if(collision.isIntersection){
+            resolveCollision(collision);
+            collision.objectA->getComponent<C_RigidBody>()->linear_velocity =
+                glm::reflect(collision.objectA->getComponent<C_RigidBody>()->linear_velocity, collision.intersectionNormal);
 
-        // TODO : Manage static bodies
-        // idea : set them to default values like velocity = 0 at every collision maybe ? 
-        
+            collision.objectB->getComponent<C_RigidBody>()->linear_velocity =
+                glm::reflect(collision.objectB->getComponent<C_RigidBody>()->linear_velocity, collision.intersectionNormal);
 
-        // TODO : Two rigid body collisions : 
+            collision.objectA->getComponent<C_RigidBody>()->linear_velocity -= collision.objectA->getComponent<C_RigidBody>()->acceleration * deltatime;
+            collision.objectB->getComponent<C_RigidBody>()->linear_velocity -= collision.objectA->getComponent<C_RigidBody>()->acceleration * deltatime;
+            
+            float THRESH = 0.0000005f;
+            if( glm::dot(collision.objectA->getComponent<C_RigidBody>()->linear_velocity, collision.objectA->getComponent<C_RigidBody>()->linear_velocity) < THRESH) collision.objectA->getComponent<C_RigidBody>()->linear_velocity = glm::vec3(0.0);
+            if( glm::dot(collision.objectB->getComponent<C_RigidBody>()->linear_velocity, collision.objectB->getComponent<C_RigidBody>()->linear_velocity) < THRESH) collision.objectB->getComponent<C_RigidBody>()->linear_velocity = glm::vec3(0.0);
 
-        //TEMP naive version just to test if it actually works i guess
-        glm::vec3 moveVector = collision.intersectionPointB - collision.intersectionPointA;
-        collision.objectA->getComponent<C_Transform>()->move(moveVector);
+            //t = true;
+        }
     }
 }
 
@@ -220,26 +281,33 @@ void PhysicsServer::solveCollisions(std::vector<intersectionData> collisions){
 // https://books.google.fr/books?hl=en&lr=&id=dSbMBQAAQBAJ&oi=fnd&pg=PP1&dq=3d+physics+engine&ots=qe2HUKonLp&sig=JMjj1CI9Jnisktw-MRhHuGTIczg&redir_esc=y#v=onepage&q&f=true
 void PhysicsServer::integrate(float deltatime){
     for(const auto& object : Objects){
-        if(object->getComponent<C_Collider>()->collider.type == SPHERE){
+        if(object->getComponent<C_Collider>()->collider.base.type == SPHERE){
             auto* objectBody = object->getComponent<C_RigidBody>();
             objectBody->acceleration = gravity; // for now thats all it is
-            std::cout << "acceleration : (" << objectBody->acceleration.x << "," << objectBody->acceleration.y  << "," << objectBody->acceleration.z << ")" << std::endl;
             // update the position
             object->getComponent<C_Transform>()->move(objectBody->linear_velocity);
 
             // update de velocity
-            objectBody->linear_velocity += objectBody->acceleration * deltatime * deltatime * 0.5f;
-            objectBody->linear_velocity *= pow(objectBody->damping, deltatime);
-            std::cout << "velocity : (" << objectBody->linear_velocity .x << "," << objectBody->linear_velocity .y  << "," << objectBody->linear_velocity .z << ")" << std::endl;
+            objectBody->linear_velocity += objectBody->acceleration * deltatime;
 
+            objectBody->linear_velocity *= pow(objectBody->damping, deltatime);
+            
+            glm::vec3 objectTransform = object->getComponent<C_Transform>()->getPosition();
+
+
+            
+            // std::cout << "acceleration : (" << objectBody->acceleration.x << "," << objectBody->acceleration.y  << "," << objectBody->acceleration.z << ")" << std::endl;
+            // std::cout << "velocity : (" << objectBody->linear_velocity .x << "," << objectBody->linear_velocity .y  << "," << objectBody->linear_velocity .z << ")" << std::endl;
+            // std::cout << "transform : (" << objectTransform.x << "," << objectTransform.y  << "," << objectTransform.z << ")" << std::endl;
 
         }
     }
 }
 
 void PhysicsServer::step(float deltatime){
+    if (t) return;
     std::vector<intersectionData> collisions = computeCollisions();
-    solveCollisions(collisions);
+    solveCollisions(collisions, deltatime);
     integrate(deltatime);
 
 }

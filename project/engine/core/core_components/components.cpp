@@ -1,7 +1,7 @@
 #include "components.h"
 #include "engine/core/gameObject/gameObject.h"
 
-const glm::mat4 & C_Transform::getLocalTransformationMatrix(){
+const glm::mat4 & C_Transform::getLocalTransformationMatrix() const{
 
     if (!local_dirty){
         return local;
@@ -27,8 +27,8 @@ const glm::mat4 & C_Transform::getLocalTransformationMatrix(){
 
     return local;
 
-}
-const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
+}   
+const glm::mat4 & C_Transform::getGlobalTransformationMatrix() const{
 
 
     if (!global_dirty && !local_dirty){
@@ -55,9 +55,32 @@ const glm::mat4 & C_Transform::getGlobalTransformationMatrix(){
 
 }
 
-const glm::mat4 & C_Transform::getGlobalInverse(){
+const glm::mat4 & C_Transform::getGlobalInverse() const{
     getGlobalTransformationMatrix();
     return global_inv;
+}
+
+const glm::vec3 & C_Transform::getGlobalPosition() const{
+    static glm::vec3 globalPosition;
+    glm::mat4 globalMatrix = getGlobalTransformationMatrix();
+    globalPosition = glm::vec3(globalMatrix[3][0], globalMatrix[3][1], globalMatrix[3][2]);
+    return globalPosition;
+}
+
+const glm::vec3 & C_Transform::getGlobalScale() const{
+    static glm::vec3 globalScale;
+    glm::mat4 globalMatrix = getGlobalTransformationMatrix();
+    globalScale = glm::vec3(
+        glm::length(glm::vec3(globalMatrix[0])),
+        glm::length(glm::vec3(globalMatrix[1])),
+        glm::length(glm::vec3(globalMatrix[2]))
+    );
+    return globalScale;
+}
+
+//TODO
+const glm::vec3 & C_Transform::getGlobalRotation() const{
+    return glm::vec3(1.0f,1.0f,1.0f);
 }
 
 
