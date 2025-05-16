@@ -7,58 +7,55 @@
 #include "engine/physics/collider/collider.h"
 #include <iostream>
 
-
-
 // Physics and collision
-class C_RigidBody : public Component{
+class C_RigidBody : public Component
+{
 
-    public:
-    glm::vec3 linear_velocity;  // Velocity for xyz directions
-    glm::vec3 angular_velocity; // Velocity for when we handle rotations
-    glm::vec3 acceleration;     // Acceleration 
-    float damping = 0.99f;      // Damping to simulate drag naively
-    float mass = 1.0f;                 // Mass of our object (maybe switch to inverse mass)
+public:
+    glm::vec3 linear_velocity;      // Velocity for xyz directions
+    glm::vec3 angular_velocity;     // Velocity for when we handle rotations
+    glm::vec3 acceleration;         // Acceleration
+    float damping = 0.99f;          // Damping to simulate drag naively
+    float mass = 1.0f;              // Mass of our object (maybe switch to inverse mass)
+    float restitution = 0.5;        // Pretty much bounciness (i hope no phycicist reads this)
+    bool isStatic = false;          // Decide if the object is static or no (infinite mass obj, like the floor or a wall)
+    float inverseMass = 1.f / mass; // Not sure yet but apparently goated to handle static members
 
     virtual void _onEnterScene() override;
     virtual void _onExitScene() override;
 
+    // Constructor
+    C_RigidBody(glm::vec3 initial_velocity = glm::vec3(0.0f), glm::vec3 initial_angular_velocity = glm::vec3(0.0f), glm::vec3 initial_acceleration = glm::vec3(0.0f),
+                float damping_coef = 0.99f, float m = 1.0f, float restitution_coef = 0.5f, bool isStatic = false)
+        : linear_velocity(initial_velocity), angular_velocity(initial_angular_velocity), damping(damping_coef), mass(m), restitution(restitution_coef), isStatic(isStatic), inverseMass(1.0f / m) {}
 
-    // Constructor 
-    C_RigidBody(glm::vec3 initial_velocity = glm::vec3(0.0f) , float m = 1.0f) 
-    : linear_velocity(initial_velocity), mass(m) {
-    }
-
-    void setVelocity(glm::vec3 velocity){
+    void setVelocity(glm::vec3 velocity)
+    {
         linear_velocity = velocity;
     }
 };
 
-// Collision without physics
-// TODO
-class C_StaticBody : public Component{
-
-};
-
-
-union Colliders {
+union Colliders
+{
     Collider base;
     SphereCollider sphere;
     PlaneCollider plane;
+    CubeCollider cube;
 
     Colliders() : base() {}
 };
 
-// Collision shape 
-class C_Collider : public Component{
-    public:
+// Collision shape
+class C_Collider : public Component
+{
+public:
+    Colliders collider;
 
-        Colliders collider;
-        
-        C_Collider() {
-            collider.base = Collider(BASE);
-        }
+    C_Collider()
+    {
+        collider.base = Collider(BASE);
+    }
 
     virtual void _onEnterScene() override;
     virtual void _onExitScene() override;
-    
 };
