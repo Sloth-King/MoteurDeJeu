@@ -28,7 +28,7 @@ namespace Utils
     }
 
     template <const char name>
-    inline void time(const bool restart = false, const std::string msg = "")
+    inline void time(const std::string msg = "", const bool restart = false)
     {
         static bool started = false;
         static std::chrono::steady_clock::time_point last_time;
@@ -47,5 +47,6 @@ namespace Utils
 
         std::cout << std::endl;
     }
-
+    template <const char name>
+    inline void time(const bool restart) {time<name>("", restart);}
 }

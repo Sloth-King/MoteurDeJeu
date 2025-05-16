@@ -5,6 +5,7 @@
 #include "gameObject.h"
 
 unsigned long  GameObjectData::next_id = 0;
+std::set<GameObjectData*> GameObjectData::queuedForDeletion = std::set<GameObjectData*>();
 
 void GameObjectData::addChild(GameObject && child){
 
@@ -44,3 +45,8 @@ void GameObjectData::addChild(GameObjectHandle && child){
     if (scene) children[p]->__enterScene(scene);
 
 }*/
+
+bool operator==(const GameObject& lhs, const GameObject& rhs)
+{
+    return lhs->getId() == rhs->getId();
+}

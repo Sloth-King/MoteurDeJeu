@@ -123,11 +123,13 @@ Scene createScene(){
     world->addComponent<C_Transform>();
 
     auto* v = world->addComponent<C_MapManager>();
-    v->initChunks();
 
     GameObject player = createPlayer();
 
     world->addChild(std::move(player));
+
+    v->player = player;
+    v->initChunks();
 
     scene.setRoot(std::move(world));
 
