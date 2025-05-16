@@ -16,7 +16,7 @@ struct VoxelType {
     bool randomizeFaces = false;
 };
 
-// externalized to be able to swap it easily. Maybe do an octree in the end (or a mix octree above surface / grid below ?)
+// externalized to be able to swap it easily. Maybe do an octree in the end
 struct VoxelContainer {
     size_t sX, sY, sZ;
 
@@ -37,8 +37,8 @@ struct VoxelContainer {
     VoxelContainer() = default;
 };
 
-const unsigned int CHUNK_SIZE_XZ = 8;
-const unsigned int CHUNK_SIZE_Y = 4;
+const unsigned int CHUNK_SIZE_XZ = 100;
+const unsigned int CHUNK_SIZE_Y = 16;
 
 void generateChunk(VoxelContainer & container, glm::ivec3 offset);
 void generateFrom3DTexture(VoxelContainer & container, std::string path, int dimX, int dimY, int dimZ, int threshold, int trueValue = 2);

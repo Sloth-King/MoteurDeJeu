@@ -77,18 +77,18 @@ void addKeybind(){
 
 GameObject createPlayer(){
 
-    const glm::vec3 cameraOffset(0.1, 0.0, 0.1);
+    const glm::vec3 cameraOffset(1.3, 0.0, -3.5);
 
     GameObject player;
 
-    Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v1.obj");
+    Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v2.obj");
     submarine.addTexture( Texture(path_prefix_from_build + "resources/textures/submarine.jpg"), "albedo" );
 
     auto* playerTransform = player->addComponent<C_Transform>();
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
     playerTransform->move(glm::vec3(0, 1, 0));
 
-    player->addComponent<C_Camera>() -> playerCamera;
+    player->addComponent<C_Camera>() -> offset = cameraOffset;
 
     player->addComponent<C_Mesh>()->mesh = submarine;
 

@@ -24,7 +24,7 @@ class C_MapManager: public Component{
 
 public:
     
-    const int chunkRadius = 4;
+    const int chunkRadius = 1;
     const float world_scale = 0.05f;
 
     std::vector < GameObject > chunks; // for now a pointer. this is NOT safe because things can reparent.
@@ -96,7 +96,6 @@ public:
         c_voxelmesh->mesh.addTexture(roughness, "roughness_map");
         c_voxelmesh->mesh.addTexture(metallic, "metallic_map");
         c_voxelmesh->mesh.addTexture(normal, "normal_map"); 
-
 
         c_voxelmesh->create_chunk(global_pos);
 

@@ -11,5 +11,5 @@ CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
 
-TP1_code/build/*
-TP1_code/build/launch-TP1.sh
+project/build/*
+project/build/launch-TP1.sh
