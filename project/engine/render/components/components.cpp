@@ -1,9 +1,10 @@
 #include "components.h"
 #include "engine/core/gameObject/gameObject.h"
+#include "engine/core/game/game.h"
 #include "engine/core/scene/scene.h"
 #include "engine/core/core_components/components.h"
 #include <stdio.h>
-void C_Mesh::_onUpdate(float deltaTime) {
+void C_Mesh::render() {
 
     if (getOwner()->hasComponent<C_Transform>()){
         //getOwner()->getComponent<C_Transform>()->printGlobal();
@@ -16,6 +17,22 @@ void C_Mesh::_onUpdate(float deltaTime) {
         mesh.render(getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(), glm::mat4(1.0));
     }
 };
+
+
+void C_Mesh::_onEnterScene(){
+    Scene& scene = getScene();
+    if(scene.current_game){
+        scene.current_game->renderingServer.addObject(this);
+    }
+};
+
+void C_Mesh::_onExitScene(){
+    Scene& scene = getScene();
+    if(scene.current_game){
+        scene.current_game->renderingServer.removeObject(this);
+    }
+};
+
 
 void C_Camera::_onLateUpdate(float deltaTime){
 

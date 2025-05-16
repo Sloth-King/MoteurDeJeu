@@ -29,7 +29,7 @@
 class Game;
 class Scene{
 
-    Camera debugCamera;
+    DebugCamera debugCamera;
 //private:
 public:
     Camera* current_camera = nullptr;
@@ -86,7 +86,7 @@ public:
         
 
         if (root){
-            //current_camera->computeMatricesFromInputs();
+            if (current_camera == &debugCamera) debugCamera.computeMatricesFromInputs();
             root->__engineUpdate(deltaTime);
         }
     }

@@ -14,7 +14,11 @@ public:
     //C_Mesh(Mesh & mesh): mesh(mesh) {}
     C_Mesh() = default;
     
-    virtual void _onUpdate(float deltaTime) override;
+    void render();
+
+    virtual void _onEnterScene() override;
+
+    virtual void _onExitScene() override;
 
 };
 
