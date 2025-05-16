@@ -23,7 +23,7 @@
 #include "engine/utils/utils.h"
 #include "engine/core/scene/scene.h"
 #include "engine/physics/physics_server/physics_server.h"
-
+#include "engine/render/renderingServer/renderingServer.h"
 
 struct GameSettings {
     int windowWidth;
@@ -70,6 +70,7 @@ public:
 
     Scene current_scene;
     PhysicsServer physics_server;
+    RenderingServer renderingServer;
 
     Scene * setScene(Scene && scene){ // TODO call enter and exitscene if comp added at runtime
         current_scene.__unloaded();

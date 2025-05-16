@@ -193,6 +193,10 @@ void Game::renderUpdate(){
 
     current_scene.__engineLateUpdate(deltaTime);
 
+
+
+    renderingServer.renderAll();
+
     // Swap buffers
     glfwSwapBuffers(window);
 

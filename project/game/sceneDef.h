@@ -76,6 +76,9 @@ void addKeybind(){
 }
 
 GameObject createPlayer(){
+
+    const glm::vec3 cameraOffset(0.1, 0.0, 0.1);
+
     GameObject player;
 
     Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v1.obj");
@@ -85,7 +88,7 @@ GameObject createPlayer(){
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
     playerTransform->move(glm::vec3(0, 1, 0));
 
-    auto* playerCamera = player->addComponent<C_Camera>();
+    player->addComponent<C_Camera>() -> playerCamera;
 
     player->addComponent<C_Mesh>()->mesh = submarine;
 
