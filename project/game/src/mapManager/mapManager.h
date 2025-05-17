@@ -24,8 +24,8 @@ class C_MapManager: public Component{
 
 public:
     
-    const int chunkRadiusXZ = 9;
-    const int chunkRadiusY = 2;
+    const int chunkRadiusXZ = 1;
+    const int chunkRadiusY = 0;
 
     const float world_scale = 0.05f;
 
@@ -53,6 +53,10 @@ public:
         
     }
 
+    inline size_t convertCoord(const glm::ivec3 & v){
+        return (v.z * (2 * chunkRadiusXZ + 1) * (2 * chunkRadiusY + 1)) + (v.y * (2 * chunkRadiusXZ + 1)) + v.x;
+    }
+
     GameObject getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
         v = {
             Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadiusXZ + 1),
@@ -60,7 +64,7 @@ public:
             Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadiusXZ + 1)
         };
 
-        return chunks.at((v.z * chunkRadiusXZ * chunkRadiusY) + (v.y * chunkRadiusY) + v.x);
+        return chunks.at(convertCoord(v));
     }
 
     void setChunkAt(glm::ivec3 v, GameObject chunk){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
@@ -70,7 +74,8 @@ public:
             Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadiusXZ + 1)
         };
 
-        chunks.at((v.z * chunkRadiusXZ * chunkRadiusY) + (v.y * chunkRadiusY) + v.x) = chunk;
+        //chunks.at((v.z * chunkRadiusXZ * chunkRadiusY) + (v.y * chunkRadiusXZ) + v.x) = chunk;
+        chunks.at(convertCoord(v)) = chunk;
     }
 
     glm::ivec3 getPlayerChunkCoords() const {
@@ -92,6 +97,8 @@ public:
         GameObject g;
 
         glm::ivec3 global_pos = chunkCoord * glm::ivec3(CHUNK_SIZE_XZ, CHUNK_SIZE_Y, CHUNK_SIZE_XZ);
+
+        Utils::print(global_pos);
 
         auto* c_transform = g->addComponent<C_Transform>();
         c_transform->setPosition(glm::vec3(global_pos) * world_scale);
@@ -132,10 +139,11 @@ public:
                         chunkIdx,
                         chunk
                     );
+                    std::cout << "yolo" << std::endl;
                 }
             }
         }
-        Utils::time<'c'>(); // init (print et reset pas (donc les temps se cumulent si appelés plusieurs fois))
+        Utils::time<'c'>();
     }
 
     virtual void _onUpdate(float deltaTime) override {
