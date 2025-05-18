@@ -1,24 +1,23 @@
 #include "material.h"
 
-template<>
-void Material::addUniform<Texture>(std::string name, Texture v){
+
+void Material::setUniform(const std::string name, Texture v){
     uniformTextures[name] = v;
 }
 
-template<>
-void Material::addUniform<glm::mat4>(std::string name, glm::mat4 v){
+void Material::setUniform(const std::string name, glm::mat4 v){
     uniformMat4s[name] = v;
 } 
-template<>
-void Material::addUniform<int>(std::string name, int v){
+
+void Material::setUniform(const std::string name, int v){
     uniformInts[name] = v;
 } 
-template<>
-void Material::addUniform<float>(std::string name, float v){
+
+void Material::setUniform(const std::string name, float v){
     uniformFloats[name] = v;
 }
 
-void Material::setShaderFromSource(std::string shaderVert, std::string shaderFrag){
+void Material::setShaderFromSource(const std::string shaderVert, std::string shaderFrag){
 
     
     loadShaders(shaderVert, shaderFrag);
@@ -28,7 +27,7 @@ void Material::setShaderFromSource(std::string shaderVert, std::string shaderFra
 
 void Material::bind() const{
 
-    glUseProgram(_shaderPID);
+    if (_shaderPID) glUseProgram(_shaderPID);
 
     int i = 0;
     // textures

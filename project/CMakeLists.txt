@@ -64,6 +64,12 @@ add_executable(Game
 	engine/render/texture/texture.h
 	engine/render/texture/texture.cpp
 
+	
+	engine/utils/utils.h
+	engine/utils/utils.cpp
+
+
+
 	engine/core/component/component.h
 	engine/core/component/component.cpp
 
@@ -95,6 +101,14 @@ add_executable(Game
 	engine/external/common/tangentspace.hpp
 
 	engine/external/stb_image.cpp
+
+	# rendering
+
+	engine/render/renderingServer/renderingServer.h
+	engine/render/renderingServer/renderingServer.cpp
+
+	engine/render/material/material.h
+	engine/render/material/material.cpp
 
 	# physics
 

@@ -133,7 +133,7 @@ void Mesh::synchronize() const {
     _synchronized = true;
 }
 
-void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & outside_transform) const{
+void Mesh::renderForward(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & outside_transform) const{
 
     if (vertices.empty()) return;
     if (!_synchronized){ // FIXME branch prediction may bottleneck a little here? idk
@@ -184,6 +184,40 @@ void Mesh::render(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & ou
                 );
     
     glUseProgram(0);
+    glBindVertexArray(0);
+}
+
+
+void Mesh::renderDeferred(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::mat4 & outside_transform, GLuint gShader) const{
+
+    if (vertices.empty()) return;
+    if (!_synchronized){ // FIXME branch prediction may bottleneck a little here? idk
+        synchronize();
+    }
+
+    glBindVertexArray(_VAO);
+
+    glm::mat4 MODEL = outside_transform * transform;
+
+    glm::mat4 MVP = vpMatrix * MODEL; // transform the VP into MVP
+
+        // todo just tranfer a struct to the gpu with all interesting data
+    GLuint mvpUniformLocation = glGetUniformLocation(gShader, "MVP");
+    GLuint modelUniformLocation = glGetUniformLocation(gShader, "MODEL");
+
+    glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(modelUniformLocation, 1, GL_FALSE, &MODEL[0][0]);
+
+    material->bind();
+    
+    
+    glDrawElements(
+                GL_TRIANGLES,      // mode
+                triangles.size()*3,    // count
+                TRI_GL_TYPE,   // type
+                (void*)0           // element array buffer offset
+                );
+    
     glBindVertexArray(0);
 }
 

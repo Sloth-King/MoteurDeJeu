@@ -138,7 +138,7 @@ void main(){
    //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
    //set the normal map to the world space normal
    
-  lights[0] = sun;
+   lights[0] = sun;
 
    //Our roughness map is brifhtness map 
    roughness = 1 - roughness; 

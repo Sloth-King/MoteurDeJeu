@@ -12,6 +12,7 @@
 #include <cassert>
 #include <variant>
 #include <set>
+#include <mutex>
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,6 +20,8 @@
 #include "engine/utils/utils.h"
 
 #include "engine/core/component/component.h"
+
+#include "engine/core/resource/resource.h"
 
 
 template<typename T> // https://stackoverflow.com/questions/65969224/c-templates-and-inheritance-can-templates-be-more-selective
@@ -122,7 +125,7 @@ class GameObjectData{
         children.erase(id); // gameobjects are always master of their children
     }
 
-
+    static std::mutex queuedelete_mut; // important to keep ordered
 public:
     GameObjectData * parent = nullptr; // null in case it's root of a scene
     
@@ -183,6 +186,9 @@ public:
     }
 
     void queueDelete(){
+
+        std::scoped_lock lock(queuedelete_mut);
+
         if (parent) // dont delete objects outside lol
             queuedForDeletion.insert(this);
     }

@@ -1,6 +1,6 @@
 #include "voxel.h"
 #include "im3d.h"
-#include "engine/external/FastNoiseLit.h"
+#include "engine/external/FastNoiseLite.h"
 
 
 const int seed = 15987; // here for now
@@ -28,6 +28,7 @@ void setupNoise(){
 }
 
 uint8_t generateVoxel(const glm::ivec3 & global_position){
+    if (global_position.x % 16 == 0 || global_position.z % 16 == 0 ) return 0 ;
     const int fac = 5;
 
     float rugosity = rugosityNoise.GetNoise((float)global_position.x, (float)global_position.z);

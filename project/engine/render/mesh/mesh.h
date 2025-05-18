@@ -11,6 +11,8 @@
 #include <common/shader.hpp>
 
 #include "engine/render/texture/texture.h"
+#include "engine/render/material/material.h"
+#include "engine/core/resource/resource.h"
 
 using TRI_IDX_TYPE = unsigned int; // change both if needed!
 extern GLuint TRI_GL_TYPE; // defined in mesh.cpp
@@ -57,6 +59,8 @@ protected:
 public:
     static GLuint base_shader;
 
+    Handle<MaterialPBR> material;
+
 
     GLuint shaderPID; // public for now.
     glm::mat4 transform = glm::mat4(1.0f);
@@ -90,7 +94,8 @@ public:
     void setShader(std::string vertex_shader, std::string fragment_shader);
     void setShaderPid(GLuint pid);
 
-    void render(const glm::mat4 & vpMatrix, glm::vec3 vp, const glm::mat4 & outside_transform) const;
+    void renderForward(const glm::mat4 & vpMatrix, glm::vec3 vp, const glm::mat4 & outside_transform) const;
+    void renderDeferred(const glm::mat4 & vpMatrix, glm::vec3 vp, const glm::mat4 & outside_transform, GLuint gShader) const;
 
     void rotate(float v, glm::vec3 axis){
         transform = glm::rotate(transform, v, axis);

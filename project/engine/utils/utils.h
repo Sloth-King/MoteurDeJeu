@@ -6,6 +6,12 @@
 #include <chrono>
 #include <string>
 
+// Include GLEW
+#include <GL/glew.h>
+
+// Include GLFW
+#include <GLFW/glfw3.h>
+
 // glm  operator<< overload for printing
 template <typename GLMType, typename = decltype(glm::to_string(std::declval<GLMType>()))> // demonic type fuckery
 std::ostream& operator<< (std::ostream& stream, const GLMType& obj) {
@@ -17,10 +23,10 @@ namespace Utils
     // I'm not yet fluent enough in the dark arts to understand it (https://stackoverflow.com/questions/27375089/what-is-the-easiest-way-to-print-a-variadic-parameter-pack-using-stdostream)
     // update: now i am. Adding comments: 
     template <typename Arg, typename... Args> // variadic template arguments
-    void print(Arg&& arg, Args&&... args) // passing everything as generic r-values. When called on an lvalue, those are cast to V&, V = T&. (see "perfect forwarding rule")
-    {
+    void print(Arg&& arg, Args&&... args){ // passing everything as generic r-values. When called on an lvalue, those are cast to V&, V = T&. (see "perfect forwarding rule")
         std::cout << std::forward<Arg>(arg); // std::forward casts the argument to either an lvalue reference, or an rvalue reference. See https://stackoverflow.com/questions/28828159/usage-of-stdforward-vs-stdmove)
         ((std::cout << ' ' << std::forward<Args>(args)), ...);
+        std::cout << std::endl;
     }
 
 
@@ -51,4 +57,7 @@ namespace Utils
     }
     template <const char name>
     inline void time(const bool restart) {time<name>("", restart);}
+
+
+void printShaderData(unsigned int ProgramID);
 }

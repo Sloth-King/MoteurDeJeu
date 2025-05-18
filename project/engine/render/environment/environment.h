@@ -77,13 +77,13 @@ void main()
 })";
 
 struct Skybox {
-    GLuint _VBO;
-    GLuint _VAO;
-    GLuint _shaderPID;
+    mutable GLuint _VBO;
+    mutable GLuint _VAO;
+    mutable GLuint _shaderPID;
 
     CubeMap cubemap;
 
-    bool _synchronized = false;
+    mutable bool _synchronized = false;
 
     Skybox(CubeMap && c){
         cubemap = std::move(c);
@@ -112,7 +112,7 @@ struct Skybox {
 
     }
 
-    void synchronize(){
+    void synchronize() const{
         _synchronized = true;
 
         glGenVertexArrays(1, &_VAO);
@@ -131,7 +131,7 @@ struct Skybox {
         glBindVertexArray(0);
     }
     
-    void render(glm::mat4 view, const glm::mat4 & projection){
+    void render(glm::mat4 view, const glm::mat4 & projection) const{
 
         if (!_synchronized) synchronize();
 
@@ -187,7 +187,7 @@ public:
         return *this;
     }
 
-    void render(const glm::mat4 & view, const glm::mat4 & projection){
+    void render(const glm::mat4 & view, const glm::mat4 & projection) const{
         skybox.render(view, projection);
     }
 };

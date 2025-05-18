@@ -14,7 +14,8 @@ public:
     //C_Mesh(Mesh & mesh): mesh(mesh) {}
     C_Mesh() = default;
     
-    void render();
+    void renderForward();
+    void renderDeferred(GLuint gShader);
 
     virtual void _onEnterScene() override;
 

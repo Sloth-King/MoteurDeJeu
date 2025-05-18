@@ -6,6 +6,7 @@
 
 unsigned long  GameObjectData::next_id = 0;
 std::set<GameObjectData*> GameObjectData::queuedForDeletion = std::set<GameObjectData*>();
+std::mutex GameObjectData::queuedelete_mut = std::mutex();
 
 void GameObjectData::addChild(GameObject && child){
 

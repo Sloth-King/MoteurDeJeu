@@ -86,7 +86,7 @@ GameObject createPlayer(){
 
     auto* playerTransform = player->addComponent<C_Transform>();
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
-    playerTransform->move(glm::vec3(0, 1, 0));
+    playerTransform->move(glm::vec3(0, 0.2, 0));
 
     //player->addComponent<C_Camera>() -> offset = cameraOffset;
 
