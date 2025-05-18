@@ -29,3 +29,8 @@ void C_RigidBody::_onExitScene(){
         scene.current_game->physics_server.removeObject(getOwner());
     }
 };
+
+float C_RigidBody::inverseMass(){
+    if(isStatic) return 0.0f;
+    return 1.f/mass;
+};

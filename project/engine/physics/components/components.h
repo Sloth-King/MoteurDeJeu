@@ -19,7 +19,6 @@ public:
     float mass = 1.0f;              // Mass of our object (maybe switch to inverse mass)
     float restitution = 0.5;        // Pretty much bounciness (i hope no phycicist reads this)
     bool isStatic = false;          // Decide if the object is static or no (infinite mass obj, like the floor or a wall)
-    float inverseMass = 1.f / mass; // Not sure yet but apparently goated to handle static members
 
     virtual void _onEnterScene() override;
     virtual void _onExitScene() override;
@@ -27,7 +26,9 @@ public:
     // Constructor
     C_RigidBody(glm::vec3 initial_velocity = glm::vec3(0.0f), glm::vec3 initial_angular_velocity = glm::vec3(0.0f), glm::vec3 initial_acceleration = glm::vec3(0.0f),
                 float damping_coef = 0.99f, float m = 1.0f, float restitution_coef = 0.5f, bool isStatic = false)
-        : linear_velocity(initial_velocity), angular_velocity(initial_angular_velocity), damping(damping_coef), mass(m), restitution(restitution_coef), isStatic(isStatic), inverseMass(1.0f / m) {}
+        : linear_velocity(initial_velocity), angular_velocity(initial_angular_velocity), damping(damping_coef), mass(m), restitution(restitution_coef), isStatic(isStatic){}
+
+    float inverseMass();
 
     void setVelocity(glm::vec3 velocity)
     {

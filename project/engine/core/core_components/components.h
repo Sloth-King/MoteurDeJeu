@@ -32,7 +32,9 @@ public:
 
     const glm::vec3 & getGlobalPosition() const;
     const glm::vec3 & getGlobalScale() const;
-    const glm::vec3 & getGlobalRotation() const; // TODO
+    const glm::vec3 & getGlobalRotation() const;
+    const glm::quat & getGlobalRotationQuat() const;
+
 
     // local funcs
     void move(glm::vec3 speed_per_coord){
