@@ -60,6 +60,9 @@ const glm::mat4 & C_Transform::getGlobalInverse() const{
     return global_inv;
 }
 
+// The getPos/Rot/Scale are all taken from there
+// https://math.stackexchange.com/questions/237369/given-this-transformation-matrix-how-do-i-decompose-it-into-translation-rotati=
+
 const glm::vec3 & C_Transform::getGlobalPosition() const{
     static glm::vec3 globalPosition;
     glm::mat4 globalMatrix = getGlobalTransformationMatrix();
@@ -78,9 +81,38 @@ const glm::vec3 & C_Transform::getGlobalScale() const{
     return globalScale;
 }
 
-//TODO
+// FIXME idk if this is correct at all
 const glm::vec3 & C_Transform::getGlobalRotation() const{
-    return glm::vec3(1.0f,1.0f,1.0f);
+    static glm::vec3 globalRotation;
+    glm::mat4 globalMatrix = getGlobalTransformationMatrix();
+    glm::vec3 scale = getGlobalScale();  
+
+    glm::mat3 rotationMatrix = glm::mat3(
+        glm::vec3(globalMatrix[0][0]/scale.x , globalMatrix[0][1]/scale.y, globalMatrix[0][2]/scale.z),
+        glm::vec3(globalMatrix[1][0]/scale.x , globalMatrix[1][1]/scale.y, globalMatrix[1][2]/scale.z),
+        glm::vec3(globalMatrix[2][0]/scale.x , globalMatrix[2][1]/scale.y, globalMatrix[2][2]/scale.z)
+    );
+
+    globalRotation.x = glm::degrees(atan2(rotationMatrix[2][1], rotationMatrix[2][2]));
+    globalRotation.y = glm::degrees(atan2(-rotationMatrix[2][0], sqrt(rotationMatrix[2][1] * rotationMatrix[2][1] + rotationMatrix[2][2] * rotationMatrix[2][2])));
+    globalRotation.z = glm::degrees(atan2(rotationMatrix[1][0], rotationMatrix[0][0]));
+
+    return globalRotation;
+}
+
+const glm::quat & C_Transform::getGlobalRotationQuat() const {
+    static glm::quat globalRotationQuat;
+    glm::mat4 globalMatrix = getGlobalTransformationMatrix();
+    glm::vec3 scale = getGlobalScale();
+
+    glm::mat3 rotationMatrix = glm::mat3(
+        glm::vec3(globalMatrix[0][0] / scale.x, globalMatrix[0][1] / scale.y, globalMatrix[0][2] / scale.z),
+        glm::vec3(globalMatrix[1][0] / scale.x, globalMatrix[1][1] / scale.y, globalMatrix[1][2] / scale.z),
+        glm::vec3(globalMatrix[2][0] / scale.x, globalMatrix[2][1] / scale.y, globalMatrix[2][2] / scale.z)
+    );
+
+    globalRotationQuat = glm::quat_cast(rotationMatrix);
+    return globalRotationQuat;
 }
 
 

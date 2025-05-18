@@ -23,7 +23,7 @@ void createSpheres(GameObject &parent, int n, float radius)
 
     for (int i = 0; i < n; ++i)
     {
-        static Mesh sphere = ResourceLoader::load_mesh_off(path_prefix_from_build + "resources/meshes/sphere2.off");
+        static Mesh sphere = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/unit_sphere.obj");
         GameObject ball;
         auto *ballTransofrm = ball->addComponent<C_Transform>();
 
@@ -36,6 +36,7 @@ void createSpheres(GameObject &parent, int n, float radius)
         // Add physics
         ball->addComponent<C_RigidBody>();
         ball->getComponent<C_RigidBody>()->setVelocity(glm::ballRand(radius / 200.0));
+        ball->getComponent<C_RigidBody>()->restitution = 0.0f;
         ball->addComponent<C_Collider>()->collider.sphere = SphereCollider(glm::vec3(0.0f), 1.0f);
 
         parent->addChild(std::move(ball));
@@ -52,7 +53,7 @@ void createCubes(GameObject &parent, int n, float radius)
         auto *cubeTransofrm = cube->addComponent<C_Transform>();
 
         cubeTransofrm->setScale(glm::vec3(0.2, 0.2, 0.2));
-        cubeTransofrm->setPositionGlobal(glm::ballRand(radius) / 1.0f);
+        cubeTransofrm->setPositionGlobal(glm::vec3(glm::linearRand(-radius, radius), glm::linearRand(0.0f, radius), glm::linearRand(-radius, radius)));
 
         auto *cubeMesh = cube->addComponent<C_Mesh>();
         // cubeMesh->mesh.addTexture(Texture(path_prefix_from_build + "resources/textures/rubiks_texture.jpg"), "albedo");
@@ -90,19 +91,20 @@ void andrew(void)
     auto *floorTransofrm = floor->addComponent<C_Transform>();
 
     floorTransofrm->setPosition(glm::vec3(0., -2., -8.0));
-    floorTransofrm->setScale(glm::vec3(1000, 1000, 1000));
+    floorTransofrm->setScale(glm::vec3(10, 10, 10));
+    floorTransofrm->setRotation(glm::vec3(10.0f,0.0f,0.0f));
 
     auto *floorMesh = floor->addComponent<C_Mesh>();
     floorMesh->mesh.addTexture(Texture(path_prefix_from_build + "resources/textures/submarine.jpg"), "albedo");
 
     floorMesh->mesh = plane;
 
-    floor->addComponent<C_RigidBody>();
+    floor->addComponent<C_RigidBody>()->isStatic = true;
     floor->getComponent<C_RigidBody>()->mass = 1000000.0f;
     floor->addComponent<C_Collider>()->collider.plane = PlaneCollider(glm::vec3(0.f, 1.f, 0.f), -0.0f);
 
-    // createSpheres(world, 40, 1.0);
-    createCubes(world, 60, 1.0);
+    createSpheres(world, 2, 1.0);
+    // createCubes(world, 100, 1.0);
 
     world->addChild(std::move(floor));
 
