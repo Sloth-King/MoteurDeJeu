@@ -24,7 +24,7 @@ class C_MapManager: public Component{
 
 public:
     
-    const int chunkRadiusXZ = 0;
+    const int chunkRadiusXZ = 1;
     const int chunkRadiusY = 0;
 
     const float world_scale = 0.05f;
@@ -32,6 +32,8 @@ public:
     std::vector < GameObject > chunks;
 
     GameObject player;
+
+    glm::ivec3 current_player_pos_in_world;
 
     glm::ivec3 current_player_chunk_in_map;
 
@@ -51,6 +53,10 @@ public:
         
     }
 
+    inline size_t convertCoord(const glm::ivec3 & v){
+        return (v.z * (2 * chunkRadiusXZ + 1) * (2 * chunkRadiusY + 1)) + (v.y * (2 * chunkRadiusXZ + 1)) + v.x;
+    }
+
     GameObject getChunkAt(glm::ivec3 v){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
         v = {
             Utils::posmod(v.x + current_player_chunk_in_map.x, 2 * chunkRadiusXZ + 1),
@@ -58,7 +64,7 @@ public:
             Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadiusXZ + 1)
         };
 
-        return chunks.at((v.z * chunkRadiusXZ * chunkRadiusXZ) + (v.y * chunkRadiusY) + v.x);
+        return chunks.at(convertCoord(v));
     }
 
     void setChunkAt(glm::ivec3 v, GameObject chunk){ // ALWAYS relative to player. (0, 0) is the player, this function does the fun conversion part
@@ -68,13 +74,22 @@ public:
             Utils::posmod(v.z + current_player_chunk_in_map.z, 2 * chunkRadiusXZ + 1)
         };
 
-        chunks.at((v.z * chunkRadiusXZ * chunkRadiusXZ) + (v.y * chunkRadiusXZ) + v.x) = chunk;
+        //chunks.at((v.z * chunkRadiusXZ * chunkRadiusY) + (v.y * chunkRadiusXZ) + v.x) = chunk;
+        chunks.at(convertCoord(v)) = chunk;
     }
 
     glm::ivec3 getPlayerChunkCoords() const {
         if (!player) return glm::ivec3(0);
 
-        return glm::ivec3(0); // worrying about this later lol
+        auto pos = player->getComponent<C_Transform>()->getGlobalPosition();
+
+        pos /= world_scale;
+
+        pos.x /= CHUNK_SIZE_XZ;
+        pos.y /= CHUNK_SIZE_XZ;
+        pos.z /= CHUNK_SIZE_Y;
+
+        return glm::ivec3(pos);
     }
 
     inline GameObject createChunk(glm::ivec3 chunkCoord){
@@ -82,6 +97,8 @@ public:
         GameObject g;
 
         glm::ivec3 global_pos = chunkCoord * glm::ivec3(CHUNK_SIZE_XZ, CHUNK_SIZE_Y, CHUNK_SIZE_XZ);
+
+        Utils::print(global_pos);
 
         auto* c_transform = g->addComponent<C_Transform>();
         c_transform->setPosition(glm::vec3(global_pos) * world_scale);
@@ -91,10 +108,10 @@ public:
 
         c_voxelmesh->mesh.setShaderPid(shaderPID);
 
-        c_voxelmesh->mesh.addTexture(atlas, "atlas");
-        c_voxelmesh->mesh.addTexture(roughness, "roughness_map");
-        c_voxelmesh->mesh.addTexture(metallic, "metallic_map");
-        c_voxelmesh->mesh.addTexture(normal, "normal_map"); 
+        c_voxelmesh->mesh.addTexture(atlas.unsafeCopyTodoRemoveThat(), "atlas");
+        c_voxelmesh->mesh.addTexture(roughness.unsafeCopyTodoRemoveThat(), "roughness_map");
+        c_voxelmesh->mesh.addTexture(metallic.unsafeCopyTodoRemoveThat(), "metallic_map");
+        c_voxelmesh->mesh.addTexture(normal.unsafeCopyTodoRemoveThat(), "normal_map"); 
 
         c_voxelmesh->create_chunk(global_pos);
 
@@ -111,25 +128,146 @@ public:
 
         Utils::time<'c'>(); // init (print pas la première fois)
 
-        Utils::time<'d'>(); // init (print pas la première fois)
-        int chcount = 0;
-        int chmax = chunks.size();
+        current_player_pos_in_world = getPlayerChunkCoords();
+
         for (int i = -chunkRadiusXZ; i <= chunkRadiusXZ; ++i){
             for (int j = -chunkRadiusY; j <= chunkRadiusY; ++j){
                 for (int k = -chunkRadiusXZ; k <= chunkRadiusXZ; ++k){
                     auto chunkIdx = glm::ivec3(i, j, k);
                     GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
-                    //std::cout << chunk->getComponent<C_voxelMesh>()->mesh << std::endl;
                     setChunkAt(
                         chunkIdx,
                         chunk
                     );
-
-
-                    Utils::time<'d'>(true, std::string("chuck ") + std::to_string(++chcount) + "/" + std::to_string(chmax)); // print, message custom et reset
+                    std::cout << "yolo" << std::endl;
                 }
             }
         }
-        Utils::time<'c'>(); // init (print et reset pas (donc les temps se cumulent si appelés plusieurs fois))
+        Utils::time<'c'>();
+    }
+
+    virtual void _onUpdate(float deltaTime) override {
+        return; //TODO finir ça
+        auto new_player_pos_in_world = getPlayerChunkCoords();
+
+        if (new_player_pos_in_world == current_player_pos_in_world) return;
+
+        auto delta = new_player_pos_in_world - current_player_pos_in_world;
+
+        // remove and replace all chunks
+        int sXZ =  2 * chunkRadiusXZ + 1;
+        int sY = 2 * chunkRadiusXZ + 1;
+
+        current_player_chunk_in_map += delta;
+
+        current_player_chunk_in_map.x = Utils::posmod(current_player_chunk_in_map.x, sXZ);
+        current_player_chunk_in_map.y = Utils::posmod(current_player_chunk_in_map.y, sXZ);
+        current_player_chunk_in_map.z = Utils::posmod(current_player_chunk_in_map.z, sY);
+
+        int number_on_x = std::min(abs(delta.x), sXZ);
+
+        // a lot of loops. Feels big but they're all small on one axis at least
+        
+        // on x
+        if (delta.x > 0)
+            for (int i = 0; i < number_on_x; ++i){
+                for (int j = 0; j < sY; ++j){
+                    for (int k = 0; k < sXZ; ++k){
+                        auto chunkIdx = glm::ivec3(i, j, k);
+
+                        getChunkAt(chunkIdx)->queueDelete();
+                        GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
+                        setChunkAt(
+                            chunkIdx,
+                            chunk
+                        );
+                    }
+                }
+            }
+        else 
+            for (int i = 0; i < number_on_x; ++i){
+                for (int j = 0; j < sY; ++j){
+                    for (int k = 0; k < sXZ; ++k){
+                        auto chunkIdx = glm::ivec3(sXZ - i, sY - j, sXZ - k);
+
+                        getChunkAt(chunkIdx)->queueDelete();
+                        GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
+                        setChunkAt(
+                            chunkIdx,
+                            chunk
+                        );
+                    }
+                }
+            }
+
+        
+        // on y
+        int number_on_y = std::min(abs(delta.y), sY);
+        if (delta.y > 0)
+            for (int i = number_on_x; i < sXZ; ++i){
+                for (int j = 0; j < number_on_y; ++j){ // we don't have to do the corner we've already done
+                    for (int k = 0; k < sXZ; ++k){
+                        auto chunkIdx = glm::ivec3(i, j, k);
+
+                        getChunkAt(chunkIdx)->queueDelete();
+                        GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
+                        setChunkAt(
+                            chunkIdx,
+                            chunk
+                        );
+                    }
+                }
+            }
+        else 
+            for (int i = number_on_x; i < sXZ; ++i){
+                for (int j = 0; j < number_on_y; ++j){
+                    for (int k = 0; k < sXZ; ++k){
+                        auto chunkIdx = glm::ivec3(sXZ - i, sY - j, sXZ - k);
+
+                        getChunkAt(chunkIdx)->queueDelete();
+                        GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
+                        setChunkAt(
+                            chunkIdx,
+                            chunk
+                        );
+                    }
+                }
+            }
+
+
+
+        // on z
+        int number_on_z = std::min(abs(delta.z), sXZ);
+        if (delta.y > 0)
+            for (int i = number_on_x; i < sXZ; ++i){
+                for (int j = number_on_y; j < sY; ++j){ // we don't have to do the corner we've already done
+                    for (int k = 0; k < number_on_z; ++k){
+                        auto chunkIdx = glm::ivec3(i, j, k);
+
+                        getChunkAt(chunkIdx)->queueDelete();
+                        GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
+                        setChunkAt(
+                            chunkIdx,
+                            chunk
+                        );
+                    }
+                }
+            }
+        else 
+            for (int i = number_on_x; i < sXZ; ++i){
+                for (int j = number_on_y; j < sY; ++j){
+                    for (int k = 0; k < number_on_z; ++k){
+                        auto chunkIdx = glm::ivec3(sXZ - i, sY - j, sXZ - k);
+
+                        getChunkAt(chunkIdx)->queueDelete();
+                        GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
+                        setChunkAt(
+                            chunkIdx,
+                            chunk
+                        );
+                    }
+                }
+            }
+        current_player_pos_in_world = new_player_pos_in_world;
     }
 };

@@ -70,7 +70,7 @@ public:
         current_camera = &c;
     }
 
-    void setRoot(GameObject && g){ // async for now, probably not a good idea but we'll manage that later
+    void setRoot(GameObject && g){ // TODO async in regards to the updateloop for now, probably not a good idea but we'll manage that later
         if (root) root->__exitScene();
 
         root = std::move(g);
@@ -84,7 +84,6 @@ public:
             setCurrentCamera(debugCamera);
         }
         
-
         if (root){
             if (current_camera == &debugCamera) debugCamera.computeMatricesFromInputs();
             root->__engineUpdate(deltaTime);

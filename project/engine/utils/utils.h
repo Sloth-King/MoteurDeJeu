@@ -5,22 +5,24 @@
 #include <glm/gtx/string_cast.hpp>
 #include <chrono>
 #include <string>
+
+// glm  operator<< overload for printing
+template <typename GLMType, typename = decltype(glm::to_string(std::declval<GLMType>()))> // demonic type fuckery
+std::ostream& operator<< (std::ostream& stream, const GLMType& obj) {
+    return stream << glm::to_string(obj);
+ }
+
 namespace Utils
 {
-
-    template <typename T>
-    static void print(T t)
+    // I'm not yet fluent enough in the dark arts to understand it (https://stackoverflow.com/questions/27375089/what-is-the-easiest-way-to-print-a-variadic-parameter-pack-using-stdostream)
+    // update: now i am. Adding comments: 
+    template <typename Arg, typename... Args> // variadic template arguments
+    void print(Arg&& arg, Args&&... args) // passing everything as generic r-values. When called on an lvalue, those are cast to V&, V = T&. (see "perfect forwarding rule")
     {
-        std::cout << t << " ";
+        std::cout << std::forward<Arg>(arg); // std::forward casts the argument to either an lvalue reference, or an rvalue reference. See https://stackoverflow.com/questions/28828159/usage-of-stdforward-vs-stdmove)
+        ((std::cout << ' ' << std::forward<Args>(args)), ...);
     }
 
-    template <typename... Args>
-    void print(Args... args)
-    {
-
-        print(args...);
-        std::cout << std::endl;
-    }
 
     inline int posmod(int i, int n)
     {
@@ -28,7 +30,7 @@ namespace Utils
     }
 
     template <const char name>
-    inline void time(const bool restart = false, const std::string msg = "")
+    inline void time(const std::string msg = "", const bool restart = false)
     {
         static bool started = false;
         static std::chrono::steady_clock::time_point last_time;
@@ -47,5 +49,6 @@ namespace Utils
 
         std::cout << std::endl;
     }
-
+    template <const char name>
+    inline void time(const bool restart) {time<name>("", restart);}
 }

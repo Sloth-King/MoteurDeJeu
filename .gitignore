@@ -12,4 +12,6 @@ _deps
 CMakeUserPresets.json
 
 project/build/*
+project/build/Game
 project/build/launch-TP1.sh
+./Game

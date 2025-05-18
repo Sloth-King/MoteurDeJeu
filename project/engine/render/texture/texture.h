@@ -77,12 +77,37 @@ public:
     height(other.height),
     nbChannels(other.nbChannels)
     {
+        _texture_id = other._texture_id;
         __synchronized = false;
-        synchronize();
+        if (!data.empty())
+            synchronize();
 
     }
 
+    Texture & operator=(const Texture & other){
+        data = (other.data);
+        width = (other.width);
+        height = (other.height);
+        nbChannels = (other.nbChannels);
+        _texture_id = other._texture_id; // just for the unsafe copies. Remove when not needed
+        __synchronized = false;
+        if (!data.empty())
+            synchronize();
+            
+        return *this;
+    }
+
     Texture() = default;
+    Texture(Texture &&) = default;
+    ~Texture(){if (__synchronized) unsynchronize();}
+
+
+    // only copies the id, which means if the main texture is removed, this one UBs. It's cheap and used for chunks with the map manager.
+    Texture unsafeCopyTodoRemoveThat()const{
+        Texture t;
+        t._texture_id = _texture_id;
+        return t;
+    }
 
     void loadTexture(const std::string path, bool cpuOnly = false){
         unsigned char * new_data = stbi_load(path.c_str(), &width, &height, &nbChannels, 0);

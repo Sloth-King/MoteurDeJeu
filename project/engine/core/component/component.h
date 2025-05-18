@@ -3,7 +3,6 @@
 #include <map>
 #include <memory>
 #include <typeindex> // for rtti use
-
 // forward declaration
 class GameObjectData;
 class Scene;
@@ -14,7 +13,6 @@ protected:
     GameObjectData* owner;
 public:
 
-    virtual ~Component() = default;
     Component(Component && v) = default;
     Component(const Component & v) = default;
 

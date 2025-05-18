@@ -194,6 +194,13 @@ void Game::renderUpdate(){
 
     renderingServer.renderAll();
 
+
+
+    for (auto* obj : GameObjectData::queuedForDeletion){
+        obj->parent->deleteChild(obj->getId());
+    }
+    GameObjectData::queuedForDeletion.clear();
+
     // Swap buffers
     glfwSwapBuffers(window);
 
@@ -213,7 +220,6 @@ void Game::physicsUpdate(){
     physDeltaTime = currentFrame - physLastFrame;
     lastFrame = currentFrame;
 
-    // ANDREw call ton machin ici !
     physics_server.step(deltaTime);
 
     current_scene.__enginePhysicsUpdate(physDeltaTime);

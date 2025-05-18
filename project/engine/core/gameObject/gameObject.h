@@ -11,6 +11,7 @@
 #include <typeindex>
 #include <cassert>
 #include <variant>
+#include <set>
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -100,17 +101,27 @@ public:
     */
 };
 
+
 class Scene;
+class Game;
 class GameObjectData{
     friend Scene;
+    friend Game;
     friend GameObject;
-    friend GameObjectHandle std::make_unique<GameObjectData>();
+    friend GameObjectHandle std::make_unique<GameObjectData>(); // idk why it precisely needs this but it does .... ???
 
     static unsigned long next_id;
+
+    static std::set<GameObjectData*> queuedForDeletion;
 
     unsigned long id = 0;
 
     GameObjectData(): id(next_id++) {};
+
+    void deleteChild(unsigned long id){
+        children.erase(id); // gameobjects are always master of their children
+    }
+
 
 public:
     GameObjectData * parent = nullptr; // null in case it's root of a scene
@@ -171,6 +182,17 @@ public:
         return id;
     }
 
+    void queueDelete(){
+        if (parent) // dont delete objects outside lol
+            queuedForDeletion.insert(this);
+    }
+    
+    ~GameObjectData(){
+        if (scene)
+            for (const auto & [ti, comp] : components)
+                comp->_onExitScene();
+    }
+
 
     template <DerivedFromComponent T>
     bool hasComponent() const {
@@ -224,3 +246,5 @@ public:
 
     }
 };
+
+bool operator==(const GameObject& lhs, const GameObject& rhs);
