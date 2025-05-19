@@ -7,7 +7,7 @@
 class C_PlayerController: public Component {
 public:
 
-    float movement_speed = 5.0;
+    float movement_speed = 2.0;
 
 
     void inputCallback(const InputEvent & e){

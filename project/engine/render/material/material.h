@@ -10,6 +10,7 @@
 #include <common/shader.hpp>
 
 #include "engine/render/texture/texture.h"
+#include "engine/utils/utils.h"
 
 
 
@@ -33,9 +34,7 @@ public:
     void setUniform(const std::string name, float v);
 
 
-
-
-    void bind() const; // TODO prendre les matrices en arg
+    void bind(GLuint overrideShader = 0) const;
 
     void setShaderFromSource(const std::string shaderVert, std::string shaderFrag);
 ;
@@ -56,10 +55,12 @@ public:
     MaterialPBR() = default;
 
     MaterialPBR(const Texture albedo, const Texture & normal, const Texture & roughness, const Texture & metallic){
-        setUniform("tex_albedo", albedo);
-        setUniform("tex_normal", normal);
-        setUniform("tex_roughness", roughness);
-        setUniform("tex_metallic", metallic);
+        setUniform("_tex_diffuse", albedo);
+        setUniform("_tex_normal", normal);
+        setUniform("_tex_roughness", roughness);
+        setUniform("_tex_metallic", metallic);
     }
-
+    MaterialPBR(const Texture albedo){
+        setUniform("_tex_diffuse", albedo);
+    }
 };

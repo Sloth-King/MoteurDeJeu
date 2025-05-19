@@ -60,12 +60,13 @@ void main()
 {
     TexCoords = aPos;
     vec4 pos = projection * view * vec4(aPos, 1.0);
+    //pos.w *= 1.1;
     gl_Position = pos.xyww; // where the magic occurs
 } )";
 
 static std::string skyboxShaderFrag = R"(
 #version 330 core
-out vec4 FragColor;
+layout (location = 4) out vec4 FragColor;
 
 in vec3 TexCoords;
 

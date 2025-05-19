@@ -34,12 +34,11 @@ void Game::handleWindowResized(GLFWwindow* window, int width, int height){
     settings.windowWidth = width;
     settings.windowHeight = height;
     // important
+    renderingServer.setupBuffers();
     glViewport(0, 0, width, height);
     if (current_scene.current_camera){
         current_scene.current_camera->resize(width, height); // update projection matrix
     }
-
-    renderingServer.setupBuffers();
 }
 
 Game* current_game; // for this, because methods cant be glfw callbacks
@@ -112,7 +111,7 @@ void Game::init()
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 
 
     // Enable depth test

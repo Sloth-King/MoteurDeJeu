@@ -74,8 +74,8 @@ void RenderingServer::geometryPass() const noexcept{
 
     renderMeshesDeferred();
 
-    glDepthMask(GL_FALSE);
-    glDisable(GL_DEPTH_TEST);
+    // for now, writes here, to the layout 4 (albedo)
+    curr_scene->environment.render(curr_scene->current_camera->getViewMatrix(), curr_scene->current_camera->getProjectionMatrix());
 
 }
 
@@ -86,14 +86,18 @@ GLuint _squareVAO;
 void RenderingServer::lightPass() const noexcept{
 
     const Scene* curr_scene = &game->current_scene;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     
+    glDepthMask(GL_FALSE);
+    glDisable(GL_DEPTH_TEST);
 
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
 
     glClear(GL_COLOR_BUFFER_BIT);
+    
 
     glUseProgram(lightShader);
     
@@ -101,11 +105,11 @@ void RenderingServer::lightPass() const noexcept{
     glActiveTexture(GL_TEXTURE0+1); glBindTexture(GL_TEXTURE_2D, gNormal); glUniform1i(glGetUniformLocation(lightShader, "gNormal"), 1);
     glActiveTexture(GL_TEXTURE0+2); glBindTexture(GL_TEXTURE_2D, gTangent); glUniform1i(glGetUniformLocation(lightShader, "gTangent"), 2);
     glActiveTexture(GL_TEXTURE0+3); glBindTexture(GL_TEXTURE_2D, gBitangent); glUniform1i(glGetUniformLocation(lightShader, "gBitangent"), 3);
-    glActiveTexture(GL_TEXTURE0+4); glBindTexture(GL_TEXTURE_2D, gDepth); glUniform1i(glGetUniformLocation(lightShader, "gDepth"), 4);
-    glActiveTexture(GL_TEXTURE0+5); glBindTexture(GL_TEXTURE_2D, gAlbedoTex); glUniform1i(glGetUniformLocation(lightShader, "gAlbedoTex"), 5);
-    glActiveTexture(GL_TEXTURE0+6); glBindTexture(GL_TEXTURE_2D, gNormalTex); glUniform1i(glGetUniformLocation(lightShader, "gNormalTex"), 6);
-    glActiveTexture(GL_TEXTURE0+7); glBindTexture(GL_TEXTURE_2D, gRoughnessTex); glUniform1i(glGetUniformLocation(lightShader, "gRoughnessTex"), 7);
-    glActiveTexture(GL_TEXTURE0+8); glBindTexture(GL_TEXTURE_2D, gMetallicTex); glUniform1i(glGetUniformLocation(lightShader, "gMetallicTex"), 8);
+    glActiveTexture(GL_TEXTURE0+4); glBindTexture(GL_TEXTURE_2D, gAlbedoTex); glUniform1i(glGetUniformLocation(lightShader, "gAlbedoTex"), 4);
+    glActiveTexture(GL_TEXTURE0+5); glBindTexture(GL_TEXTURE_2D, gNormalTex); glUniform1i(glGetUniformLocation(lightShader, "gNormalTex"), 5);
+    glActiveTexture(GL_TEXTURE0+6); glBindTexture(GL_TEXTURE_2D, gRoughnessTex); glUniform1i(glGetUniformLocation(lightShader, "gRoughnessTex"), 6);
+    glActiveTexture(GL_TEXTURE0+7); glBindTexture(GL_TEXTURE_2D, gMetallicTex); glUniform1i(glGetUniformLocation(lightShader, "gMetallicTex"), 7);
+    glActiveTexture(GL_TEXTURE0+8); glBindTexture(GL_TEXTURE_2D, gDepth); glUniform1i(glGetUniformLocation(lightShader, "gDepth"), 8);
 
     glm::vec3 viewvector = curr_scene->current_camera->getForwardVector();
     glUniform3fv(glGetUniformLocation(lightShader, "view"), 1, &viewvector[0]);
@@ -114,9 +118,9 @@ void RenderingServer::lightPass() const noexcept{
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    //curr_scene->environment.render(curr_scene->current_camera->getViewMatrix(), curr_scene->current_camera->getProjectionMatrix());
 }
 
 
@@ -201,14 +205,6 @@ void RenderingServer::setupBuffers(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gBitangent, 0);
-
-    // - depth color buffer
-    glGenTextures(1, &gDepth);
-    glBindTexture(GL_TEXTURE_2D, gDepth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
     
     // - albedo color buffer
     glGenTextures(1, &gAlbedoTex);
@@ -221,7 +217,7 @@ void RenderingServer::setupBuffers(){
     // - normals color buffer
     glGenTextures(1, &gNormalTex);
     glBindTexture(GL_TEXTURE_2D, gNormalTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, gNormalTex, 0);
@@ -229,7 +225,7 @@ void RenderingServer::setupBuffers(){
     // - roughness color buffer
     glGenTextures(1, &gRoughnessTex);
     glBindTexture(GL_TEXTURE_2D, gRoughnessTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, gRoughnessTex, 0);
@@ -237,17 +233,29 @@ void RenderingServer::setupBuffers(){
     // - metallic color buffer
     glGenTextures(1, &gMetallicTex);
     glBindTexture(GL_TEXTURE_2D, gMetallicTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT7, GL_TEXTURE_2D, gMetallicTex, 0);
+
+    // - depth color buffer
+    glGenTextures(1, &gDepth);
+    glBindTexture(GL_TEXTURE_2D, gDepth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, gDepth);
 
 
     // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
     unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 , GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
     glDrawBuffers(8, attachments);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, gDepth);
+
+    glDepthFunc(GL_LEQUAL);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }

@@ -102,11 +102,11 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gTangent;
 uniform sampler2D gBitangent;
-uniform sampler2D gDepth;
 uniform sampler2D gAlbedoTex;
 uniform sampler2D gNormalTex;
 uniform sampler2D gRoughnessTex;
 uniform sampler2D gMetallicTex;
+uniform sampler2D gDepth;
 
 uniform vec3 view;
 
@@ -217,6 +217,9 @@ vec3 pbr_lighting(vec3 albedo, vec3 normal, float roughness, float metallic, Lig
 }
 
 void main(){    
+
+   color = vec3(0);
+
    vec3 position = texture(gPosition, uv).xyz;
    vec3 normal = texture(gNormal, uv).xyz;
    vec3 tangent = texture(gTangent, uv).xyz;
@@ -235,9 +238,7 @@ void main(){
    float zNear = 0.1;
    float  zFar = 300.0;
 
-   depth =  zNear * zFar / (zFar + depth * (zNear - zFar)) / 10.0;
-
-   textureNormal = normal * 2.0 - 1.0;   
+   textureNormal = textureNormal * 2.0 - 1.0;   
    textureNormal = normalize(TBN * textureNormal); //convert to tangent spage
 
 
@@ -248,11 +249,21 @@ void main(){
 
    //calculating our albedo map
 
-   for(int i = 0 ; i < num_lights ; i++){
-      color+= pbr_lighting(albedo.xyz, textureNormal, roughness, metallic, lights[i]);
+   if (depth >= 1.0){ // means we're in the skybox
+      color = albedo.xyz;
+   } else {
+      for(int i = 0 ; i < num_lights ; i++){
+         color+= pbr_lighting(albedo.xyz, textureNormal, roughness, metallic, lights[i]);
+      }
    }
 
+   //depth =  zNear * zFar / (zFar + depth * (zNear - zFar)) / 10.0;
 
+   color = mix(
+      color,
+      vec3(0.05, 0.20, 0.14),
+      min(1.2 * pow(depth, 200), 1.0)
+   );
 } 
 )"; // PBR deferred end
 

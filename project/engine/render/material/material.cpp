@@ -25,9 +25,12 @@ void Material::setShaderFromSource(const std::string shaderVert, std::string sha
 }
 
 
-void Material::bind() const{
-
-    if (_shaderPID) glUseProgram(_shaderPID);
+void Material::bind(GLuint overrideShader) const{
+    GLuint shader = overrideShader;
+    if (overrideShader == 0){
+        shader = _shaderPID;
+        glUseProgram(_shaderPID);
+    }
 
     int i = 0;
     // textures
@@ -35,8 +38,12 @@ void Material::bind() const{
 
         val.bind(i);
 
+        if (glGetUniformLocation(shader, name.c_str()) == -1){
+            Utils::print("MAUVAIS NOM ", name);
+        }
+
         glUniform1i(
-            glGetUniformLocation(_shaderPID, name.c_str()),
+            glGetUniformLocation(shader, name.c_str()),
             i
         );
         ++i;
@@ -46,7 +53,7 @@ void Material::bind() const{
     for (auto & [name, val]: uniformMat4s){ 
 
         glUniformMatrix4fv(
-            glGetUniformLocation(_shaderPID, name.c_str()),
+            glGetUniformLocation(shader, name.c_str()),
             1,
             GL_FALSE,
             &val[0][0]
@@ -57,7 +64,7 @@ void Material::bind() const{
     for (auto & [name, val]: uniformFloats){ 
 
         glUniform1f(
-            glGetUniformLocation(_shaderPID, name.c_str()),
+            glGetUniformLocation(shader, name.c_str()),
             val
         );
     }
@@ -66,7 +73,7 @@ void Material::bind() const{
     for (auto & [name, val]: uniformInts){ 
 
         glUniform1i(
-            glGetUniformLocation(_shaderPID, name.c_str()),
+            glGetUniformLocation(shader, name.c_str()),
             val
         );
     }

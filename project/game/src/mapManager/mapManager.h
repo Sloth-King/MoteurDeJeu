@@ -64,7 +64,7 @@ public:
         metallic = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Metallic.png");
         normal = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Normal.png");
 
-        material = Handle<MaterialPBR>(atlas, roughness, metallic, normal);
+        material = Handle<MaterialPBR>(atlas, normal, roughness, metallic);
         
     }
 

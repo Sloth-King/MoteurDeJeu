@@ -208,7 +208,7 @@ void Mesh::renderDeferred(const glm::mat4 & vpMatrix, glm::vec3 fv, const glm::m
     glUniformMatrix4fv(mvpUniformLocation, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix4fv(modelUniformLocation, 1, GL_FALSE, &MODEL[0][0]);
 
-    material->bind();
+    material->bind(gShader);
     
     
     glDrawElements(
