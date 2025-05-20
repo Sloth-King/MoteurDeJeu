@@ -268,11 +268,11 @@ void main(){
    }
    //depth =  zNear * zFar / (zFar + depth * (zNear - zFar)) / 10.0;
 
-   color = mix(
-      color,
-      vec3(0.05, 0.20, 0.14),
-      min(1.2 * pow(depth, 10), 1.0)
-   );
+   // color = mix(
+   //    color,
+   //    vec3(0.05, 0.20, 0.14),
+   //    min(1.2 * pow(depth, 10), 1.0)
+   // );
 } 
 )"; // PBR deferred end
 

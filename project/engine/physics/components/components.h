@@ -30,6 +30,9 @@ public:
 
     float inverseMass();
 
+    void applyForce(glm::vec3 force);
+    void applyImpulse(glm::vec3 impulse);
+
     void setVelocity(glm::vec3 velocity)
     {
         linear_velocity = velocity;

@@ -25,8 +25,6 @@ bool debugMode(bool t)
 
 ///////////////////////////////////////////////////////////////// Inertia calculations /////////////////////////////////////////////////////////////////////////
 
-glm::vec3 calculateRotationalInertia() {}
-
 // Basically store the inertia in a matrix to allow for tensor product
 glm::mat3 computeInertiaTensor(GameObjectData *obj)
 {
@@ -409,6 +407,10 @@ void PhysicsServer::removeObject(GameObjectData *go)
     Objects.erase(go);
 }
 
+float PhysicsServer::getDeltaTime(){
+    return deltaT;
+}
+
 std::vector<intersectionData> PhysicsServer::computeCollisions()
 {
     std::vector<intersectionData> intersectionList;
@@ -430,6 +432,10 @@ std::vector<intersectionData> PhysicsServer::computeCollisions()
             continue;
         for (const auto &objectB : Objects)
         {
+
+            if(objectA->getComponent<C_RigidBody>()->isStatic && objectB->getComponent<C_RigidBody>()->isStatic) continue;
+
+            std::cout << "wesh" << std::endl;
 
             // Check if the object has the right components AND that they're not the same object
             if (
@@ -633,7 +639,7 @@ void PhysicsServer::integrate(float deltatime)
     for (const auto &object : Objects)
     {
         // If the obj is not static apply physics
-        if (object->getComponent<C_RigidBody>()->isStatic) return;
+        if (object->getComponent<C_RigidBody>()->isStatic) continue;
 
         // std::cout << object->getComponent<C_Collider>()->collider.base.type << std::endl;
 
@@ -672,6 +678,7 @@ void PhysicsServer::integrate(float deltatime)
 
 void PhysicsServer::step(float deltatime)
 {
+    deltaT = deltatime;
     //t = debugMode(t);
     t = false;
     if (t)

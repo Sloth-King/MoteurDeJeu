@@ -27,10 +27,12 @@ private:
     std::set<GameObjectData *> Objects;
     glm::vec3 gravity = glm::vec3(0.0, -5, 0.0);
     float gameSpeed = 0.1f;
+    float deltaT = 0.0f;
 
 public:
     void addObject(GameObjectData *go);                // Add an object to the phys world
     void removeObject(GameObjectData *go);             // Remove an object from the phys world
+    float getDeltaTime();                              // Return delta time
     std::vector<intersectionData> computeCollisions(); // Compute all collisions in our world
     void resolveCollision(const intersectionData &a);
     void solveCollisions(std::vector<intersectionData> collisions, float deltatime); // Resolve collisions
