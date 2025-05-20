@@ -54,7 +54,11 @@ public:
     }
 
     inline glm::mat4 getViewMatrix(){
-        return glm::inverse(transform); // TODO return global transform once we have created the scene class
+        return glm::inverse(transform);
+    }
+
+    inline glm::vec3 getGlobalPosition(){
+        return glm::vec3(transform[3]); 
     }
 
     inline glm::mat4 getVP(){

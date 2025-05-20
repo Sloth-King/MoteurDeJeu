@@ -150,6 +150,8 @@ Mesh load_mesh_obj(std::string path){
 
     fclose(file);
 
+    mesh.recomputeTangents();
+
     return mesh;
 }
 

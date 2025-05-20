@@ -1,6 +1,6 @@
 #include "voxel.h"
 #include "im3d.h"
-#include "engine/external/FastNoiseLit.h"
+#include "engine/external/FastNoiseLite.h"
 
 
 const int seed = 15987; // here for now

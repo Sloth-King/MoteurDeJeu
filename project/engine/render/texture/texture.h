@@ -136,6 +136,8 @@ public:
     // IN CASE STRANGE THINGS HAPPEN: ALWAYS REMEMBER https://learnopengl.com/Getting-started/Textures
     void bind(GLuint slot = 0) const {
         glActiveTexture(GL_TEXTURE0+slot); // activate the texture unit first before binding texture
+        // this is true here and seems to be the right way, but somehow doesnt work the same on the cubemap
+        
         glBindTexture(GL_TEXTURE_2D, _texture_id);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);

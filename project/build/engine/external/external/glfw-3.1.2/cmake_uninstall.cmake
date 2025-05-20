@@ -1,9 +1,17 @@
 
+<<<<<<< HEAD
 if (NOT EXISTS "/home/andrew/Desktop/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt")
   message(FATAL_ERROR "Cannot find install manifest: \"/home/andrew/Desktop/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt\"")
 endif()
 
 file(READ "/home/andrew/Desktop/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt" files)
+=======
+if (NOT EXISTS "/home/abdellah/Documents/Programmation/Moteur de jeux/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: \"/home/abdellah/Documents/Programmation/Moteur de jeux/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt\"")
+endif()
+
+file(READ "/home/abdellah/Documents/Programmation/Moteur de jeux/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt" files)
+>>>>>>> c0997a85b15fe58e23bfd2a822796427f0d6f916
 string(REGEX REPLACE "\n" ";" files "${files}")
 
 foreach (file ${files})

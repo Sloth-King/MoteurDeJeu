@@ -91,10 +91,6 @@ public:
     }
     void __engineLateUpdate(float deltaTime){
 
-
-        // here to prevent shakiness when moving camera in the update or physicsupdate
-        environment.render(current_camera->getViewMatrix(), current_camera->getProjectionMatrix());
-
         if (root){
             root->__lateUpdate(deltaTime);
         }

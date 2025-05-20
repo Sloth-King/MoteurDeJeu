@@ -5,6 +5,7 @@
 
 #include "engine/render/mesh/mesh.h"
 #include "engine/render/camera/camera.h"
+#include "engine/render/light/light.h"
 
 class C_Mesh: public Component {
 public:
@@ -14,7 +15,8 @@ public:
     //C_Mesh(Mesh & mesh): mesh(mesh) {}
     C_Mesh() = default;
     
-    void render();
+    void renderForward();
+    void renderDeferred(GLuint gShader);
 
     virtual void _onEnterScene() override;
 
@@ -34,4 +36,12 @@ public:
     virtual void _onEnterScene() override;
 };
 
+class C_Light: public Component{
+public:
+    Light light;
+
+    virtual void _onEnterScene() override;
+
+    virtual void _onExitScene() override;
+};
 

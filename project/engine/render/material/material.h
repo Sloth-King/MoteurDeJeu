@@ -10,10 +10,14 @@
 #include <common/shader.hpp>
 
 #include "engine/render/texture/texture.h"
+#include "engine/utils/utils.h"
 
 
+
+class Mesh;
 class Material {
-    GLuint _shaderPID;
+friend Mesh;
+    GLuint _shaderPID = 0;
 
     std::map< std::string, Texture > uniformTextures;
     std::map< std::string, glm::mat4 > uniformMat4s;
@@ -21,16 +25,42 @@ class Material {
     std::map< std::string, float > uniformFloats;
 
 
+public:
     // not secured. What if someone adds same name in different types?
-    template<typename T>
-    void addUniform(std::string name, T v);
 
-    void bind() const; // TODO prendre les matrices en arg
+    void setUniform(const std::string name, Texture v);
+    void setUniform(const std::string name, glm::mat4 v);
+    void setUniform(const std::string name, int v);
+    void setUniform(const std::string name, float v);
 
-    void setShaderFromSource(std::string shaderVert, std::string shaderFrag);
+
+    void bind(GLuint overrideShader = 0) const;
+
+    void setShaderFromSource(const std::string shaderVert, std::string shaderFrag);
 ;
 
     void setShaderFromFile(std::string path){
         setShaderFromSource("le code loadé à partir du path", "");
+    }
+};
+
+
+
+
+// used for now with deferred rendering. Additional args wont change much
+class MaterialPBR: private Material {
+friend Mesh;
+
+public:
+    MaterialPBR() = default;
+
+    MaterialPBR(const Texture albedo, const Texture & normal, const Texture & roughness, const Texture & metallic){
+        setUniform("_tex_diffuse", albedo);
+        setUniform("_tex_normal", normal);
+        setUniform("_tex_roughness", roughness);
+        setUniform("_tex_metallic", metallic);
+    }
+    MaterialPBR(const Texture albedo){
+        setUniform("_tex_diffuse", albedo);
     }
 };

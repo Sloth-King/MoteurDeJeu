@@ -1,39 +1,26 @@
-
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-#include <map>
-#include <iostream>
 #include <memory>
 
-// https://giordi91.github.io/post/resourcesystem/
+// using shared_ptr allows us to split resource ownership. 
+// As long as one thing is using the ressource, it stays in-memory.
+// The memory overhead is really small and the perf overhead shouldn't be a problem.
+// this is a small handle wrapper
+template<typename T>
+class Handle{
 
-class ResourceManager;
-
-class ResourceHandle{
-private:
-    ResourceManager & owner; // the manager should live long enough for this to be safe (aka for the whole game)
-
-    uint32_t index = 0;
-
-}
-
-
-// not virtual since we do not need RTTI, but it makes it a bit awkward so please follow the patterns
-class ResourceManager{
-private:
-    uint32_t next_index = 1;
-    ResourceManager() = default; // don't ever instanciate this one !
+    std::shared_ptr<T> _ptr;
 public:
-    T load(std::string path) final{
+    Handle()
+        : _ptr(std::make_shared<T>())
+        {}
 
+    template<class ...Args>
+    Handle(Args &&...args)
+        :_ptr(new T(std::forward<Args>(args)...))
+    {}
+
+    inline T* operator -> () const{
+        return _ptr.get();
     }
-
-    ResourceHandle onload(std::string path); // redefine this
-    
-    
-    void get(ResourceHandle &);
-    
-}
+};

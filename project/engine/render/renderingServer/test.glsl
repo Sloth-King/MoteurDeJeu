@@ -1,45 +1,42 @@
 #version 460 core
 
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedoTex;
+uniform sampler2D gRoughnessMetallicTex;
+uniform sampler2D gDepth;
+
 uniform vec3 view;
+uniform Mat4 VP;
 
 const float PI = 3.14159265359;
 const int atlas_nb_textures = 8;
 const int atlas_size_textures = 8;
-const int num_lights = 1;
 
-struct Light{
+
+const int num_lights = PLACEHOLDER_num_lights; //autoreplaced by the renderingserver at compilation
+
+struct Light{ // order is important. See Light class
+   vec3 position;
    uint type;
-   vec3 lightDir;
-   vec3 lightPos;
-   vec3 lightColor;
+   vec3 color;
+   float intensity;
+   float radius;
 };
 
-Light lights[num_lights]; 
+uniform int currentLightCount;
 
-uniform sampler2D atlas;
-uniform sampler2D roughness_map;
-uniform sampler2D metallic_map;
-uniform sampler2D normal_map;
-
+layout(std140) uniform lights // can it be the same name?
+{
+   Light lights[num_lights]; 
+}
 
 in vec2 uv;
-in mat3 TBN;
-//in vec3 normal;
-
-// uniform float metallic;
-// uniform float roughness;
-
-//light (for now using placeholder)
-//TODO : create and manage lights properly (ie. send them to the shader and manager their number)
-
-Light sun = {0, vec3(1.0,1.0,1.0) , vec3(1.0,1.0,1.0), vec3(23.47, 21.31, 20.79)};
-// vec3 light = vec3(1.0,1.0,1.0); //placeholder light pos
-// vec3  lightColor  = vec3(23.47, 21.31, 20.79);
 
 out vec3 color;
 
-//Distrubution function
-//Source : https://learnopengl.com/PBR/Theory (Completely copy pasted this lmaoo)
+// PBR implementation by andrew
+
 float DistributionGGX(vec3 N, vec3 H, float a)
 {
    float a2     = a*a;
@@ -74,6 +71,7 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
+
 
 vec3 pbr_lighting(vec3 albedo, vec3 normal, float roughness, float metallic, Light light_struct){
 
@@ -121,34 +119,56 @@ vec3 pbr_lighting(vec3 albedo, vec3 normal, float roughness, float metallic, Lig
 
 }
 
-//mostly from here : https://learnopengl.com/PBR/Lighting
-void main(){
-   
-   color = vec3(0.0,0.0,0.0);
+void main(){    
 
-   float roughness = texture(roughness_map, uv).r; //roughness map
-   float metallic = texture(metallic_map, uv).r; //metallic map
-   
-   vec3 normal = texture(normal_map, uv).xyz; //normal map
+   color = vec3(0);
 
-   normal = normal * 2.0 - 1.0;   
-   normal = normalize(TBN * normal); //convert to tangent spage
+   vec3 position = texture(gPosition, uv).xyz;
+   vec3 normal = texture(gNormal, uv).xyz;
 
 
-   //https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-   //set the normal map to the world space normal
-   
+   vec4 albedo = texture(gAlbedoTex, uv);
+   vec3 textureNormal = texture(gNormal, uv).xyz;
+   float roughness = texture(gRoughnessMetallicTex, uv).x;
+   float metallic = texture(gRoughnessMetallicTex, uv).y;
+
+   float depth = texture(gDepth, uv).x;
+
+   float zNear = 0.1;
+   float  zFar = 300.0;
+
    lights[0] = sun;
 
    //Our roughness map is brifhtness map 
    roughness = 1 - roughness; 
 
-
    //calculating our albedo map
-   vec3 albedo = texture(atlas, uv).xyz;
 
-   for(int i = 0 ; i < num_lights ; i++){
-      color+= pbr_lighting(albedo, normal, roughness, metallic, lights[i]);
+   if (depth >= 1.0){ // means we're in the skybox
+      color = albedo.xyz;
+   } else {
+      for(int i = 0 ; i < currentLightCount ; i++){
+         color+= pbr_lighting(albedo.xyz, normal, roughness, metallic, lights[i]);
+      }
    }
-   
-}
+
+
+   // light fog bloom
+   for(int i = 0 ; i < currentLightCount ; i++){
+      Light light = lights[i];
+
+      vec2 posClipSpace = VP * glm::vec4(light.position, 1.0).xy;
+      float d = distance(posClipSpace, uv);
+      if (d <= 0.1){
+         color += light.Color * 1.0/pow(d, 2);
+      }
+   }
+   //depth =  zNear * zFar / (zFar + depth * (zNear - zFar)) / 10.0;
+
+   color = mix(
+      color,
+      vec3(0.05, 0.20, 0.14),
+      min(1.2 * pow(depth, 10), 1.0)
+   );
+} 
+)

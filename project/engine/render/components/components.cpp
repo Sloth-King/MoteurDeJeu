@@ -4,20 +4,34 @@
 #include "engine/core/scene/scene.h"
 #include "engine/core/core_components/components.h"
 #include <stdio.h>
-void C_Mesh::render() {
+void C_Mesh::renderForward() {
 
     if (getOwner()->hasComponent<C_Transform>()){
         //getOwner()->getComponent<C_Transform>()->printGlobal();
-        mesh.render(
+        mesh.renderForward(
             getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(),
             getOwner()->getComponent<C_Transform>()->getGlobalTransformationMatrix()
         );
     
     } else {
-        mesh.render(getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(), glm::mat4(1.0));
+        mesh.renderForward(getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(), glm::mat4(1.0));
     }
 };
 
+void C_Mesh::renderDeferred(GLuint gShader) {
+
+    if (getOwner()->hasComponent<C_Transform>()){
+        //getOwner()->getComponent<C_Transform>()->printGlobal();
+        mesh.renderDeferred(
+            getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(),
+            getOwner()->getComponent<C_Transform>()->getGlobalTransformationMatrix(),
+            gShader
+        );
+    
+    } else {
+        mesh.renderDeferred(getScene().getCurrentCamera().getVP(), getScene().getCurrentCamera().getForwardVector(), glm::mat4(1.0), gShader);
+    }
+};
 
 void C_Mesh::_onEnterScene(){
     Scene& scene = getScene();
@@ -45,3 +59,18 @@ void C_Camera::_onEnterScene(){
     getOwner()->getScene()->setCurrentCamera(camera);
 };
 
+
+
+void C_Light::_onEnterScene(){
+    Scene& scene = getScene();
+    if(scene.current_game){
+        scene.current_game->renderingServer.addLight(this);
+    }
+};
+
+void C_Light::_onExitScene(){
+    Scene& scene = getScene();
+    if(scene.current_game){
+        scene.current_game->renderingServer.removeLight(this);
+    }
+};

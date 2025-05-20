@@ -28,39 +28,13 @@ using namespace glm;
 #include <common/vboindexer.hpp>
 
 
-inline void limit_fps(int FPS){
-    static double last_time = glfwGetTime();
 
-    double current_time = glfwGetTime();
-    double ms = 1.0 / FPS;
-    while (current_time - last_time <= ms){
-        current_time = glfwGetTime();
-    }
-
-    last_time = current_time;
-}
-
-inline void showFPS(GLFWwindow* window){
-
-    static const float timeBetweenUpdates = 0.5;
-    static double last_time = glfwGetTime();
-    static unsigned int nbframes = 0;
-    static const std::string windowTitle ("FPS - ");
-    double current_time = glfwGetTime();
-
-    nbframes++;
-    
-    if (current_time - last_time > timeBetweenUpdates){ // seconds
-        glfwSetWindowTitle(window, (windowTitle + std::to_string((uint32_t)(nbframes/timeBetweenUpdates))).c_str());
-        last_time = current_time;
-        nbframes = 0;
-    }
-}
 
 void Game::handleWindowResized(GLFWwindow* window, int width, int height){
     settings.windowWidth = width;
     settings.windowHeight = height;
     // important
+    renderingServer.setupBuffers();
     glViewport(0, 0, width, height);
     if (current_scene.current_camera){
         current_scene.current_camera->resize(width, height); // update projection matrix
@@ -87,6 +61,11 @@ MessageCallback( GLenum source,
             type, severity, message );
 }
 
+void activateGLErrors(){
+    glEnable(GL_DEBUG_OUTPUT);        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(MessageCallback, nullptr);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+}
 
 void Game::init()
 {
@@ -132,7 +111,7 @@ void Game::init()
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 
 
     // Enable depth test
@@ -147,7 +126,9 @@ void Game::init()
     glfwSetFramebufferSizeCallback(window, handleWindowResizedCallback);
     glEnable(GL_CULL_FACE); 
 
-
+    renderingServer.setContext(window);
+    renderingServer.setGame(this);
+    renderingServer.setupBuffers();
     Input::init();
 
 }
@@ -180,32 +161,21 @@ void Game::renderUpdate(){
 
     glfwPollEvents();
 
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-
     current_scene.__engineUpdate(deltaTime);
 
     physicsUpdate(); // called here for now
 
     current_scene.__engineLateUpdate(deltaTime);
 
+    renderingServer.renderScene();
 
-
-    renderingServer.renderAll();
-
-
+    std::lock_guard lock(GameObjectData::queuedelete_mut);
+    //if (GameObjectData::queuedForDeletion.size() != 0) Utils::print("deletings objects : ",GameObjectData::queuedForDeletion.size());
 
     for (auto* obj : GameObjectData::queuedForDeletion){
         obj->parent->deleteChild(obj->getId());
     }
     GameObjectData::queuedForDeletion.clear();
-
-    // Swap buffers
-    glfwSwapBuffers(window);
-
-    showFPS(window);
-    //limit_fps(60);
     
 }
 

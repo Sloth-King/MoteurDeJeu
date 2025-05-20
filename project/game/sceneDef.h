@@ -82,11 +82,13 @@ GameObject createPlayer(){
     GameObject player;
 
     Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v2.obj");
-    submarine.addTexture( Texture(path_prefix_from_build + "resources/textures/submarine.jpg"), "albedo" );
+    submarine.material = Handle<MaterialPBR>(
+        Texture(path_prefix_from_build + "resources/textures/submarine.jpg")
+    );
 
     auto* playerTransform = player->addComponent<C_Transform>();
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
-    playerTransform->move(glm::vec3(0, 1, 0));
+    playerTransform->move(glm::vec3(0, 0.2, 0));
 
     //player->addComponent<C_Camera>() -> offset = cameraOffset;
 
@@ -102,14 +104,27 @@ Environment createEnvironment(const std::string & skybox_path = "resources/textu
     Environment env;
 
     auto cubemap = CubeMap(
-            path_prefix_from_build + skybox_path.c_str()
-        );
+        path_prefix_from_build + skybox_path.c_str()
+    );
 
     env.skybox = Skybox( std::move(cubemap));
 
     return env;
 }
 
+GameObject createLightObject(GameObject & parent, glm::vec3 position, glm::vec3 color){
+
+    GameObject light;
+
+    auto* lightComponent = light->addComponent<C_Light>();
+
+    lightComponent->light.color = color;
+    light->addComponent<C_Transform>()->setPosition(position);
+    
+    parent->addChild(std::move(light));
+
+    return light;
+}
 
 Scene createScene(){
     Scene scene;
@@ -131,6 +146,14 @@ Scene createScene(){
     v->player = player;
     v->initChunks();
 
+    for (int i = 0; i < 10; ++i){
+        createLightObject(
+            world,
+            glm::vec3(0.0, 0.5, i/2.0),
+            glm::vec3(i/10.0, 1-i/10.0, 0.6)
+        );
+    }
+
     scene.setRoot(std::move(world));
 
     return scene;
@@ -140,7 +163,7 @@ void game( void )
 {
 
     Game game;
-    game.settings.windowWidth = 720;
+    game.settings.windowWidth = 1280;
     game.settings.windowHeight = 720;
 
     game.init();

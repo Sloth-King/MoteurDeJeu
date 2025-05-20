@@ -79,6 +79,8 @@ GLuint loadShaders(std::string VertexShaderCode, std::string FragmentShaderCode)
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
 
+
+
 	return ProgramID;
 }
 
