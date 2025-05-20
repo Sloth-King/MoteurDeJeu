@@ -35,8 +35,9 @@ void createSpheres(GameObject &parent, int n, float radius)
         ballMesh->mesh = sphere;
         // Add physics
         ball->addComponent<C_RigidBody>();
-        ball->getComponent<C_RigidBody>()->setVelocity(glm::ballRand(radius / 200.0));
-        ball->getComponent<C_RigidBody>()->restitution = 0.0f;
+        // ball->getComponent<C_RigidBody>()->setVelocity(glm::ballRand(radius / 200.0));
+        ball->getComponent<C_RigidBody>()->restitution = 0.1f;
+        ball->getComponent<C_RigidBody>()->mass = 10.0f;
         ball->addComponent<C_Collider>()->collider.sphere = SphereCollider(glm::vec3(0.0f), 1.0f);
 
         parent->addChild(std::move(ball));
@@ -61,8 +62,9 @@ void createCubes(GameObject &parent, int n, float radius)
         cubeMesh->mesh = sphere;
         // Add physics
         cube->addComponent<C_RigidBody>();
-        cube->getComponent<C_RigidBody>()->setVelocity(glm::vec3(0.5f));
+        cube->getComponent<C_RigidBody>()->setVelocity(glm::vec3(0.0f));
         cube->addComponent<C_Collider>()->collider.cube = CubeCollider(glm::vec3(0.0f), 0.5f);
+        cube->getComponent<C_RigidBody>()->isStatic = true;
 
         parent->addChild(std::move(cube));
     }
@@ -103,8 +105,8 @@ void andrew(void)
     floor->getComponent<C_RigidBody>()->mass = 1000000.0f;
     floor->addComponent<C_Collider>()->collider.plane = PlaneCollider(glm::vec3(0.f, 1.f, 0.f), -0.0f);
 
-    createSpheres(world, 2, 1.0);
-    // createCubes(world, 100, 1.0);
+    // createSpheres(world, 1, 1.0);
+    createCubes(world, 4000, 1.0);
 
     world->addChild(std::move(floor));
 

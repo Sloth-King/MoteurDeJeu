@@ -507,6 +507,8 @@ void PhysicsServer::resolveCollision(const intersectionData &a)
     auto *objectBodyB = objectB->getComponent<C_RigidBody>();
     auto *objectTransformB = objectB->getComponent<C_Transform>();
 
+    if(objectBodyA->isStatic && objectBodyB->isStatic) return;
+
     // Intersection normal
     glm::vec3 normal = a.intersectionNormal;
 
@@ -560,8 +562,8 @@ void PhysicsServer::resolveCollision(const intersectionData &a)
 
         // Update linear velocity
         // No need to check if static cuz static bodies have an inverseMass of 0
-        objectBodyA->setVelocity(objectBodyA->linear_velocity - impulse * objectBodyA->inverseMass() * gameSpeed);
-        objectBodyB->setVelocity(objectBodyB->linear_velocity - impulse * objectBodyB->inverseMass() * gameSpeed);
+        objectBodyA->setVelocity(objectBodyA->linear_velocity - impulse * objectBodyA->inverseMass());
+        objectBodyB->setVelocity(objectBodyB->linear_velocity - impulse * objectBodyB->inverseMass());
 
         glm::vec3 angularImpulseA = invInertiaTensor(objectA) * glm::cross(ra, impulse);
         if (objectBodyA->isStatic)
@@ -575,8 +577,8 @@ void PhysicsServer::resolveCollision(const intersectionData &a)
         }
 
 		// Update angular velocities accordingly.
-        objectBodyA->angular_velocity = (objectBodyA->angular_velocity - angularImpulseA) * gameSpeed;
-        objectBodyB->angular_velocity = (objectBodyB->angular_velocity - angularImpulseB) * gameSpeed;
+        objectBodyA->angular_velocity = (objectBodyA->angular_velocity - angularImpulseA);
+        objectBodyB->angular_velocity = (objectBodyB->angular_velocity - angularImpulseB);
     }
 
     // Old collision test for bouncy balls hehe
@@ -631,52 +633,47 @@ void PhysicsServer::integrate(float deltatime)
     for (const auto &object : Objects)
     {
         // If the obj is not static apply physics
-        if (!object->getComponent<C_RigidBody>()->isStatic)
+        if (object->getComponent<C_RigidBody>()->isStatic) return;
+
+        // std::cout << object->getComponent<C_Collider>()->collider.base.type << std::endl;
+
+        auto *objectBody = object->getComponent<C_RigidBody>();
+        objectBody->acceleration = gravity; // for now thats all it is
+
+        // https://github.com/DallinClark/3d-physics-engine/blob/main/src/physics/rigid_body.cpp
+        // If we have angular velocity and we're not an aabb
+        if (glm::length(objectBody->angular_velocity) > 0.0f && !(object->getComponent<C_Collider>()->collider.base.type == CUBE))
         {
-            // std::cout << object->getComponent<C_Collider>()->collider.base.type << std::endl;
+            float angle = glm::length(objectBody->angular_velocity) * deltatime; // Get the rotation magnitude
+            glm::vec3 axis = glm::normalize(objectBody->angular_velocity);       // The rotation axis
 
-            auto *objectBody = object->getComponent<C_RigidBody>();
-            objectBody->acceleration = gravity; // for now thats all it is
+            // Construct the small-angle rotation matrix
+            glm::mat4 deltaRotation = glm::rotate(glm::mat4(1.0f), angle, axis);
 
-            // FIXME REMOVE !!!!!!!
-            objectBody->angular_velocity = glm::vec3(0.1f, 100.1f, 0.1f);
+            // Convert rotation matrix to euler tho idk if that's necessary at all
+            // FIXME
+            glm::vec3 eulerAngles = glm::eulerAngles(glm::quat_cast(deltaRotation));
 
-            // https://github.com/DallinClark/3d-physics-engine/blob/main/src/physics/rigid_body.cpp
-            // If we have angular velocity and we're not an aabb
-            if (glm::length(objectBody->angular_velocity) > 0.0f && !(object->getComponent<C_Collider>()->collider.base.type == CUBE))
-            {
-                float angle = glm::length(objectBody->angular_velocity) * deltatime; // Get the rotation magnitude
-                glm::vec3 axis = glm::normalize(objectBody->angular_velocity);       // The rotation axis
-
-                // Construct the small-angle rotation matrix
-                glm::mat4 deltaRotation = glm::rotate(glm::mat4(1.0f), angle, axis);
-
-                // Convert rotation matrix to euler tho idk if that's necessary at all
-                // FIXME
-                glm::vec3 eulerAngles = glm::eulerAngles(glm::quat_cast(deltaRotation));
-
-                // Apply rotation update
-                object->getComponent<C_Transform>()->rotate(eulerAngles);
-            }
-
-            // update the position
-            objectBody->linear_velocity *= deltatime * gameSpeed;
-            object->getComponent<C_Transform>()->move(objectBody->linear_velocity);
-
-            // update de velocity
-            objectBody->linear_velocity += objectBody->acceleration * deltatime;
-            objectBody->linear_velocity *= pow(objectBody->damping, deltatime);
-
-            // std::cout << "acceleration : (" << objectBody->acceleration.x << "," << objectBody->acceleration.y  << "," << objectBody->acceleration.z << ")" << std::endl;
-            // std::cout << "velocity : (" << objectBody->linear_velocity .x << "," << objectBody->linear_velocity .y  << "," << objectBody->linear_velocity .z << ")" << std::endl;
-            // std::cout << "transform : (" << objectTransform.x << "," << objectTransform.y  << "," << objectTransform.z << ")" << std::endl;
+            // Apply rotation update
+            object->getComponent<C_Transform>()->rotate(eulerAngles);
         }
+
+        // update de velocity
+        objectBody->linear_velocity += objectBody->acceleration * deltatime;
+        objectBody->linear_velocity *= pow(objectBody->damping, deltatime);
+
+        object->getComponent<C_Transform>()->move(objectBody->linear_velocity * gameSpeed);
+
+        // std::cout << "acceleration : (" << objectBody->acceleration.x << "," << objectBody->acceleration.y  << "," << objectBody->acceleration.z << ")" << std::endl;
+        // std::cout << "velocity : (" << objectBody->linear_velocity .x << "," << objectBody->linear_velocity .y  << "," << objectBody->linear_velocity .z << ")" << std::endl;
+        // std::cout << "transform : (" << objectTransform.x << "," << objectTransform.y  << "," << objectTransform.z << ")" << std::endl;
     }
 }
 
 void PhysicsServer::step(float deltatime)
 {
-    t = debugMode(t);
+    //t = debugMode(t);
+    t = false;
     if (t)
         return;
     std::vector<intersectionData> collisions = computeCollisions();

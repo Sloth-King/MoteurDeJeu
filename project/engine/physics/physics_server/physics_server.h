@@ -26,7 +26,7 @@ class PhysicsServer
 private:
     std::set<GameObjectData *> Objects;
     glm::vec3 gravity = glm::vec3(0.0, -5, 0.0);
-    float gameSpeed = 1;
+    float gameSpeed = 0.1f;
 
 public:
     void addObject(GameObjectData *go);                // Add an object to the phys world
