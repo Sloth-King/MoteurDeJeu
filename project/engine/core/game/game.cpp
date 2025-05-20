@@ -30,20 +30,20 @@ using namespace glm;
 
 
 
-void Game::handleWindowResized(GLFWwindow* window, int width, int height){
-    settings.windowWidth = width;
-    settings.windowHeight = height;
-    // important
+void Game::handleWindowResized(){
     renderingServer.setupBuffers();
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, settings.windowWidth, settings.windowHeight);
     if (current_scene.current_camera){
-        current_scene.current_camera->resize(width, height); // update projection matrix
+        current_scene.current_camera->resize(settings.windowWidth, settings.windowHeight); // update projection matrix
     }
 }
 
 Game* current_game; // for this, because methods cant be glfw callbacks
+bool needResizeWindow = false;
 void handleWindowResizedCallback(GLFWwindow* window, int width, int height){
-    current_game->handleWindowResized(window, width, height);
+    current_game->settings.windowWidth = width;
+    current_game->settings.windowHeight = height;
+    needResizeWindow = true;
 }
 
 void GLAPIENTRY
@@ -161,6 +161,11 @@ void Game::renderUpdate(){
 
     glfwPollEvents();
 
+    if (needResizeWindow){
+        needResizeWindow = false;
+        handleWindowResized();
+    }
+
     current_scene.__engineUpdate(deltaTime);
 
     physicsUpdate(); // called here for now
@@ -176,7 +181,6 @@ void Game::renderUpdate(){
         obj->parent->deleteChild(obj->getId());
     }
     GameObjectData::queuedForDeletion.clear();
-    
 }
 
 float physDeltaTime = 0.0f;
