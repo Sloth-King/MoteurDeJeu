@@ -8,12 +8,15 @@
 class Game;
 class RenderingServer{
 friend class Game;
-    std::set<C_Mesh * > objects;
+    std::set< C_Mesh * > objects;
+    std::set< C_Light * > lights;
 
-    GLuint gBuffer;
+    GLuint gBuffer = 0;
+    GLuint gRenderBuffer = 0;
+    GLuint lightsUBO;
     GLuint gShader = 0;
     GLuint lightShader = 0;
-    GLuint gPosition, gNormal, gAlbedoTex, gNormalTex, gRoughnessTex, gMetallicTex, gTangent, gBitangent, gDepth;
+    GLuint gPosition, gNormal, gAlbedoTex, gRoughnessMetallicTex, gDepth = 0;
 
 
     void setupBuffers();
@@ -75,8 +78,16 @@ public:
         objects.insert(g);
     }
 
-    void removeObject(C_Mesh * g )noexcept {
+    void removeObject(C_Mesh * g ) noexcept {
         objects.erase(g);
     }
 
+
+    void addLight(C_Light * g ) noexcept {
+        lights.insert(g);
+    }
+
+    void removeLight(C_Light * g ) noexcept {
+        lights.erase(g);
+    }
 };

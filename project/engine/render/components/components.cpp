@@ -59,3 +59,18 @@ void C_Camera::_onEnterScene(){
     getOwner()->getScene()->setCurrentCamera(camera);
 };
 
+
+
+void C_Light::_onEnterScene(){
+    Scene& scene = getScene();
+    if(scene.current_game){
+        scene.current_game->renderingServer.addLight(this);
+    }
+};
+
+void C_Light::_onExitScene(){
+    Scene& scene = getScene();
+    if(scene.current_game){
+        scene.current_game->renderingServer.removeLight(this);
+    }
+};

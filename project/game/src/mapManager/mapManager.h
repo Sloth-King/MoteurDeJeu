@@ -148,7 +148,7 @@ public:
         current_player_pos_in_world = getPlayerChunkCoords();
 
         for (int i = -chunkRadiusXZ; i <= chunkRadiusXZ; ++i){
-            for (int j = -chunkRadiusY; j <= chunkRadiusY; ++j){
+            for (int j = chunkRadiusY; j >= -chunkRadiusY; --j){ //top down rendering for better depth discarding
                 for (int k = -chunkRadiusXZ; k <= chunkRadiusXZ; ++k){
                     auto chunkIdx = glm::ivec3(i, j, k);
                     GameObject chunk = createChunk(chunkIdxToChunkCoord(chunkIdx));
@@ -170,7 +170,6 @@ public:
         auto new_player_pos_in_world = getPlayerChunkCoords();
 
         if (new_player_pos_in_world != current_player_pos_in_world){
-            Utils::print("Available memory: ", getTotalSystemMemory() / 1000, "kb");
             if (thread.joinable()) thread.join(); // end execution of last thread. Idk if it's clean
 
             thread = std::thread(&C_MapManager::updateChunks, this, current_player_pos_in_world, new_player_pos_in_world);
@@ -204,7 +203,7 @@ public:
         // on x
         if (delta.x > 0)
             for (int i = 0; i < number_on_x; ++i){
-                for (int j = 0; j < sY; ++j){
+                for (int j = sY-1; j >= 0; --j){
                     for (int k = 0; k < sXZ; ++k){
                         auto chunkIdx = -glm::ivec3(i, j, k)  + radius_vec;
 
@@ -219,7 +218,7 @@ public:
             }
         else if (delta.x < 0) // do nothing on 0
             for (int i = 0; i < number_on_x; ++i){
-                for (int j = 0; j < sY; ++j){
+                for (int j = sY-1; j >= 0; --j){
                     for (int k = 0; k < sXZ; ++k){
                         auto chunkIdx = glm::ivec3(i,j,k) - radius_vec;
 
@@ -238,7 +237,7 @@ public:
         int number_on_y = std::min(abs(delta.y), sY);
         if (delta.y > 0)
             for (int i = number_on_x; i < sXZ; ++i){
-                for (int j = 0; j < number_on_y; ++j){ // we don't have to do the corner we've already done
+                for (int j = number_on_y-1; j >= 0; --j){ // we don't have to do the corner we've already done
                     for (int k = 0; k < sXZ; ++k){
                         auto chunkIdx = -glm::ivec3(i, j, k) + radius_vec;
 
@@ -253,7 +252,7 @@ public:
             }
         else if (delta.y < 0)
             for (int i = number_on_x; i < sXZ; ++i){
-                for (int j = 0; j < number_on_y; ++j){
+                for (int j = number_on_y-1; j >= 0; --j){
                     for (int k = 0; k < sXZ; ++k){
                         auto chunkIdx = glm::ivec3(i, j, k) - radius_vec;
 
@@ -273,7 +272,7 @@ public:
         int number_on_z = std::min(abs(delta.z), sXZ);
         if (delta.z > 0)
             for (int i = number_on_x; i < sXZ; ++i){
-                for (int j = number_on_y; j < sY; ++j){ // we don't have to do the corner we've already done
+                for (int j = sY-1; j >= number_on_y; --j){ // we don't have to do the corner we've already done
                     for (int k = 0; k < number_on_z; ++k){
                         auto chunkIdx = -glm::ivec3(i, j, k)  + radius_vec;
 
@@ -288,7 +287,7 @@ public:
             }
         else if (delta.z < 0)
             for (int i = number_on_x; i < sXZ; ++i){
-                for (int j = number_on_y; j < sY; ++j){
+                for (int j = sY-1; j >= number_on_y; --j){
                     for (int k = 0; k < number_on_z; ++k){
                         auto chunkIdx = glm::ivec3(i, j, k) - radius_vec;
                         getChunkAt(chunkIdx)->queueDelete();

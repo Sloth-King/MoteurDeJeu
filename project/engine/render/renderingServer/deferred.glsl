@@ -3,7 +3,7 @@
 #include <string>
 
 
-const std::string vertex_deferred= R"( // vertex deferred start
+std::string vertex_deferred= R"( // vertex deferred start
 #version 460 core
 
 layout(location = 0) in vec3 RAW_POSITION; // screen space
@@ -18,38 +18,36 @@ uniform mat4 MODEL;
 out float DEPTH;
 out vec2 UV;
 out vec3 POSITION;
-out vec3 NORMAL;
-out vec3 TANGENT;
-out vec3 BITANGENT;
+out mat3 TBN;
 
 
 void main () {
-    gl_Position = MVP * vec4(RAW_POSITION, 1);
-    DEPTH = gl_Position.w;
+   gl_Position = MVP * vec4(RAW_POSITION, 1);
+   DEPTH = gl_Position.w;
 
-    UV = RAW_UV;
+   UV = RAW_UV;
 
-    POSITION =( MODEL * vec4(RAW_POSITION, 1)).xyz;
+   POSITION = ( MODEL * vec4(RAW_POSITION, 1)).xyz;
 
-    NORMAL = (MODEL * vec4(RAW_NORMAL, 0)).xyz;
-    TANGENT = (MODEL * vec4(RAW_TANGENT, 0)).xyz;
-    BITANGENT = (MODEL * vec4(RAW_BITANGENT, 0)).xyz;
+   TBN = mat3(
+      (MODEL * vec4(RAW_TANGENT, 0)).xyz, 
+      (MODEL * vec4(RAW_BITANGENT, 0)).xyz, 
+      (MODEL * vec4(RAW_NORMAL, 0)).xyz
+   );
+
 }
 )"; // vertex deferred end
 
 
 
 
-const std::string fragment_deferred= R"( // fragment deferred start
+std::string fragment_deferred= R"( // fragment deferred start
 #version 460 core
 layout (location = 0) out vec3 _Position;
 layout (location = 1) out vec3 _Normal;
-layout (location = 2) out vec3 _Tangent;
-layout (location = 3) out vec3 _Bitangent;
-layout (location = 4) out vec4 _AlbedoTex;
-layout (location = 5) out vec3 _NormalTex;
-layout (location = 6) out vec3 _RoughnessTex;
-layout (location = 7) out vec3 _MetallicTex;
+layout (location = 2) out vec4 _AlbedoTex;
+layout (location = 3) out vec2 _RoughnessMetallicTex;
+
 
 uniform sampler2D _tex_diffuse;
 uniform sampler2D _tex_normal;
@@ -58,30 +56,37 @@ uniform sampler2D _tex_metallic;
 
 in float DEPTH;
 in vec2 UV;
-in vec3 NORMAL;
+in mat3 TBN;
 in vec3 POSITION;
-in vec3 TANGENT;
-in vec3 BITANGENT;
+
 
 void main(){    
    // store the fragment position vector in the first gbuffer texture
    _Position = POSITION;
    // also store the per-fragment normals into the gbuffer
-   _Normal = normalize(NORMAL);
-   _Tangent = normalize(TANGENT);
-   _Bitangent = normalize(BITANGENT);
+
+   vec3 textureNormal = texture(_tex_normal, UV).xyz;
+
+   if (textureNormal != vec3(0, 0, 0)){
+      textureNormal = textureNormal * 2.0 - 1.0;   
+      _Normal = normalize(TBN * textureNormal);
+   } else {
+   _Normal = normalize(TBN[2]);
+   }
+
+
    // and the diffuse per-fragment color
    _AlbedoTex = texture(_tex_diffuse, UV);
-   _NormalTex = texture(_tex_normal, UV).rgb;
-   _RoughnessTex = texture(_tex_roughness, UV).rgb;
-   _MetallicTex = texture(_tex_metallic, UV).rgb;
+
+   _RoughnessMetallicTex.r = texture(_tex_roughness, UV).r;
+   _RoughnessMetallicTex.g = texture(_tex_metallic, UV).r;
 
 }  
 )"; // fragment deferred end
 
 
 
-const std::string PBR_vertex_deferred= R"( // vertex PBR deferred start
+std::string PBR_vertex_deferred= R"( // vertex PBR deferred start
 #version 460 core
 
 layout(location = 0) in vec2 RAW_POSITION;
@@ -95,42 +100,44 @@ void main () {
 }
 )"; // vertex deferred end
 
-const std::string fragment_PBR_deferred= R"( // PBR deferred start
+std::string fragment_PBR_deferred= R"( // PBR deferred start
 #version 460 core
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
-uniform sampler2D gTangent;
-uniform sampler2D gBitangent;
 uniform sampler2D gAlbedoTex;
-uniform sampler2D gNormalTex;
-uniform sampler2D gRoughnessTex;
-uniform sampler2D gMetallicTex;
+uniform sampler2D gRoughnessMetallicTex;
 uniform sampler2D gDepth;
 
 uniform vec3 view;
+uniform mat4 VP;
 
 const float PI = 3.14159265359;
 const int atlas_nb_textures = 8;
 const int atlas_size_textures = 8;
-const int num_lights = 1;
 
-struct Light{
+
+const int num_lights = PLACEHOLDER_num_lights; //autoreplaced by the renderingserver at compilation
+
+struct Light{ // order is important. See Light class
+   vec3 position;
    uint type;
-   vec3 lightDir;
-   vec3 lightPos;
-   vec3 lightColor;
+   vec3 color;
+   float intensity;
+   vec3 direction;
+   float radius;
 };
 
-Light lights[num_lights]; 
+uniform int currentLightCount;
+
+layout(std140) uniform lightsUniform // can it be the same name?
+{
+   Light lights[num_lights]; 
+};
 
 in vec2 uv;
 
 out vec3 color;
-mat3 TBN; // computed in main
-
-Light sun = {0, vec3(1.0,1.0,1.0) , vec3(1.0,1.0,1.0), vec3(23.47, 21.31, 20.79)};
-
 
 // PBR implementation by andrew
 
@@ -175,8 +182,8 @@ vec3 pbr_lighting(vec3 albedo, vec3 normal, float roughness, float metallic, Lig
    vec3 N = normalize(normal); 
    vec3 V = normalize(view);
 
-   vec3 light = light_struct.lightDir;
-   vec3 lightColor = light_struct.lightColor;
+   vec3 light = light_struct.direction;
+   vec3 lightColor = light_struct.color;
 
    vec3 Lo = vec3(0.0);
 
@@ -222,27 +229,17 @@ void main(){
 
    vec3 position = texture(gPosition, uv).xyz;
    vec3 normal = texture(gNormal, uv).xyz;
-   vec3 tangent = texture(gTangent, uv).xyz;
-   vec3 bitangent = texture(gBitangent, uv).xyz;
+
 
    vec4 albedo = texture(gAlbedoTex, uv);
-   vec3 textureNormal = texture(gNormalTex, uv).xyz;
-   float roughness = texture(gRoughnessTex, uv).x;
-   float metallic = texture(gMetallicTex, uv).x;
+   vec3 textureNormal = texture(gNormal, uv).xyz;
+   float roughness = texture(gRoughnessMetallicTex, uv).x;
+   float metallic = texture(gRoughnessMetallicTex, uv).y;
 
    float depth = texture(gDepth, uv).x;
-    
-   mat3 TBN = mat3(tangent, bitangent, normal);
-
 
    float zNear = 0.1;
    float  zFar = 300.0;
-
-   textureNormal = textureNormal * 2.0 - 1.0;   
-   textureNormal = normalize(TBN * textureNormal); //convert to tangent spage
-
-
-   lights[0] = sun;
 
    //Our roughness map is brifhtness map 
    roughness = 1 - roughness; 
@@ -252,17 +249,29 @@ void main(){
    if (depth >= 1.0){ // means we're in the skybox
       color = albedo.xyz;
    } else {
-      for(int i = 0 ; i < num_lights ; i++){
-         color+= pbr_lighting(albedo.xyz, textureNormal, roughness, metallic, lights[i]);
+      for(int i = 0 ; i < currentLightCount ; i++){
+         color+= pbr_lighting(albedo.xyz, normal, roughness, metallic, lights[i]);
       }
    }
 
+
+   // light fog bloom
+   for(int i = 0 ; i < currentLightCount ; i++){
+      Light light = lights[i];
+
+      vec2 posClipSpace = (transpose(VP) * vec4(light.position, 0.0)).xy;
+      posClipSpace = (posClipSpace + 1.0) / 2.0;
+      float d = distance(posClipSpace, uv);
+      if (d <= 0.1){
+         color += clamp(mix(light.color, vec3(0.0), d * d / 0.1), 0.0, 1.0);
+      }
+   }
    //depth =  zNear * zFar / (zFar + depth * (zNear - zFar)) / 10.0;
 
    color = mix(
       color,
       vec3(0.05, 0.20, 0.14),
-      min(1.2 * pow(depth, 200), 1.0)
+      min(1.2 * pow(depth, 10), 1.0)
    );
 } 
 )"; // PBR deferred end

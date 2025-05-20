@@ -5,6 +5,7 @@
 
 #include "engine/render/mesh/mesh.h"
 #include "engine/render/camera/camera.h"
+#include "engine/render/light/light.h"
 
 class C_Mesh: public Component {
 public:
@@ -35,4 +36,12 @@ public:
     virtual void _onEnterScene() override;
 };
 
+class C_Light: public Component{
+public:
+    Light light;
+
+    virtual void _onEnterScene() override;
+
+    virtual void _onExitScene() override;
+};
 

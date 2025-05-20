@@ -60,4 +60,7 @@ namespace Utils
 
 
 void printShaderData(unsigned int ProgramID);
+
+// https://stackoverflow.com/questions/3418231/replace-part-of-a-string-with-another-string
+bool replaceInString(std::string& str, const std::string& from, const std::string& to);
 }

@@ -38,10 +38,6 @@ void Material::bind(GLuint overrideShader) const{
 
         val.bind(i);
 
-        if (glGetUniformLocation(shader, name.c_str()) == -1){
-            Utils::print("MAUVAIS NOM ", name);
-        }
-
         glUniform1i(
             glGetUniformLocation(shader, name.c_str()),
             i

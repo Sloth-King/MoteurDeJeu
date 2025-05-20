@@ -1,6 +1,8 @@
 #include "renderingServer.h"
 #include "engine/core/game/game.h"
+#include "engine/core/core_components/components.h"
 #include "deferred.glsl"
+#include <algorithm>
 
 inline void limit_fps(int FPS){
     static double last_time = glfwGetTime();
@@ -79,10 +81,12 @@ void RenderingServer::geometryPass() const noexcept{
 
 }
 
-
+// not really clean to put these three here but nothing else is ever gonna need em anyway
+//maybe it's cleaner actually ?
 GLuint _squareVBO;
 GLuint _squareVAO;
 
+std::array<Light, Light::MAX_NUMBER_OF_LIGHTS> lightsPassArray;
 void RenderingServer::lightPass() const noexcept{
 
     const Scene* curr_scene = &game->current_scene;
@@ -103,16 +107,49 @@ void RenderingServer::lightPass() const noexcept{
     
     glActiveTexture(GL_TEXTURE0+0); glBindTexture(GL_TEXTURE_2D, gPosition); glUniform1i(glGetUniformLocation(lightShader, "gPosition"), 0);
     glActiveTexture(GL_TEXTURE0+1); glBindTexture(GL_TEXTURE_2D, gNormal); glUniform1i(glGetUniformLocation(lightShader, "gNormal"), 1);
-    glActiveTexture(GL_TEXTURE0+2); glBindTexture(GL_TEXTURE_2D, gTangent); glUniform1i(glGetUniformLocation(lightShader, "gTangent"), 2);
-    glActiveTexture(GL_TEXTURE0+3); glBindTexture(GL_TEXTURE_2D, gBitangent); glUniform1i(glGetUniformLocation(lightShader, "gBitangent"), 3);
-    glActiveTexture(GL_TEXTURE0+4); glBindTexture(GL_TEXTURE_2D, gAlbedoTex); glUniform1i(glGetUniformLocation(lightShader, "gAlbedoTex"), 4);
-    glActiveTexture(GL_TEXTURE0+5); glBindTexture(GL_TEXTURE_2D, gNormalTex); glUniform1i(glGetUniformLocation(lightShader, "gNormalTex"), 5);
-    glActiveTexture(GL_TEXTURE0+6); glBindTexture(GL_TEXTURE_2D, gRoughnessTex); glUniform1i(glGetUniformLocation(lightShader, "gRoughnessTex"), 6);
-    glActiveTexture(GL_TEXTURE0+7); glBindTexture(GL_TEXTURE_2D, gMetallicTex); glUniform1i(glGetUniformLocation(lightShader, "gMetallicTex"), 7);
-    glActiveTexture(GL_TEXTURE0+8); glBindTexture(GL_TEXTURE_2D, gDepth); glUniform1i(glGetUniformLocation(lightShader, "gDepth"), 8);
+    glActiveTexture(GL_TEXTURE0+2); glBindTexture(GL_TEXTURE_2D, gAlbedoTex); glUniform1i(glGetUniformLocation(lightShader, "gAlbedoTex"), 2);
+    glActiveTexture(GL_TEXTURE0+3); glBindTexture(GL_TEXTURE_2D, gRoughnessMetallicTex); glUniform1i(glGetUniformLocation(lightShader, "gRoughnessMetallicTex"), 3);
+    glActiveTexture(GL_TEXTURE0+4); glBindTexture(GL_TEXTURE_2D, gDepth); glUniform1i(glGetUniformLocation(lightShader, "gDepth"), 4);
 
     glm::vec3 viewvector = curr_scene->current_camera->getForwardVector();
     glUniform3fv(glGetUniformLocation(lightShader, "view"), 1, &viewvector[0]);
+
+    glm::mat4 VP = curr_scene->current_camera->getVP();
+    glUniformMatrix4fv(glGetUniformLocation(lightShader, "VP"), 1, GL_FALSE, &VP[0][0]);
+
+    // light setup
+    int currentLightCount = 0;
+
+    // on prend les N premières lights qui sont assez proches du joueur
+
+    for (C_Light* light: lights){
+
+        Light & lightStruct = light->light;
+
+        if (light->getOwner()->hasComponent<C_Transform>()){
+            lightStruct._pos = light->getOwner()->getComponent<C_Transform>()->getGlobalPosition();
+        } else {
+            lightStruct._pos = glm::vec3(0, 0, 0);
+        }
+
+        if (glm::distance(
+                lightStruct._pos,
+                curr_scene->current_camera->getGlobalPosition()
+            ) <= lightStruct.radius){
+
+            lightsPassArray[currentLightCount] = lightStruct; // copy
+
+            ++currentLightCount;
+        }
+
+        if (currentLightCount > Light::MAX_NUMBER_OF_LIGHTS) break;
+    }
+
+    glUniform1i(glGetUniformLocation(lightShader, "currentLightCount"), currentLightCount);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, lightsPassArray.size(), lightsPassArray.data());
+    glBindBuffer(GL_UNIFORM_BUFFER,0);
 
     glBindVertexArray(_squareVAO);
 
@@ -153,8 +190,15 @@ void RenderingServer::setupBuffers(){
     }
 
     if (!lightShader){
+
+        Utils::replaceInString(
+            fragment_PBR_deferred,
+            "PLACEHOLDER_num_lights",
+            std::to_string(Light::MAX_NUMBER_OF_LIGHTS)
+        );
         lightShader = loadShaders(PBR_vertex_deferred, fragment_PBR_deferred);
 
+        // setting up screen plane for second pass
         glGenVertexArrays(1, &_squareVAO);
         glBindVertexArray(_squareVAO);
         glEnableVertexAttribArray(0);
@@ -166,6 +210,22 @@ void RenderingServer::setupBuffers(){
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
         glBindVertexArray(0);
+
+        // setting up light array uniform
+
+        // recuperer l'identifiant du groupe d'uniforms frameData
+        GLuint block= glGetUniformBlockIndex(lightShader, "lightsUniform");
+        // associer l'indice 0 a frameData
+        glUniformBlockBinding(lightShader, block, 0);
+        
+        // creer et initialiser le buffer // https://community.khronos.org/t/uniform-buffer-objects-dynamic-sized-arrays-and-lights/70415
+        glGenBuffers(1,&lightsUBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
+        glBufferData(GL_UNIFORM_BUFFER, Light::MAX_NUMBER_OF_LIGHTS * sizeof(Light), lightsPassArray.data(), GL_DYNAMIC_DRAW); // this allocates space for the UBO. 
+
+        // selectionner un buffer existant pour affecter une valeur a tous les uniforms du groupe simpleData
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, lightsUBO);
+
     }
 
     glGenFramebuffers(1, &gBuffer);
@@ -185,26 +245,10 @@ void RenderingServer::setupBuffers(){
     // - normal color buffer
     glGenTextures(1, &gNormal);
     glBindTexture(GL_TEXTURE_2D, gNormal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-
-    // - tangents color buffer
-    glGenTextures(1, &gTangent);
-    glBindTexture(GL_TEXTURE_2D, gTangent);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gTangent, 0);
-    
-    // - bitangents color buffer
-    glGenTextures(1, &gBitangent);
-    glBindTexture(GL_TEXTURE_2D, gBitangent);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gBitangent, 0);
     
     // - albedo color buffer
     glGenTextures(1, &gAlbedoTex);
@@ -212,49 +256,31 @@ void RenderingServer::setupBuffers(){
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gAlbedoTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoTex, 0);
 
-    // - normals color buffer
-    glGenTextures(1, &gNormalTex);
-    glBindTexture(GL_TEXTURE_2D, gNormalTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, gNormalTex, 0);
 
     // - roughness color buffer
-    glGenTextures(1, &gRoughnessTex);
-    glBindTexture(GL_TEXTURE_2D, gRoughnessTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glGenTextures(1, &gRoughnessMetallicTex);
+    glBindTexture(GL_TEXTURE_2D, gRoughnessMetallicTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, SCR_WIDTH, SCR_HEIGHT, 0, GL_RG, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, gRoughnessTex, 0);
-
-    // - metallic color buffer
-    glGenTextures(1, &gMetallicTex);
-    glBindTexture(GL_TEXTURE_2D, gMetallicTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT7, GL_TEXTURE_2D, gMetallicTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gRoughnessMetallicTex, 0);
 
     // - depth color buffer
     glGenTextures(1, &gDepth);
     glBindTexture(GL_TEXTURE_2D, gDepth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, gDepth);
-
 
     // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-    unsigned int attachments[8] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 , GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
-    glDrawBuffers(8, attachments);
+    unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 , GL_COLOR_ATTACHMENT3};
+    glDrawBuffers(4, attachments);
 
 
-    glDepthFunc(GL_LEQUAL);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
