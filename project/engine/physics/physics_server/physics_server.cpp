@@ -305,8 +305,9 @@ intersectionData intersectionPlaneCube(const Collider *a, const C_Transform *at,
 
     for (auto vertex : cube->getVertices())
     {
-        vertex += bt->getGlobalPosition();
-        float distance = glm::dot(planeNormal, vertex) - planeDistance;
+        // vertex += bt->getGlobalPosition(); // Might actually just not handle scale
+        glm::vec3 worldVertex = vertex * bt->getGlobalScale() + bt->getGlobalPosition();
+        float distance = glm::dot(planeNormal, worldVertex) - planeDistance;
 
         if (distance > 0)
             hasFront = true;
@@ -316,7 +317,7 @@ intersectionData intersectionPlaneCube(const Collider *a, const C_Transform *at,
         if (std::abs(distance) < minDistance)
         {
             minDistance = std::abs(distance);
-            closestPoint = vertex;
+            closestPoint = worldVertex;
         }
 
         if (hasFront && hasBack)
@@ -377,7 +378,7 @@ intersectionData intersectionCubeCube(const Collider *a, const C_Transform *at,
 
     // Closest points on each cube
     glm::vec3 contactPointA = glm::clamp(bCubeCenter, aCubeMin, aCubeMax);
-    glm::vec3 contactPointB = glm::clamp(aCubeCenter, aCubeMin, aCubeMax);
+    glm::vec3 contactPointB = glm::clamp(aCubeCenter, bCubeMin, bCubeMax);
 
     res.isIntersection = true;
     res.intersectionNormal = glm::normalize(bCubeCenter - aCubeCenter); // i think that's right idk
