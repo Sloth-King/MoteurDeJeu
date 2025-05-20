@@ -135,7 +135,7 @@ void Game::init()
 
 void Game::renderloop(){
     glfwMakeContextCurrent(window);
-    while (running) renderUpdate();
+    while (running && !glfwWindowShouldClose(window)) renderUpdate();
 }
 
 void Game::start(){
@@ -146,7 +146,7 @@ void Game::start(){
         this
     );
     */
-    Game::renderloop(); // TODO
+    Game::renderloop();
 }
 
 float deltaTime = 0.0f;

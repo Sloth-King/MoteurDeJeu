@@ -182,8 +182,10 @@ void RenderingServer::setupBuffers(){
     
     */
 
-    glDeleteFramebuffers(1, &gBuffer);
+    
     glDeleteBuffers(9, &gPosition);
+    glDeleteFramebuffers(1, &gBuffer);
+
     
     if (!gShader){
         gShader = loadShaders(vertex_deferred, fragment_deferred);
