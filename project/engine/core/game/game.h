@@ -46,7 +46,7 @@ protected:
     GLFWwindow* window;
     bool running = false;
 
-    void handleWindowResized(GLFWwindow* window, int width, int height);
+    void handleWindowResized();
 
 
 public:
