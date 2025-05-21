@@ -25,8 +25,6 @@ bool debugMode(bool t)
 
 ///////////////////////////////////////////////////////////////// Inertia calculations /////////////////////////////////////////////////////////////////////////
 
-glm::vec3 calculateRotationalInertia() {}
-
 // Basically store the inertia in a matrix to allow for tensor product
 glm::mat3 computeInertiaTensor(GameObjectData *obj)
 {
@@ -307,8 +305,9 @@ intersectionData intersectionPlaneCube(const Collider *a, const C_Transform *at,
 
     for (auto vertex : cube->getVertices())
     {
-        vertex += bt->getGlobalPosition();
-        float distance = glm::dot(planeNormal, vertex) - planeDistance;
+        // vertex += bt->getGlobalPosition(); // Might actually just not handle scale
+        glm::vec3 worldVertex = vertex * bt->getGlobalScale() + bt->getGlobalPosition();
+        float distance = glm::dot(planeNormal, worldVertex) - planeDistance;
 
         if (distance > 0)
             hasFront = true;
@@ -318,7 +317,7 @@ intersectionData intersectionPlaneCube(const Collider *a, const C_Transform *at,
         if (std::abs(distance) < minDistance)
         {
             minDistance = std::abs(distance);
-            closestPoint = vertex;
+            closestPoint = worldVertex;
         }
 
         if (hasFront && hasBack)
@@ -379,7 +378,7 @@ intersectionData intersectionCubeCube(const Collider *a, const C_Transform *at,
 
     // Closest points on each cube
     glm::vec3 contactPointA = glm::clamp(bCubeCenter, aCubeMin, aCubeMax);
-    glm::vec3 contactPointB = glm::clamp(aCubeCenter, aCubeMin, aCubeMax);
+    glm::vec3 contactPointB = glm::clamp(aCubeCenter, bCubeMin, bCubeMax);
 
     res.isIntersection = true;
     res.intersectionNormal = glm::normalize(bCubeCenter - aCubeCenter); // i think that's right idk
@@ -409,6 +408,10 @@ void PhysicsServer::removeObject(GameObjectData *go)
     Objects.erase(go);
 }
 
+float PhysicsServer::getDeltaTime(){
+    return deltaT;
+}
+
 std::vector<intersectionData> PhysicsServer::computeCollisions()
 {
     std::vector<intersectionData> intersectionList;
@@ -430,6 +433,10 @@ std::vector<intersectionData> PhysicsServer::computeCollisions()
             continue;
         for (const auto &objectB : Objects)
         {
+
+            if(objectA->getComponent<C_RigidBody>()->isStatic && objectB->getComponent<C_RigidBody>()->isStatic) continue;
+
+            std::cout << "wesh" << std::endl;
 
             // Check if the object has the right components AND that they're not the same object
             if (
@@ -633,7 +640,7 @@ void PhysicsServer::integrate(float deltatime)
     for (const auto &object : Objects)
     {
         // If the obj is not static apply physics
-        if (object->getComponent<C_RigidBody>()->isStatic) return;
+        if (object->getComponent<C_RigidBody>()->isStatic) continue;
 
         // std::cout << object->getComponent<C_Collider>()->collider.base.type << std::endl;
 
@@ -672,6 +679,7 @@ void PhysicsServer::integrate(float deltatime)
 
 void PhysicsServer::step(float deltatime)
 {
+    deltaT = deltatime;
     //t = debugMode(t);
     t = false;
     if (t)

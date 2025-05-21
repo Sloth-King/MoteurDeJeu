@@ -6,7 +6,6 @@ endif()
 
 file(READ "/home/e20210002460/Master/Moteur_de_jeux/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt" files)
 =======
-<<<<<<< HEAD
 if (NOT EXISTS "/home/andrew/Desktop/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt")
   message(FATAL_ERROR "Cannot find install manifest: \"/home/andrew/Desktop/MoteurDeJeu/project/build/engine/external/external/glfw-3.1.2/install_manifest.txt\"")
 endif()
