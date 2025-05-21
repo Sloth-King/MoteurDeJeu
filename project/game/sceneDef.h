@@ -79,7 +79,7 @@ GameObject createPlayer(){
 
     GameObject player;
 
-    //Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v2.obj");
+    // Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v2.obj");
     Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/unit_sphere.obj");
 
     submarine.material = Handle<MaterialPBR>(
@@ -91,7 +91,7 @@ GameObject createPlayer(){
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
     
 
-    // player->addComponent<C_Camera>() -> offset = cameraOffset;
+    player->addComponent<C_Camera>() -> offset = cameraOffset;
 
     player->addComponent<C_Mesh>()->mesh = submarine;
 
@@ -99,8 +99,9 @@ GameObject createPlayer(){
 
     player->addComponent<C_Collider>()->collider.sphere = SphereCollider(glm::vec3(0.0) , 1.0);
     auto *playerBody = player->addComponent<C_RigidBody>();
-    // playerBody->gravityScale = 0.0f;
+    playerBody->gravityScale = 0.0f;
     playerBody->restitution = 0.0f;
+    playerBody->damping = 0.5f;
     
     return player;
 }
@@ -177,6 +178,7 @@ void game( void )
     game.settings.windowHeight = 720;
 
     game.init();
+
     addKeybind();
 
     game.setScene(

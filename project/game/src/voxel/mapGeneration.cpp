@@ -69,8 +69,8 @@ void spawnAlgae(const glm::ivec3 & local_position, C_voxelMesh & chunk){
 int nbalgae = 0;
 uint8_t generateVoxel(const glm::ivec3 & global_position, const glm::ivec3 & local_position, C_voxelMesh & chunk){
 
-    if (global_position == glm::ivec3(1.0, 1.0, 1.0)) return 1;
-    return 0;
+    // if (global_position == glm::ivec3(1.0, 1.0, 1.0)) return 1;
+    // return 0;
 
     const int fac = 5;
 

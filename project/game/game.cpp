@@ -21,7 +21,7 @@
 int main( void )
 {
     //tom(); // tom
-    andrew(); // andrew
-    //game();
+    // andrew(); // andrew
+    game();
 }
 
