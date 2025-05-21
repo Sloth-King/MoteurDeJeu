@@ -10,7 +10,7 @@ class Light{
     glm::vec3 _pos;
 
 public:
-    static const uint MAX_NUMBER_OF_LIGHTS = 64;
+    static const uint MAX_NUMBER_OF_LIGHTS = 256;
 
     // explicit type is important for passing to gpu
     enum LIGHT_TYPE : signed int {LIGHT_NONE, LIGHT_POINT, LIGHT_TYPE_MAX};

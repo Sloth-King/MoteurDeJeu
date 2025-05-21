@@ -57,7 +57,6 @@ protected:
     
 
 public:
-    static GLuint base_shader;
 
     Handle<MaterialPBR> material;
 
@@ -78,10 +77,7 @@ public:
 
     static Mesh gen_tesselatedSquare(int nX, int nY, float sX = 1, float sY = 1);
 
-    Mesh(){
-        if (base_shader == 0) createDefaultShader();
-        shaderPID = base_shader;
-    };
+    Mesh() = default;
     ~Mesh(){
         if (_synchronized){
             unsynchronize();

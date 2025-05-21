@@ -126,6 +126,8 @@ void Game::init()
     glfwSetFramebufferSizeCallback(window, handleWindowResizedCallback);
     glEnable(GL_CULL_FACE); 
 
+    
+
     renderingServer.setContext(window);
     renderingServer.setGame(this);
     renderingServer.setupBuffers();

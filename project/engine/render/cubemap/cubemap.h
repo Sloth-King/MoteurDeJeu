@@ -14,7 +14,7 @@ class CubeMap {
 
 protected:
 public:
-    GLuint _texture_id;
+    GLuint _texture_id = 0;
 
     bool __synchronized = false;
 
@@ -38,7 +38,7 @@ public:
 
     ~CubeMap(){
         if (__synchronized){
-            glDeleteBuffers(1, &_texture_id);
+            glDeleteTextures(1, &_texture_id);
         }
     }
 
@@ -94,6 +94,7 @@ public:
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         __synchronized = true;
+        glFinish();
     }
     
 
@@ -101,7 +102,9 @@ public:
 
     // IN CASE STRANGE THINGS HAPPEN: ALWAYS REMEMBER https://learnopengl.com/Getting-started/Textures
     void bind(GLuint slot = 0) const {
-        glBindTexture(GL_TEXTURE_CUBE_MAP, _texture_id);
         glActiveTexture(GL_TEXTURE0+slot); // should go here actually
+        glBindTexture(GL_TEXTURE_CUBE_MAP, _texture_id);
+
+        
     }
 };

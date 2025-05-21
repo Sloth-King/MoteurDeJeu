@@ -123,11 +123,6 @@ public:
 
         c_voxelmesh->mesh.material = material;
 
-        c_voxelmesh->mesh.addTexture(atlas.unsafeCopyTodoRemoveThat(), "atlas");
-        c_voxelmesh->mesh.addTexture(roughness.unsafeCopyTodoRemoveThat(), "roughness_map");
-        c_voxelmesh->mesh.addTexture(metallic.unsafeCopyTodoRemoveThat(), "metallic_map");
-        c_voxelmesh->mesh.addTexture(normal.unsafeCopyTodoRemoveThat(), "normal_map"); 
-
         c_voxelmesh->create_chunk(glm::round(global_pos));
 
         

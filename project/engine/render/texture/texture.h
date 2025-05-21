@@ -54,7 +54,7 @@ protected:
         
         if (!__synchronized) return;
 
-        glDeleteBuffers(1, &_texture_id);
+        glDeleteTextures(1, &_texture_id);
 
         __synchronized = false;
     }
@@ -100,14 +100,6 @@ public:
     Texture() = default;
     Texture(Texture &&) = default;
     ~Texture(){if (__synchronized) unsynchronize();}
-
-
-    // only copies the id, which means if the main texture is removed, this one UBs. It's cheap and used for chunks with the map manager.
-    Texture unsafeCopyTodoRemoveThat()const{
-        Texture t;
-        t._texture_id = _texture_id;
-        return t;
-    }
 
     void loadTexture(const std::string path, bool cpuOnly = false){
         unsigned char * new_data = stbi_load(path.c_str(), &width, &height, &nbChannels, 0);
