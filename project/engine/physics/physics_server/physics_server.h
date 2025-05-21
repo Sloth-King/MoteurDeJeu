@@ -4,6 +4,7 @@
 #include <glm/vec3.hpp>
 #include "engine/physics/components/components.h"
 #include "engine/core/gameObject/gameObject.h"
+#include "engine/physics/collider/collider.h"
 
 struct intersectionData
 {

@@ -16,6 +16,7 @@
 
 #include "src/mapManager/mapManager.h"
 
+
 using Utils::print;
 
 void andrew(void)
@@ -37,28 +38,29 @@ void andrew(void)
 
     // scene objects
 
-    static Mesh cubemesh_obj = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/cube.obj");
+    GameObject chunk;
+    chunk->addComponent<C_Transform>();
+    auto *chunkMesh = chunk->addComponent<C_voxelMesh>();
+    chunkMesh->create_chunk();
 
-    cubemesh_obj.material = Handle<MaterialPBR>(
-        Texture(path_prefix_from_build + "resources/textures/submarine.jpg")
-    );
+    // Physics
+    chunk->addComponent<C_Collider>()->collider.chunk = ChunkCollider();
+    chunk->addComponent<C_RigidBody>()->isStatic = true;
 
-    GameObject cube;
-    auto *cubeTransofrm = cube->addComponent<C_Transform>();
+    auto atlas = Texture(path_prefix_from_build + "resources/textures/voxelAtlas.png");
+    auto roughness = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Roughness.png");
+    auto metallic = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Metallic.png");
+    auto normal = Texture(path_prefix_from_build + "resources/textures/voxelAtlas_Normal.png");
 
-    cubeTransofrm->setPositionGlobal(glm::vec3(0.0f,0.0f,1.0f));
-    cubeTransofrm->setScale(glm::vec3(1.0, 1.0, 1.0));
+    Handle<MaterialPBR> material = Handle<MaterialPBR>(atlas, normal, roughness, metallic);
 
-    auto *cubeMesh = cube->addComponent<C_Mesh>();
-    cubeMesh->mesh = cubemesh_obj;
+    chunkMesh->mesh.material = material;
+    
+    GameObject player = createPlayer();
 
-    // Add physics
-    cube->addComponent<C_RigidBody>();
-    cube->getComponent<C_RigidBody>()->setVelocity(glm::vec3(0.0f));
-    cube->addComponent<C_Collider>()->collider.cube = CubeCollider(glm::vec3(0.0f), 0.5f);
-    cube->getComponent<C_RigidBody>()->isStatic = true;
 
-    world->addChild(std::move(cube));
+    world->addChild(std::move(chunk));
+    world->addChild(std::move(player));
 
     // Create scene
     Scene scene;

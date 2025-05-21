@@ -48,6 +48,7 @@ union Colliders
     SphereCollider sphere;
     PlaneCollider plane;
     CubeCollider cube;
+    ChunkCollider chunk;
 
     Colliders() : base() {}
 };

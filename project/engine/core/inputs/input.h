@@ -5,8 +5,6 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <memory>
-#include <thread>
 #include <functional>
 
 // Include GLEW
@@ -20,9 +18,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "engine/utils/utils.h"
-#include "engine/core/scene/scene.h"
-#include "engine/physics/physics_server/physics_server.h"
-
 
 enum BIND_TYPE {
     BINDTYPE_KEYBOARD,
