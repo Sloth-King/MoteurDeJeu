@@ -80,6 +80,6 @@ struct ChunkCollider : public Collider
     // We will use the size of a chunk, voxel and their placement
     C_voxelMesh *voxelMesh = 0;
 
-    ChunkCollider()
-        : Collider(CHUNK) {}
+    ChunkCollider(C_voxelMesh *mesh)
+        : Collider(CHUNK), voxelMesh(mesh) {}
 };

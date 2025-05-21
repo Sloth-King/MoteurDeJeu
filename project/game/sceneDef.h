@@ -56,8 +56,6 @@ void addKeybind(){
         )
     );
 
-
-
     Input::addKeybind(
         "move_down",
         KeySpec(
@@ -81,20 +79,28 @@ GameObject createPlayer(){
 
     GameObject player;
 
-    Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v2.obj");
+    //Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/sousmarin_v2.obj");
+    Mesh submarine = ResourceLoader::load_mesh_obj(path_prefix_from_build + "resources/meshes/unit_sphere.obj");
+
     submarine.material = Handle<MaterialPBR>(
         Texture(path_prefix_from_build + "resources/textures/submarine.jpg")
     );
 
     auto* playerTransform = player->addComponent<C_Transform>();
+    playerTransform->move(glm::vec3(0.05, 1.0, 0.05));
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
-    playerTransform->move(glm::vec3(0, 0.2, 0));
+    
 
-    player->addComponent<C_Camera>() -> offset = cameraOffset;
+    // player->addComponent<C_Camera>() -> offset = cameraOffset;
 
     player->addComponent<C_Mesh>()->mesh = submarine;
 
     player->addComponent<C_PlayerController>();
+
+    player->addComponent<C_Collider>()->collider.sphere = SphereCollider(glm::vec3(0.0) , 1.0);
+    auto *playerBody = player->addComponent<C_RigidBody>();
+    // playerBody->gravityScale = 0.0f;
+    playerBody->restitution = 0.0f;
     
     return player;
 }
@@ -119,7 +125,7 @@ GameObject createLightObject(GameObject & parent, glm::vec3 position, glm::vec3 
     auto* lightComponent = light->addComponent<C_Light>();
 
     lightComponent->light.color = color;
-    lightComponent->light.intensity = 0.0;
+    lightComponent->light.intensity = 1.0;
     light->addComponent<C_Transform>()->setPosition(position);
     
     parent->addChild(std::move(light));

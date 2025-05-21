@@ -27,6 +27,7 @@ void andrew(void)
     game.settings.windowHeight = 720;
 
     game.init();
+    addKeybind();
 
     // world
     GameObject world;
@@ -34,7 +35,7 @@ void andrew(void)
 
     // light
 
-    createLightObject(world , glm::vec3(1.0f,1.0f,1.0f) , glm::vec3(100.0f));
+    createLightObject(world , glm::vec3(1.0f,1.0f,1.0f) , glm::vec3(1.0f));
 
     // scene objects
 
@@ -44,7 +45,7 @@ void andrew(void)
     chunkMesh->create_chunk();
 
     // Physics
-    chunk->addComponent<C_Collider>()->collider.chunk = ChunkCollider();
+    chunk->addComponent<C_Collider>()->collider.chunk = ChunkCollider(chunkMesh);
     chunk->addComponent<C_RigidBody>()->isStatic = true;
 
     auto atlas = Texture(path_prefix_from_build + "resources/textures/voxelAtlas.png");
@@ -57,8 +58,7 @@ void andrew(void)
     chunkMesh->mesh.material = material;
     
     GameObject player = createPlayer();
-
-
+    
     world->addChild(std::move(chunk));
     world->addChild(std::move(player));
 
