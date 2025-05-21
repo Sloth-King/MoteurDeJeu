@@ -121,7 +121,7 @@ const int num_lights = PLACEHOLDER_num_lights; //autoreplaced by the renderingse
 
 struct Light{ // order is important. See Light class
    vec3 position;
-   uint type;
+   int type;
    vec3 color;
    float intensity;
    vec3 direction;
@@ -176,23 +176,23 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-
-vec3 pbr_lighting(vec3 albedo, vec3 normal, float roughness, float metallic, Light light_struct){
+const float falloff_fac = 10.0;
+vec3 pbr_lighting(vec3 position, vec3 albedo, vec3 normal, float roughness, float metallic, Light light_struct){
 
    vec3 N = normalize(normal); 
-   vec3 V = normalize(view);
+   vec3 V = normalize(-view);
 
-   vec3 light = light_struct.direction;
-   vec3 lightColor = light_struct.color;
+   vec3 lightColor = light_struct.color * light_struct.intensity;
+
+   albedo = (pow(albedo, vec3(2.2))); // convert from srgb to linear
 
    vec3 Lo = vec3(0.0);
 
-   //make a for loop if we have more than 1 light probably
-   vec3 L = normalize(light);
+   vec3 L = normalize( light_struct.position - position );
    vec3 H = normalize(V + L); //half vector
    
-   float distance = length(light);
-   float attenuation = 1.0 / (distance * distance);
+   float distance = distance(position, light_struct.position);
+   float attenuation = 1.0 / (1.0 + falloff_fac * distance * distance);
    vec3 radiance = lightColor * attenuation; 
 
    vec3 F0 = vec3(0.04); 
@@ -215,11 +215,8 @@ vec3 pbr_lighting(vec3 albedo, vec3 normal, float roughness, float metallic, Lig
 
    //end of for loop
 
-   vec3 ambient = vec3(0.03) * albedo; // * ao if we create an ao map but tbh idgaf
-   vec3 tempColor = ambient + Lo;
-
-   tempColor = tempColor / (tempColor + vec3(1.0));
-   return pow(tempColor, vec3(1.0/2.2));  
+   //vec3 ambient = vec3(0.03) * albedo; // * ao if we create an ao map but tbh idgaf
+   return  Lo;
 
 }
 
@@ -242,7 +239,7 @@ void main(){
    float  zFar = 300.0;
 
    //Our roughness map is brifhtness map 
-   roughness = 1 - roughness; 
+   roughness = 1.0 - roughness; 
 
    //calculating our albedo map
 
@@ -250,11 +247,15 @@ void main(){
       color = albedo.xyz;
    } else {
       for(int i = 0 ; i < currentLightCount ; i++){
-         color+= pbr_lighting(albedo.xyz, normal, roughness, metallic, lights[i]);
+         color+= pbr_lighting(position, albedo.xyz, normal, roughness, metallic, lights[i]);
+
       }
+   // fin du pbr. Voir avec andrew
+      color = color / (color + vec3(1.0));
+      color = pow(color, vec3(1.0/2.2));  
    }
 
-
+   /*
    // light fog bloom
    for(int i = 0 ; i < currentLightCount ; i++){
       Light light = lights[i];
@@ -267,7 +268,7 @@ void main(){
       }
    }
    //depth =  zNear * zFar / (zFar + depth * (zNear - zFar)) / 10.0;
-
+   */
    color = mix(
       color,
       vec3(0.05, 0.20, 0.14),

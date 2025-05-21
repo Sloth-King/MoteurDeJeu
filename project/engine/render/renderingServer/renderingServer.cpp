@@ -148,7 +148,7 @@ void RenderingServer::lightPass() const noexcept{
     glUniform1i(glGetUniformLocation(lightShader, "currentLightCount"), currentLightCount);
 
     glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, lightsPassArray.size(), lightsPassArray.data());
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, lightsPassArray.size() * sizeof(Light), lightsPassArray.data());
     glBindBuffer(GL_UNIFORM_BUFFER,0);
 
     glBindVertexArray(_squareVAO);
@@ -183,7 +183,7 @@ void RenderingServer::setupBuffers(){
     */
 
     
-    glDeleteBuffers(9, &gPosition);
+    glDeleteTextures(9, &gPosition);
     glDeleteFramebuffers(1, &gBuffer);
 
     
@@ -286,4 +286,5 @@ void RenderingServer::setupBuffers(){
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    glFinish();
 }

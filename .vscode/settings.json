@@ -119,6 +119,5 @@
     "variant": "cpp",
     "condition_variable": "cpp",
     "mutex": "cpp",
-    "*.glsl": "cpp"
   }
 }

@@ -107,7 +107,7 @@ Environment createEnvironment(const std::string & skybox_path = "resources/textu
         path_prefix_from_build + skybox_path.c_str()
     );
 
-    env.skybox = Skybox( std::move(cubemap));
+    env.skybox = std::move(Skybox( std::move(cubemap)));
 
     return env;
 }
@@ -119,6 +119,7 @@ GameObject createLightObject(GameObject & parent, glm::vec3 position, glm::vec3 
     auto* lightComponent = light->addComponent<C_Light>();
 
     lightComponent->light.color = color;
+    lightComponent->light.intensity = 0.0;
     light->addComponent<C_Transform>()->setPosition(position);
     
     parent->addChild(std::move(light));
@@ -146,13 +147,16 @@ Scene createScene(){
     v->player = player;
     v->initChunks();
 
-    for (int i = 0; i < 10; ++i){
-        createLightObject(
-            world,
-            glm::vec3(0.0, 0.5, i/2.0),
-            glm::vec3(i/10.0, 1-i/10.0, 0.6)
-        );
-    }
+
+
+
+    
+    createLightObject(
+        world,
+        glm::vec3(0.0, 0.0, 0.0),
+        glm::vec3(0, 1.0, 0.0)
+    );
+
 
     scene.setRoot(std::move(world));
 
