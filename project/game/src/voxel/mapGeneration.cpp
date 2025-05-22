@@ -159,7 +159,7 @@ uint8_t generateVoxel(const glm::ivec3 & global_position, const glm::ivec3 & loc
     //result = 6;
     if (spawn_algae && randval() < 0.002){
         spawnAlgae(local_position, chunk);
-        Utils::print(nbalgae++);
+        // Utils::print(nbalgae++);
     }
 
 

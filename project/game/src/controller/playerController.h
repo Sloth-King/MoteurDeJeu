@@ -5,7 +5,7 @@ class C_PlayerController : public Component
 {
 public:
     float movement_speed = 1.0;
-    float mouseSpeed = 40;
+    float mouseSpeed = 10;
     bool _isMouseHidden = false;
 
     void inputCallback(const InputEvent &e)
@@ -63,29 +63,28 @@ public:
             }
             if (Input::isInputPressed("move_left"))
             {
-                linearForce += -cam->camera.getForwardVector();
+                linearForce -= cam->camera.getRightVector();
             }
             if (Input::isInputPressed("move_forward"))
             {
-                linearForce += glm::vec3(0, 0, -1);
+                linearForce -= cam->camera.getForwardVector();
             }
             if (Input::isInputPressed("move_backwards"))
             {
-                linearForce += glm::vec3(0, 0, 1);
+                linearForce += cam->camera.getForwardVector();
             }
             if (Input::isInputPressed("move_up"))
             {
-                linearForce += glm::vec3(0, 1, 0);
+                linearForce += cam->camera.getUpVector();
             }
             if (Input::isInputPressed("move_down"))
             {
-                linearForce += glm::vec3(0, -1, 0);
+                linearForce -= cam->camera.getUpVector();
             }
 
-            Utils::print("linear force", linearForce);
+            // Utils::print("linear force", linearForce);
 
-            if (glm::length(linearForce) > 0.0f)
-                body->applyForce(delta * linearForce * glm::quat((transform->getGlobalRotation())));
+            body->applyForce(delta * linearForce);
 
             // Mouse movement
 
@@ -110,7 +109,7 @@ public:
 
                 // in local space
                 // transform->rotate(-horizontalAngle * glm::vec3(0.0, 1.0, 0.0));
-                // transform->rotate(-verticalAngle * glm::vec3(1.0, 0.0, 0.0));
+                // transform->rotate(-verticalAngle * glm::vec3(0.0, 0.0, 1.0));
 
                 body->applyAngularForce(-horizontalAngle * glm::vec3(0.0, 1.0, 0.0));
                 body->applyAngularForce(-verticalAngle * glm::vec3(1.0, 0.0, 0.0));

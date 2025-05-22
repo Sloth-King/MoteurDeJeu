@@ -75,7 +75,7 @@ void addKeybind(){
 
 GameObject createPlayer(){
 
-    const glm::vec3 cameraOffset(1.3, 0.0, -3.5);
+    const glm::vec3 cameraOffset(1.3, 0.0, -3.75);
 
     GameObject player;
 
@@ -97,7 +97,7 @@ GameObject createPlayer(){
 
     player->addComponent<C_PlayerController>();
 
-    player->addComponent<C_Collider>()->collider.sphere = SphereCollider(glm::vec3(0.0) , 1.0);
+    player->addComponent<C_Collider>()->collider.sphere = SphereCollider(glm::vec3(0.0) , 1);
     auto *playerBody = player->addComponent<C_RigidBody>();
     playerBody->gravityScale = 0.0f;
     playerBody->restitution = 0.0f;
@@ -174,8 +174,8 @@ void game( void )
 {
 
     Game game;
-    game.settings.windowWidth = 1280;
-    game.settings.windowHeight = 720;
+    game.settings.windowWidth = 1920;
+    game.settings.windowHeight = 1080;
 
     game.init();
 
