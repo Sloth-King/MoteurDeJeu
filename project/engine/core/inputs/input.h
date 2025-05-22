@@ -60,7 +60,7 @@ struct InputEvent {
 
     inline bool isReleased() const noexcept { return !pressed;}
 
-    inline bool isPressed() const noexcept { return !pressed;}
+    inline bool isPressed() const noexcept { return pressed;}
 
 };
 

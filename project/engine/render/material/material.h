@@ -62,5 +62,8 @@ public:
     }
     MaterialPBR(const Texture albedo){
         setUniform("_tex_diffuse", albedo);
+        setUniform("_tex_normal", Texture::getPixelTexture(0));
+        setUniform("_tex_roughness", Texture::getPixelTexture(128));
+        setUniform("_tex_metallic", Texture::getPixelTexture(0));
     }
 };

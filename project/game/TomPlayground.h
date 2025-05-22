@@ -107,7 +107,7 @@ void tom( void )
     game.settings.windowHeight = 720;
 
     game.init();
-
+    
     game.setScene(
         createScene()
     );

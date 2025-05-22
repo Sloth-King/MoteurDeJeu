@@ -156,12 +156,68 @@ Scene createScene(){
         glm::vec3(0.0, 0.0, 0.0),
         glm::vec3(0, 1.0, 0.0)
     );
+    
 
 
     scene.setRoot(std::move(world));
 
     return scene;
 }
+
+
+
+void setupScene(Game& game){
+    Scene scene;
+    GameObject world;
+
+
+    Mesh cube = ResourceLoader::load_mesh_obj("../game/resources/meshes/supercube.obj");
+
+    // Les handles sont des objets référence à des ressources. Tant qu'au moins une handle existe, la ressource
+    // n'est pas libérée.
+    cube.material = Handle<MaterialPBR>(Texture("../game/resources/textures/logo.jpg"));
+
+
+
+    C_Transform* t = world->addComponent<C_Transform>(); 
+    t->setPosition(glm::vec3(0, -0.2, 0));
+    t->setScale(glm::vec3(0.1, 0.1, 0.1));
+
+    world->addComponent<C_Mesh>() -> mesh = cube; 
+
+
+
+
+
+    // light
+
+    GameObject light;
+
+    auto* lightComponent = light->addComponent<C_Light>();
+
+    lightComponent->light.color = glm::vec3(1.0, 1.0, 1.0);
+    lightComponent->light.intensity = 100.0;
+    light->addComponent<C_Transform>()->setPosition(glm::vec3(10.0, 10.0, 5.0));
+    
+    world->addChild(std::move(light));
+
+
+    Environment env;
+
+    auto cubemap = CubeMap(
+        path_prefix_from_build + "resources/textures/skybox"
+    );
+
+    env.skybox = Skybox( std::move(cubemap));
+    scene.environment = std::move(env);
+
+    scene.setRoot(std::move(world));
+  
+    game.setScene(std::move(scene)); // on donne l'ownership de la scène au jeu
+}
+
+
+
 
 void game( void )
 {
@@ -171,13 +227,18 @@ void game( void )
     game.settings.windowHeight = 720;
 
     game.init();
-    addKeybind();
 
+    
+    addKeybind();
+    /*
     game.setScene(
         createScene()
-    );
+    );*/
+    
 
+    setupScene(game);
     game.start();
+
 
     game.waitGameStopped();
 }

@@ -121,6 +121,15 @@ public:
         return getPixelSafe(i, j, RepeatMode::MIRROR);
     }
 
+    static Texture getPixelTexture(uint8_t val){
+        Texture t;
+        t.data = {val, val, val};
+        t.width = t.height = 1;
+        t.nbChannels = 3;
+        t.synchronize();
+        return t;
+    }
+
 
 
     GLuint getTextureId(){ return _texture_id;};
