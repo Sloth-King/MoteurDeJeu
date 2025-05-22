@@ -131,6 +131,7 @@ void Game::init()
     renderingServer.setContext(window);
     renderingServer.setGame(this);
     renderingServer.setupBuffers();
+
     Input::init();
 
 }

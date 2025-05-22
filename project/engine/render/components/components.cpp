@@ -56,7 +56,12 @@ void C_Camera::_onLateUpdate(float deltaTime){
 }
 
 void C_Camera::_onEnterScene(){
-    getOwner()->getScene()->setCurrentCamera(camera);
+    // on the game instead of the scene because the game can resize the camera
+
+    if (getOwner()->getScene()->current_game)
+        getOwner()->getScene()->current_game->setCurrentCamera(camera);
+    else
+        getOwner()->getScene()->setCurrentCamera(camera);
 };
 
 

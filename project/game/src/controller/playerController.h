@@ -5,7 +5,7 @@ class C_PlayerController : public Component
 {
 public:
     float movement_speed = 1.0;
-    float mouseSpeed = 10;
+    float mouseSpeed = 30;
     bool _isMouseHidden = false;
 
     void inputCallback(const InputEvent &e)

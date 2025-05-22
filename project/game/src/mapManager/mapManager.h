@@ -125,8 +125,8 @@ public:
 
         c_voxelmesh->create_chunk(glm::round(global_pos));
 
-        g->addComponent<C_Collider>()->collider.chunk = ChunkCollider(c_voxelmesh);
-        g->addComponent<C_RigidBody>()->isStatic = true;        
+        //g->addComponent<C_Collider>()->collider.chunk = ChunkCollider(c_voxelmesh);
+        //g->addComponent<C_RigidBody>()->isStatic = true;        
 
         getOwner()->addChild(std::move(g));
         return g;

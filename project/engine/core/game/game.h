@@ -76,6 +76,8 @@ public:
         current_scene.__unloaded();
         current_scene = std::move(scene);
         current_scene.current_game = this;
+        
+        if (current_scene.current_camera) current_scene.current_camera->resize(settings.windowWidth, settings.windowHeight);
         current_scene.__loaded();
         return &current_scene;
     }
