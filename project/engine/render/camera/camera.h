@@ -70,6 +70,14 @@ public:
         //view = glm::inverse(getViewMatrix());
         return glm::vec3(transform[2][0], transform[2][1], transform[2][2]);
     }
+    inline glm::vec3 getUpVector(){
+        //view = glm::inverse(getViewMatrix());
+        return glm::vec3(transform[1][0], transform[1][1], transform[1][2]);
+    }
+    inline glm::vec3 getRightVector(){
+        //view = glm::inverse(getViewMatrix());
+        return glm::vec3(transform[0][0], transform[0][1], transform[0][2]);
+    }
 };
 
 class DebugCamera: public Camera{

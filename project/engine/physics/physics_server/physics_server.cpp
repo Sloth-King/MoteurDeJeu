@@ -1,5 +1,6 @@
 #include "engine/physics/physics_server/physics_server.h"
 #include "engine/core/core_components/components.h"
+#include "game/src/voxel/voxel.h"
 #include <GLFW/glfw3.h>
 
 #include <utility> //for swap
@@ -7,12 +8,6 @@
 //////////////////////////////////////////////////////////////////// Random helpers ///////////////////////////////////////////////////////////////////////////////
 
 bool t = true;
-
-std::ostream &operator<<(std::ostream &os, const glm::vec3 &vec)
-{
-    os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
-    return os;
-}
 
 bool debugMode(bool t)
 {
@@ -30,6 +25,7 @@ glm::mat3 computeInertiaTensor(GameObjectData *obj)
 {
     auto *collider = obj->getComponent<C_Collider>();
     auto *body = obj->getComponent<C_RigidBody>();
+    auto *transform = obj->getComponent<C_Transform>();
 
     // For now we'll just say that all planes must be static idk
     if (body->isStatic)
@@ -39,7 +35,7 @@ glm::mat3 computeInertiaTensor(GameObjectData *obj)
 
     if (collider->collider.base.type == SPHERE)
     {
-        float r = collider->collider.sphere.radius;
+        float r = collider->collider.sphere.radius * transform->getGlobalScale().x;
         float I = (2.0f / 5.0f) * body->mass * r * r;
         return glm::mat3(
             I, 0.0f, 0.0f,
@@ -47,6 +43,7 @@ glm::mat3 computeInertiaTensor(GameObjectData *obj)
             0.0f, 0.0f, I);
     }
 
+    return glm::mat3(0.0f);
     // TODO : Handle other shapes, i guess rn rn we dont really give a fuck about other shapes
 }
 
@@ -396,6 +393,106 @@ intersectionData intersectionCubeCube(const Collider *a, const C_Transform *at,
     return res;
 }
 
+// CHUNK
+
+
+intersectionData intersectionSphereChunk(const Collider *a, const C_Transform *at,
+                                         const Collider *b, const C_Transform *bt)
+{
+
+    // Types secrutiy checks + casts
+    assert(a->type == ColliderType::SPHERE && b->type == ColliderType::CHUNK);
+
+    const SphereCollider *sphere = static_cast<const SphereCollider *>(a);
+    const ChunkCollider *chunk = static_cast<const ChunkCollider *>(b);
+
+    intersectionData res;
+
+    // Sphere to world
+    glm::vec3 sphereCenter = sphere->center + at->getGlobalPosition();
+    float sphereRadius = sphere->radius * at->getGlobalScale().x;
+
+    // (variables to make less annoying)
+    const C_voxelMesh *mesh = chunk->voxelMesh;
+    const VoxelContainer &container = mesh->container; 
+    
+    // Chunk to world
+    glm::vec3 chunkOrigin = bt->getGlobalPosition();
+    // Utils::print(chunkOrigin);
+    float voxelSize = mesh->size;
+
+    // TODO (maybe) add a lil check to make sure we're in a chunk and/or neighbors to avoid useless computation
+
+    // Ok so basically, get the bounding box of my sphere, and just check the voxels inside it
+    // This cuts the number of computations by like a bajillion probably
+
+    // Sphere bounding box edges
+    glm::vec3 sphereBBMin = sphereCenter - glm::vec3(sphereRadius);
+    glm::vec3 sphereBBMax = sphereCenter + glm::vec3(sphereRadius);
+
+    // indexes of our toing (contained between 0 and max size pretty much)
+    // floor and ceil are just to make sure we take any voxel even that's barely in
+
+    glm::ivec3 minIdx = glm::clamp(glm::floor((sphereBBMin - chunkOrigin) / voxelSize), glm::vec3(0), glm::vec3(container.sX , container.sY , container.sZ ));
+    glm::ivec3 maxIdx = glm::clamp(glm::ceil((sphereBBMax - chunkOrigin) / voxelSize), glm::vec3(0), glm::vec3(container.sX , container.sY , container.sZ ));
+
+    // Utils::print("min_idx : ", minIdx, " max_idx :", maxIdx);
+
+    for (int x = minIdx.x; x < maxIdx.x; ++x)
+        for (int y = minIdx.y; y < maxIdx.y; ++y)
+            for (int z = minIdx.z; z < maxIdx.z; ++z)
+
+    // for (int x = 0; x < container.sX; ++x)
+    //     for (int y = 0; y < container.sY; ++y)
+    //         for (int z = 0; z < container.sZ; ++z)
+            {
+                // Utils::print("in loop : ",x,y,z);
+                // just check solids
+                VOXEL_IDX_TYPE id = container.get(x, y, z);
+                if (id == 0)
+                    continue;
+                
+                // not 100% sure but i think this is ok (not sure of the halfstep or no)
+                glm::vec3 voxelMin = chunkOrigin + voxelSize * glm::vec3(x, y, z);
+                glm::vec3 voxelMax = voxelMin + glm::vec3(voxelSize);
+                glm::vec3 voxelCenter = voxelMin + glm::vec3(voxelSize / 2.0f);
+
+                // Straight up just SphereCube but reskin
+
+                glm::vec3 closestPoint = glm::clamp(sphereCenter, voxelMin, voxelMax);
+                float sqDist = glm::dot(sphereCenter - closestPoint, sphereCenter - closestPoint);
+
+                if (sqDist <= sphereRadius * sphereRadius)
+                {
+                    Utils::print("sqDist : " , sqDist);
+                    Utils::print("r2 : " , sphereRadius * sphereRadius);
+                    // TODO : add the check to make sure it doesnt return NAN but the sun is rising tbh
+
+                    glm::vec3 intersectionNormal;
+                    if (closestPoint == sphereCenter)
+                    {
+                        intersectionNormal = glm::normalize(sphereCenter - voxelCenter); // to avoid 0s or nan cause i kept cetting those
+                        t = true;
+                    }
+                    else
+                        intersectionNormal = glm::normalize(sphereCenter - closestPoint);   
+                    glm::vec3 sphereIntersectionPoint = sphereCenter - intersectionNormal * sphereRadius; // FIXME NO CLUE IF THIS IS RIGHT
+
+                    Utils::print("Normal : ",intersectionNormal);
+
+                    res.isIntersection = true;
+                    res.intersectionNormal = intersectionNormal;
+                    res.intersectionPointA = sphereIntersectionPoint;
+                    res.intersectionPointB = closestPoint;
+                    return res; // Return on first intersection
+                }
+            }
+
+            // no intersection
+            res.isIntersection = false;
+            return res;
+}
+
 ///////////////////////////////////////////////////////////////// Physics server methods ////////////////////////////////////////////////////////////////////////////
 
 void PhysicsServer::addObject(GameObjectData *go)
@@ -408,7 +505,8 @@ void PhysicsServer::removeObject(GameObjectData *go)
     Objects.erase(go);
 }
 
-float PhysicsServer::getDeltaTime(){
+float PhysicsServer::getDeltaTime()
+{
     return deltaT;
 }
 
@@ -421,11 +519,13 @@ std::vector<intersectionData> PhysicsServer::computeCollisions()
 
     using FindContactFunc = intersectionData (*)(const Collider *, const C_Transform *, const Collider *, const C_Transform *);
 
-    static const FindContactFunc functionTables[4][4] = {
+    // Each value represents the collision shape in the struct
+    static const FindContactFunc functionTables[5][5] = {
         {nullptr, nullptr, nullptr, nullptr},
-        {nullptr, intersectionSphereSphere, intersectionSpherePlane, intersectionSphereCube},
-        {nullptr, nullptr, intersectionPlanePlane, intersectionPlaneCube},
-        {nullptr, nullptr, nullptr, intersectionCubeCube}};
+        {nullptr, intersectionSphereSphere, intersectionSpherePlane, intersectionSphereCube, intersectionSphereChunk},
+        {nullptr, nullptr, intersectionPlanePlane, intersectionPlaneCube, nullptr},
+        {nullptr, nullptr, nullptr, intersectionCubeCube, nullptr},
+        {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
     for (const auto &objectA : Objects)
     {
@@ -434,9 +534,8 @@ std::vector<intersectionData> PhysicsServer::computeCollisions()
         for (const auto &objectB : Objects)
         {
 
-            if(objectA->getComponent<C_RigidBody>()->isStatic && objectB->getComponent<C_RigidBody>()->isStatic) continue;
-
-            std::cout << "wesh" << std::endl;
+            if (objectA->getComponent<C_RigidBody>()->isStatic && objectB->getComponent<C_RigidBody>()->isStatic)
+                continue;
 
             // Check if the object has the right components AND that they're not the same object
             if (
@@ -501,6 +600,36 @@ std::vector<intersectionData> PhysicsServer::computeCollisions()
     return intersectionList;
 }
 
+void solveOverlap(intersectionData &a){
+
+    static const float MARGIN = 0.000001f;
+
+    auto *objectA = a.objectA;
+    auto *objectB = a.objectB;
+
+    float marginA = MARGIN, marginB = MARGIN;
+
+    glm::vec3 overlapVector(a.intersectionPointB - a.intersectionPointA);
+
+    float mass_ratio;
+    if (objectB->getComponent<C_RigidBody>()->isStatic){
+        mass_ratio = 1.0;
+        marginB = 0.0f;
+    } else if (objectA->getComponent<C_RigidBody>()->isStatic){
+        mass_ratio = 0.0;
+        marginA = 0.0f;
+    } else{
+        mass_ratio = objectB->getComponent<C_RigidBody>()->mass / (objectB->getComponent<C_RigidBody>()->mass + objectA->getComponent<C_RigidBody>()->mass);
+    }
+
+    auto v = objectA->getComponent<C_Transform>()->getGlobalPosition();
+    objectA->getComponent<C_Transform>()->moveGlobal(overlapVector * (mass_ratio + MARGIN));
+
+    objectB->getComponent<C_Transform>()->moveGlobal(-1.0f * overlapVector  * (1.0f - mass_ratio + MARGIN));
+    
+    a.intersectionPointA = a.intersectionPointB = a.intersectionPointA + (mass_ratio) * overlapVector;
+}
+
 // this is like almost word for word this :
 // https://github.com/DallinClark/3d-physics-engine/blob/main/src/physics/world.cpp
 void PhysicsServer::resolveCollision(const intersectionData &a)
@@ -514,24 +643,22 @@ void PhysicsServer::resolveCollision(const intersectionData &a)
     auto *objectBodyB = objectB->getComponent<C_RigidBody>();
     auto *objectTransformB = objectB->getComponent<C_Transform>();
 
-    if(objectBodyA->isStatic && objectBodyB->isStatic) return;
+    if (objectBodyA->isStatic && objectBodyB->isStatic)
+        return;
 
     // Intersection normal
-    glm::vec3 normal = a.intersectionNormal;
+    glm::vec3 normal = -a.intersectionNormal;
 
     // Points of collision
-    glm::vec3 collisionPointA = a.intersectionPointA;
-    glm::vec3 collisionPointB = a.intersectionPointB;
+    glm::vec3 collisionPoint = a.intersectionPointA; // same
 
     // Smalerst restitution value (take the min elasticity)
     float e = std::min(objectBodyA->restitution, objectBodyB->restitution);
 
-    std::cout << "restitution : " << e << std::endl;
-
     // Collision offsets
     // ngl i'm not sure which collision points i should be using
-    glm::vec3 ra = collisionPointA - objectTransformA->getGlobalPosition();
-    glm::vec3 rb = collisionPointB - objectTransformB->getGlobalPosition();
+    glm::vec3 ra = collisionPoint - objectTransformA->getGlobalPosition();
+    glm::vec3 rb = collisionPoint - objectTransformB->getGlobalPosition();
 
     // Calculate new angular velocity based on the offset
     glm::vec3 angularVelocityA = glm::cross(objectBodyA->angular_velocity, ra);
@@ -542,6 +669,8 @@ void PhysicsServer::resolveCollision(const intersectionData &a)
 
     // Magnitude of contact veloziwty
     float contactVelocityMag = glm::dot(relativeVelocity, normal);
+
+    Utils::print("hello??");
 
     // If < 0 means colliusion, if no collision, give empty impulse
     float j = 0.0f;
@@ -563,14 +692,22 @@ void PhysicsServer::resolveCollision(const intersectionData &a)
         float denom = objectBodyA->inverseMass() + objectBodyB->inverseMass() + glm::dot(glm::cross(raInertia, ra), normal) + glm::dot(glm::cross(rbInertia, rb), normal);
 
         // Compute the impulse scalar.
-        j = -(1.0f + e) * contactVelocityMag / denom;
+        j =  -e * contactVelocityMag / denom;
 
-        glm::vec3 impulse = j * normal;
+        glm::vec3 impulse = j * normal / 2.0f;
 
         // Update linear velocity
         // No need to check if static cuz static bodies have an inverseMass of 0
-        objectBodyA->setVelocity(objectBodyA->linear_velocity - impulse * objectBodyA->inverseMass());
-        objectBodyB->setVelocity(objectBodyB->linear_velocity - impulse * objectBodyB->inverseMass());
+        Utils::print("impulse : " , impulse);
+        Utils::print("add impulse : " , objectBodyA->linear_velocity - impulse * objectBodyA->inverseMass());
+        Utils::print("velocity before : " , objectBodyA->linear_velocity);
+        objectBodyA->applyImpulse(-1.0f * impulse * objectBodyA->inverseMass());
+        objectBodyB->applyImpulse(impulse * objectBodyB->inverseMass());
+        Utils::print("velocity after : ", objectBodyA->linear_velocity);
+
+        objectBodyA->linear_velocity -= (gravity * objectBodyA->gravityScale + objectBodyA->acceleration) * getDeltaTime();
+        objectBodyB->linear_velocity -= (gravity * objectBodyB->gravityScale + objectBodyB->acceleration) * getDeltaTime();
+
 
         glm::vec3 angularImpulseA = invInertiaTensor(objectA) * glm::cross(ra, impulse);
         if (objectBodyA->isStatic)
@@ -583,46 +720,31 @@ void PhysicsServer::resolveCollision(const intersectionData &a)
             angularImpulseB = glm::vec3(0.0f);
         }
 
-		// Update angular velocities accordingly.
+
+
+        // Update angular velocities accordingly.
         objectBodyA->angular_velocity = (objectBodyA->angular_velocity - angularImpulseA);
         objectBodyB->angular_velocity = (objectBodyB->angular_velocity - angularImpulseB);
     }
 
-    // Old collision test for bouncy balls hehe
-
-    // static const float MARGIN = 0.001f;
-
-    // auto *objectA = a.objectA;
-    // auto *objectB = a.objectB;
-
-    // glm::vec3 overlapVector(a.intersectionPointB - a.intersectionPointA);
-    // float mass_ratio = objectB->getComponent<C_RigidBody>()->mass / (objectB->getComponent<C_RigidBody>()->mass + objectA->getComponent<C_RigidBody>()->mass);
-    // glm::vec3 moveA = overlapVector * (mass_ratio + MARGIN);
-
-    // auto v = objectA->getComponent<C_Transform>()->getGlobalPosition();
-    // objectA->getComponent<C_Transform>()->moveGlobal(overlapVector * (mass_ratio + MARGIN));
-
-    // objectA->getComponent<C_Transform>()->setScale(glm::vec3(glm::length(overlapVector*20.0f)));
-    // objectB->getComponent<C_Transform>()->moveGlobal(-1.0f * overlapVector  * (1.0f - mass_ratio + MARGIN));
 }
 
 void PhysicsServer::solveCollisions(std::vector<intersectionData> collisions, float deltatime)
 {
-    for (const auto &collision : collisions)
+    for (auto &collision : collisions)
     {
         if (collision.isIntersection)
         {
+            solveOverlap(collision);
             resolveCollision(collision);
-            collision.objectA->getComponent<C_RigidBody>()->linear_velocity =
-                glm::reflect(collision.objectA->getComponent<C_RigidBody>()->linear_velocity, collision.intersectionNormal);
 
-            collision.objectB->getComponent<C_RigidBody>()->linear_velocity =
-                glm::reflect(collision.objectB->getComponent<C_RigidBody>()->linear_velocity, collision.intersectionNormal);
+            auto *objectBodyA = collision.objectA->getComponent<C_RigidBody>();
+            auto *objectBodyB = collision.objectB->getComponent<C_RigidBody>();
 
-            collision.objectA->getComponent<C_RigidBody>()->linear_velocity -= collision.objectA->getComponent<C_RigidBody>()->acceleration * deltatime;
-            collision.objectB->getComponent<C_RigidBody>()->linear_velocity -= collision.objectB->getComponent<C_RigidBody>()->acceleration * deltatime;
+            // collision.objectA->getComponent<C_RigidBody>()->linear_velocity -= (gravity * objectBodyA->gravityScale + objectBodyA->acceleration) * deltatime;
+            // collision.objectB->getComponent<C_RigidBody>()->linear_velocity -= (gravity * objectBodyB->gravityScale + objectBodyB->acceleration) * deltatime;
 
-            float THRESH = 0.0000005f;
+            float THRESH = 0.0005f;
             if (glm::dot(collision.objectA->getComponent<C_RigidBody>()->linear_velocity, collision.objectA->getComponent<C_RigidBody>()->linear_velocity) < THRESH)
                 collision.objectA->getComponent<C_RigidBody>()->linear_velocity = glm::vec3(0.0);
             if (glm::dot(collision.objectB->getComponent<C_RigidBody>()->linear_velocity, collision.objectB->getComponent<C_RigidBody>()->linear_velocity) < THRESH)
@@ -640,51 +762,48 @@ void PhysicsServer::integrate(float deltatime)
     for (const auto &object : Objects)
     {
         // If the obj is not static apply physics
-        if (object->getComponent<C_RigidBody>()->isStatic) continue;
-
-        // std::cout << object->getComponent<C_Collider>()->collider.base.type << std::endl;
+        if (object->getComponent<C_RigidBody>()->isStatic)
+            continue;
 
         auto *objectBody = object->getComponent<C_RigidBody>();
-        objectBody->acceleration = gravity; // for now thats all it is
 
         // https://github.com/DallinClark/3d-physics-engine/blob/main/src/physics/rigid_body.cpp
         // If we have angular velocity and we're not an aabb
         if (glm::length(objectBody->angular_velocity) > 0.0f && !(object->getComponent<C_Collider>()->collider.base.type == CUBE))
         {
+
             float angle = glm::length(objectBody->angular_velocity) * deltatime; // Get the rotation magnitude
             glm::vec3 axis = glm::normalize(objectBody->angular_velocity);       // The rotation axis
 
             // Construct the small-angle rotation matrix
-            glm::mat4 deltaRotation = glm::rotate(glm::mat4(1.0f), angle, axis);
+            //glm::mat4 deltaRotation = glm::rotate(glm::mat4(1.0f), angle, axis);
 
             // Convert rotation matrix to euler tho idk if that's necessary at all
             // FIXME
-            glm::vec3 eulerAngles = glm::eulerAngles(glm::quat_cast(deltaRotation));
-
+            //glm::vec3 eulerAngles = (angle);
+            
             // Apply rotation update
-            object->getComponent<C_Transform>()->rotate(eulerAngles);
+            object->getComponent<C_Transform>()->rotate(objectBody->angular_velocity * deltatime);
+            objectBody->angular_velocity *= pow(objectBody->damping, deltatime);
+            
         }
 
         // update de velocity
-        objectBody->linear_velocity += objectBody->acceleration * deltatime;
+        objectBody->linear_velocity += (gravity * objectBody->gravityScale + objectBody->acceleration) * deltatime;
         objectBody->linear_velocity *= pow(objectBody->damping, deltatime);
 
-        object->getComponent<C_Transform>()->move(objectBody->linear_velocity * gameSpeed);
-
-        // std::cout << "acceleration : (" << objectBody->acceleration.x << "," << objectBody->acceleration.y  << "," << objectBody->acceleration.z << ")" << std::endl;
-        // std::cout << "velocity : (" << objectBody->linear_velocity .x << "," << objectBody->linear_velocity .y  << "," << objectBody->linear_velocity .z << ")" << std::endl;
-        // std::cout << "transform : (" << objectTransform.x << "," << objectTransform.y  << "," << objectTransform.z << ")" << std::endl;
+        object->getComponent<C_Transform>()->moveGlobal(objectBody->linear_velocity * gameSpeed);
     }
 }
 
 void PhysicsServer::step(float deltatime)
 {
-    deltaT = deltatime;
-    //t = debugMode(t);
+    deltaT = deltatime * 1;
+    // t = debugMode(t);
     t = false;
     if (t)
         return;
+    integrate(deltaT);
     std::vector<intersectionData> collisions = computeCollisions();
-    solveCollisions(collisions, deltatime);
-    integrate(deltatime);
+    solveCollisions(collisions, deltaT);
 }

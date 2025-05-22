@@ -1,16 +1,15 @@
 #pragma once
 #include "engine/includes/core.h"
 
-
-
-
-class C_PlayerController: public Component {
+class C_PlayerController : public Component
+{
 public:
+    float movement_speed = 1.0;
+    float mouseSpeed = 10;
+    bool _isMouseHidden = false;
 
-    float movement_speed = 2.0;
-
-
-    void inputCallback(const InputEvent & e){
+    void inputCallback(const InputEvent &e)
+    {
         /*
         if (e == "move_right"){
             std::cout << "move_right" << std::endl;
@@ -33,39 +32,124 @@ public:
         */
     }
 
-    C_PlayerController(){
+    C_PlayerController()
+    {
         Input::addInputListener(
-            [& /*capture ambient object ref*/](const InputEvent & e){
+            [&/*capture ambient object ref*/](const InputEvent &e)
+            {
                 inputCallback(e);
+            });
+    }
+
+    virtual void _onUpdate(float delta) override
+    {
+        if (!getOwner()->hasComponent<C_Transform>() || !getOwner()->hasComponent<C_RigidBody>())
+            return;
+
+        auto *transform = getOwner()->getComponent<C_Transform>();
+        auto *body = getOwner()->getComponent<C_RigidBody>();
+
+        if (getOwner()->hasComponent<C_Camera>())
+        {
+            auto *cam = getOwner()->getComponent<C_Camera>();
+            
+            delta *= movement_speed;
+
+            glm::vec3 linearForce(0.0f);
+
+            if (Input::isInputPressed("move_right"))
+            {
+                linearForce += cam->camera.getRightVector();
             }
-        );
-    }
+            if (Input::isInputPressed("move_left"))
+            {
+                linearForce -= cam->camera.getRightVector();
+            }
+            if (Input::isInputPressed("move_forward"))
+            {
+                linearForce -= cam->camera.getForwardVector();
+            }
+            if (Input::isInputPressed("move_backwards"))
+            {
+                linearForce += cam->camera.getForwardVector();
+            }
+            if (Input::isInputPressed("move_up"))
+            {
+                linearForce += cam->camera.getUpVector();
+            }
+            if (Input::isInputPressed("move_down"))
+            {
+                linearForce -= cam->camera.getUpVector();
+            }
 
-    virtual void _onUpdate(float delta) override{
+            // Utils::print("linear force", linearForce);
 
-        delta *= movement_speed;
+            body->applyForce(delta * linearForce);
 
-        if (!getOwner()->hasComponent<C_Transform>()) return;
+            // Mouse movement
 
-        auto* transform = getOwner()->getComponent<C_Transform>();
+            {
+                if (!_isMouseHidden)
+                {
+                    glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                    _isMouseHidden = true;
+                }
 
-        if (Input::isInputPressed("move_right")){
-            transform->move(glm::vec3(1, 0, 0) * delta);
+                static double xpos_last, ypos_last;
+                double xpos, ypos;
+                glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
+
+                // Reset mouse position for next frame
+                // glfwSetCursorPos(glfwGetCurrentContext(), 1024/2, 768/2);
+
+                // Compute new orientation
+
+                float horizontalAngle = mouseSpeed * (xpos - xpos_last) / 1000.0;
+                float verticalAngle = mouseSpeed * (ypos - ypos_last) / 1000.0;
+
+                // in local space
+                // transform->rotate(-horizontalAngle * glm::vec3(0.0, 1.0, 0.0));
+                // transform->rotate(-verticalAngle * glm::vec3(0.0, 0.0, 1.0));
+
+                body->applyAngularForce(-horizontalAngle * glm::vec3(0.0, 1.0, 0.0));
+                body->applyAngularForce(-verticalAngle * glm::vec3(1.0, 0.0, 0.0));
+
+                xpos_last = xpos;
+                ypos_last = ypos;
+            }
         }
-        if (Input::isInputPressed("move_left")){
-            transform->move(glm::vec3(-1, 0, 0) * delta);
+        else
+        {
+            delta *= movement_speed;
+
+            glm::vec3 linearForce(0.0f);
+
+            if (Input::isInputPressed("move_right"))
+            {
+                linearForce += glm::vec3(1, 0, 0);
+            }
+            if (Input::isInputPressed("move_left"))
+            {
+                linearForce += glm::vec3(-1, 0, 0);
+            }
+            if (Input::isInputPressed("move_forward"))
+            {
+                linearForce += glm::vec3(0, 0, -1);
+            }
+            if (Input::isInputPressed("move_backwards"))
+            {
+                linearForce += glm::vec3(0, 0, 1);
+            }
+            if (Input::isInputPressed("move_up"))
+            {
+                linearForce += glm::vec3(0, 1, 0);
+            }
+            if (Input::isInputPressed("move_down"))
+            {
+                linearForce += glm::vec3(0, -1, 0);
+            }
+
+            body->applyForce(linearForce * delta);
         }
-        if (Input::isInputPressed("move_forward")){
-            transform->move(glm::vec3(0, 0, -1) * delta);
-        }
-        if (Input::isInputPressed("move_backwards")){
-            transform->move(glm::vec3(0, 0, 1) * delta);
-        }
-        if (Input::isInputPressed("move_up")){
-            transform->move(glm::vec3(0, 1, 0) * delta);
-        }
-        if (Input::isInputPressed("move_down")){
-            transform->move(glm::vec3(0, -1, 0) * delta);
-        }
-    }
+    };
 };

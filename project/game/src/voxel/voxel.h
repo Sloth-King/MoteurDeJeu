@@ -26,7 +26,7 @@ struct VoxelContainer {
         data.resize(x * y * z);
     }
 
-    inline VOXEL_IDX_TYPE get( size_t x, size_t y, size_t z ) {
+    inline VOXEL_IDX_TYPE get( size_t x, size_t y, size_t z ) const {
         return data.at((z * sX * sY) + (y * sX) + x);
     }
 
