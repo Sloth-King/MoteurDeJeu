@@ -196,7 +196,7 @@ vec3 pbr_lighting(vec3 position, vec3 albedo, vec3 normal, float roughness, floa
    vec3 radiance = lightColor * attenuation; 
 
    vec3 F0 = vec3(0.04); 
-   F0 = mix(F0, albedo, metallic);
+   F0 = mix(albedo, F0, metallic);
    vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
    float NDF = DistributionGGX(N, H, roughness);       
    float G = GeometrySmith(N, V, L, roughness);   

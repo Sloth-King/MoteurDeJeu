@@ -87,7 +87,7 @@ GameObject createPlayer(){
     );
 
     auto* playerTransform = player->addComponent<C_Transform>();
-    playerTransform->move(glm::vec3(0.05, 1.0, 0.05));
+    playerTransform->move(glm::vec3(0.05, 0.3, 0.05));
     playerTransform->setScale(glm::vec3(0.07, 0.07, 0.07));
     
 

@@ -4,8 +4,8 @@
 class C_PlayerController : public Component
 {
 public:
-    float movement_speed = 1.0;
-    float mouseSpeed = 30;
+    float movement_speed = 1.7;
+    float mouseSpeed = 100;
     bool _isMouseHidden = false;
 
     void inputCallback(const InputEvent &e)
@@ -89,14 +89,19 @@ public:
             // Mouse movement
 
             {
+
+                static double xpos_last, ypos_last;
+                double xpos, ypos;
                 if (!_isMouseHidden)
                 {
+                    glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
+                    xpos_last = xpos;
+                    ypos_last = ypos;
                     glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     _isMouseHidden = true;
                 }
 
-                static double xpos_last, ypos_last;
-                double xpos, ypos;
+        
                 glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
 
                 // Reset mouse position for next frame
